@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { applyFixer, streak } from '$lib/stores.svelte';
+	import { applyFixer, clearStreakHistory, streak } from '$lib/stores.svelte';
 	import {
 		currentStreak,
 		fixerProgress,
@@ -29,6 +29,12 @@
 		if (!repair) return;
 		if (confirm(`Use 1 streak fixer to fill in ${repair} and repair the streak?`)) {
 			applyFixer();
+		}
+	}
+
+	function handleClearStreak(): void {
+		if (confirm('Clear all streak history? This will reset your current streak, longest streak, completed days, and fixer balance.')) {
+			clearStreakHistory();
 		}
 	}
 </script>
@@ -72,7 +78,7 @@
 	</div>
 </section>
 
-<section class="card">
+<section class="card" style="margin-bottom: 0.75rem">
 	<h2>Last 42 days</h2>
 	<div class="calendar">
 		{#each calendar as d (d.key)}
@@ -85,4 +91,18 @@
 		Finish a routine to credit the day. Missing a day breaks the streak; every 7 completed days earns a fixer
 		that repairs the most recent break.
 	</p>
+</section>
+
+<section class="card">
+	<div class="spread">
+		<div>
+			<h2>Streak management</h2>
+			<p class="muted small" style="margin: 0.2rem 0 0">
+				Reset all recorded workout days and start fresh.
+			</p>
+		</div>
+		<button class="btn small danger" onclick={handleClearStreak} disabled={totalDays === 0 && streak.fixersUsed === 0}>
+			Clear streak history
+		</button>
+	</div>
 </section>

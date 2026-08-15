@@ -28,12 +28,12 @@
 		{ kind: 'full-body-mobility', title: 'Full-body mobility', duration: '6 min', description: 'A balanced daily flow' }
 	];
 
-	let newRoutineMenu = $state<HTMLDetailsElement>();
+	let showNewModal = $state(false);
 
 	function createRoutine(): void {
 		const r = newRoutine('New routine');
 		addRoutine(r);
-		if (newRoutineMenu) newRoutineMenu.open = false;
+		showNewModal = false;
 		goto(`/routine/${r.id}`);
 	}
 
@@ -63,7 +63,7 @@
 	function addTemplate(kind: StarterRoutineKind): void {
 		const routine = starterRoutine(kind);
 		addRoutine(routine);
-		if (newRoutineMenu) newRoutineMenu.open = false;
+		showNewModal = false;
 		goto(`/routine/${routine.id}`);
 	}
 
@@ -112,54 +112,35 @@
 	<title>Stretch Timer</title>
 </svelte:head>
 
-<section class="card" style="margin-bottom: 0.9rem">
+<section class="card streak-banner" style="margin-bottom: 0.9rem">
 	<div class="spread">
 		<div>
-			<h2>🔥 {streakNow} day streak</h2>
-			<p class="muted small" style="margin: 0.2rem 0 0">
-				{fixers} streak fixer{fixers === 1 ? '' : 's'} · {fixerProgress(streak)}/7 days to the next
+			<h2 style="font-size: 1.15rem">🔥 {streakNow} day streak</h2>
+			<p class="muted small" style="margin: 0.25rem 0 0">
+				{fixers} streak fixer{fixers === 1 ? '' : 's'} · {fixerProgress(streak)}/7 days to next
 			</p>
 		</div>
-		<a class="btn small" href="/stats">Streak details</a>
+		<a class="btn small" href="/stats">Details</a>
 	</div>
 </section>
 
 <div class="spread routine-heading" style="margin-bottom: 0.9rem">
 	<h1 style="font-size: 1.3rem">Routines</h1>
 	<div class="row routine-heading-actions">
-		<button class="btn small" onclick={downloadBackup}>⇩ Back up</button>
-		<label class="btn small" class:disabled={importing}>
+		<button class="btn small" onclick={downloadBackup} title="Export routines as backup">⇩ Back up</button>
+		<label class="btn small" class:disabled={importing} title="Import routines from backup">
 			⇧ Restore
 			<input class="sr-only" type="file" accept="application/json,.json" onchange={restoreBackup} disabled={importing} />
 		</label>
-		<details class="new-routine-menu" bind:this={newRoutineMenu}>
-			<summary class="btn primary">＋ New routine <span class="menu-chevron">⌄</span></summary>
-			<div class="new-routine-panel">
-				<div class="new-routine-panel-heading">
-					<strong>Choose a quick start</strong>
-					<span class="muted small">or start from scratch</span>
-				</div>
-				<div class="starter-grid">
-					{#each starterOptions as option (option.kind)}
-						<button class="starter-option" onclick={() => addTemplate(option.kind)}>
-							<StarterArt kind={option.kind} />
-							<span class="starter-option-copy">
-								<strong>{option.title}</strong>
-								<span class="muted small">{option.description}</span>
-								<span class="starter-duration">{option.duration}</span>
-							</span>
-						</button>
-					{/each}
-				</div>
-				<button class="btn new-blank-button" onclick={createRoutine}>＋ Blank routine</button>
-			</div>
-		</details>
+		<button class="btn primary" onclick={() => (showNewModal = true)}>
+			＋ New routine
+		</button>
 	</div>
 </div>
 
 {#if routines.length > 0}
 	<div class="routine-tools">
-		<input type="text" bind:value={query} placeholder="Search routines" aria-label="Search routines" />
+		<input type="text" bind:value={query} placeholder="Search routines..." aria-label="Search routines" />
 		<select bind:value={sort} aria-label="Sort routines">
 			<option value="recent">Recently created</option>
 			<option value="name">Name</option>
@@ -173,9 +154,27 @@
 {/if}
 
 {#if routines.length === 0}
-	<div class="card">
-		<p class="muted" style="margin: 0">No routines yet. Create one to start timing your stretches.</p>
-	</div>
+	<section class="card empty-routines-card">
+		<div class="empty-state-header">
+			<h2>Choose a starter routine</h2>
+			<p class="muted small" style="margin: 0.25rem 0 0.85rem">
+				Pick a ready-to-go stretching flow or start with a blank routine.
+			</p>
+		</div>
+		<div class="starter-grid">
+			{#each starterOptions as option (option.kind)}
+				<button class="starter-option" onclick={() => addTemplate(option.kind)}>
+					<StarterArt kind={option.kind} />
+					<span class="starter-option-copy">
+						<strong>{option.title}</strong>
+						<span class="muted small">{option.description}</span>
+						<span class="starter-duration">{option.duration}</span>
+					</span>
+				</button>
+			{/each}
+		</div>
+		<button class="btn new-blank-button" onclick={createRoutine}>＋ Create blank routine</button>
+	</section>
 {:else if visibleRoutines.length === 0}
 	<div class="card">
 		<p class="muted" style="margin: 0">No routines match “{query}”.</p>
@@ -191,12 +190,12 @@
 				</span>
 			</div>
 			{#if r.stretches.length > 0}
-				<p class="muted small" style="margin: 0">
-					{r.stretches.map((s) => (s.sides === 'two' ? `${s.name} (L/R)` : s.name)).join(' · ')}
+				<p class="routine-stretch-summary muted small">
+					{r.stretches.map((s) => (s.sides === 'two' ? `${s.name || 'Stretch'} (L/R)` : (s.name || 'Stretch'))).join(' · ')}
 				</p>
 			{/if}
-			<div class="row">
-				<button class="btn primary small" onclick={() => play(r)} disabled={r.stretches.length === 0}>
+			<div class="row routine-card-actions">
+				<button class="btn primary small play-btn" onclick={() => play(r)} disabled={r.stretches.length === 0}>
 					▶ Play
 				</button>
 				<button class="btn small" onclick={() => edit(r)}>Edit</button>
@@ -205,4 +204,32 @@
 			</div>
 		</div>
 	{/each}
+{/if}
+
+{#if showNewModal}
+	<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+	<div class="modal-backdrop" onclick={() => (showNewModal = false)}>
+		<div class="modal-sheet" onclick={(e) => e.stopPropagation()}>
+			<div class="modal-header">
+				<div>
+					<h2 style="font-size: 1.15rem">Add Routine</h2>
+					<p class="muted small" style="margin: 0.15rem 0 0">Choose a quick start or create from scratch</p>
+				</div>
+				<button class="icon-btn close-modal-btn" onclick={() => (showNewModal = false)} aria-label="Close">✕</button>
+			</div>
+			<div class="starter-grid modal-starter-grid">
+				{#each starterOptions as option (option.kind)}
+					<button class="starter-option" onclick={() => addTemplate(option.kind)}>
+						<StarterArt kind={option.kind} />
+						<span class="starter-option-copy">
+							<strong>{option.title}</strong>
+							<span class="muted small">{option.description}</span>
+							<span class="starter-duration">{option.duration}</span>
+						</span>
+					</button>
+				{/each}
+			</div>
+			<button class="btn new-blank-button" onclick={createRoutine}>＋ Create blank routine</button>
+		</div>
+	</div>
 {/if}

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { playCue } from '$lib/audio';
-	import { saveAll, settings } from '$lib/stores.svelte';
+	import { clearStreakHistory, saveAll, settings, streak } from '$lib/stores.svelte';
 	import { type Theme } from '$lib/types';
 	import Segmented from '$lib/components/Segmented.svelte';
 	import Stepper from '$lib/components/Stepper.svelte';
@@ -13,6 +13,12 @@
 	function setTheme(v: string): void {
 		settings.theme = v as Theme;
 		saveAll();
+	}
+
+	function handleClearStreak(): void {
+		if (confirm('Clear all streak history? This will reset your streak count, completed days, and fixer history.')) {
+			clearStreakHistory();
+		}
 	}
 </script>
 
@@ -82,6 +88,25 @@
 				<Stepper bind:value={settings.breakSeconds} min={0} step={5} onchange={saveAll} />
 			</div>
 		{/if}
+	</div>
+
+	<div class="settings-group">
+		<h3>Data & History</h3>
+		<div class="spread" style="padding: 0.3rem 0">
+			<div>
+				<div style="font-weight: 600">Streak history</div>
+				<div class="muted small">
+					{streak.completedDates.length} day{streak.completedDates.length === 1 ? '' : 's'} recorded
+				</div>
+			</div>
+			<button
+				class="btn small danger"
+				onclick={handleClearStreak}
+				disabled={streak.completedDates.length === 0 && streak.fixersUsed === 0}
+			>
+				Clear streak
+			</button>
+		</div>
 	</div>
 </section>
 

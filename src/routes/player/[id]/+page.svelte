@@ -33,6 +33,24 @@
 	const routineProgress = $derived(total > 0 ? Math.min(1, routineElapsed / total) : 0);
 
 	let photoUrl = $state<string | null>(null);
+	let ringSize = $state(230);
+
+	function updateRingSize(): void {
+		if (typeof window === 'undefined') return;
+		const h = window.innerHeight;
+		const w = window.innerWidth;
+		if (h < 750 || w < 380) {
+			ringSize = 200;
+		} else if (h < 880 || w < 500) {
+			ringSize = 225;
+		} else {
+			ringSize = 260;
+		}
+	}
+
+	$effect(() => {
+		updateRingSize();
+	});
 
 	$effect(() => {
 		let cancelled = false;
@@ -75,11 +93,14 @@
 	});
 
 	onMount(() => {
+		updateRingSize();
+		window.addEventListener('resize', updateRingSize);
 		const onVis = () => {
 			if (document.visibilityState === 'visible' && player.status === 'running') void requestWake();
 		};
 		document.addEventListener('visibilitychange', onVis);
 		return () => {
+			window.removeEventListener('resize', updateRingSize);
 			document.removeEventListener('visibilitychange', onVis);
 			stopPlayer();
 		};
@@ -124,82 +145,95 @@
 
 {#if player.status === 'idle'}
 	{#if !routine || routine.stretches.length === 0}
-		<div class="card">
+		<div class="card" style="margin: 1.5rem auto; max-width: 480px">
 			<p class="muted" style="margin: 0">This routine has no stretches yet.</p>
-			<a class="btn small" href="/" style="margin-top: 0.6rem">← Back</a>
+			<a class="btn small" href="/" style="margin-top: 0.6rem">← Back to routines</a>
 		</div>
 	{:else}
-		<div class="player">
-			<div></div>
-			<div style="display: flex; flex-direction: column; align-items: center; gap: 0.8rem">
-				<h1 style="font-size: 1.6rem">{routine.name}</h1>
-				<div class="row" style="justify-content: center">
+		<div class="player player-idle-view">
+			<div class="player-top">
+				<a class="btn small ghost" href="/">← Routines</a>
+				<span class="player-routine">{routine.name}</span>
+				<div style="width: 4rem"></div>
+			</div>
+			<div class="player-idle-content">
+				<h1 style="font-size: 1.7rem; margin-bottom: 0.2rem">{routine.name}</h1>
+				<div class="row" style="justify-content: center; gap: 0.5rem">
 					<span class="badge">{routine.stretches.length} stretch{routine.stretches.length === 1 ? '' : 'es'}</span>
 					<span class="badge">⏱ {formatSeconds(total)}</span>
 					{#if settings.breaksEnabled}
 						<span class="badge">{settings.breakSeconds}s breaks</span>
 					{/if}
 				</div>
-				<button class="btn primary" style="font-size: 1.1rem; padding: 0.8rem 2.2rem" onclick={begin}>
-					▶ Start
+				<button class="btn primary player-big-start-btn" onclick={begin}>
+					▶ Start routine
 				</button>
-				<p class="muted small" style="margin: 0">Beeps guide you — keep the tab open and the screen stays awake.</p>
+				<p class="muted small" style="margin: 0; max-width: 20rem">
+					Screen stays awake · Sound cues guide each stretch and switch
+				</p>
 			</div>
-			<div></div>
+			<div class="player-idle-bottom"></div>
 		</div>
 	{/if}
 {:else}
-	<div class="player">
+	<div class="player player-active-view">
 		<div class="player-top">
-			<button class="btn small ghost" onclick={done}>✕ Stop</button>
+			<button class="btn small ghost player-stop-btn" onclick={done}>✕ Stop</button>
 			<span class="player-routine">{player.routineName}</span>
-			<button class="btn small ghost" onclick={restart} title="Restart">↺</button>
+			<button class="btn small ghost player-restart-btn" onclick={restart} title="Restart">↺</button>
 		</div>
 
 		{#if segment}
-			<div style="display: flex; flex-direction: column; align-items: center; gap: 0.4rem">
-				{#if segment.kind === 'break'}
-					<span class="side-badge break-badge">BREAK</span>
-				{:else if segment.side}
-					<span class="side-badge">{segment.side === 'left' ? 'LEFT' : 'RIGHT'}</span>
-				{/if}
-				<ProgressRing progress={fraction} size={300}>
+			<div class="player-ring-section">
+				<div class="player-badge-row">
+					{#if segment.kind === 'break'}
+						<span class="side-badge break-badge">BREAK</span>
+					{:else if segment.side}
+						<span class="side-badge">{segment.side === 'left' ? 'LEFT SIDE' : 'RIGHT SIDE'}</span>
+					{:else}
+						<span class="side-badge side-badge-neutral">STRETCH</span>
+					{/if}
+				</div>
+				<ProgressRing progress={fraction} size={ringSize}>
 					<div class="time">{formatSeconds(player.remaining)}</div>
-					<div style="font-weight: 700">{segment.label}</div>
+					<div class="player-segment-name">{segment.label}</div>
 					{#if segment.kind === 'break' && nextSegment}
-						<div class="muted small">Next: {nextSegment.label}</div>
+						<div class="muted small player-next-cue">Next: {nextSegment.label}</div>
 					{/if}
 				</ProgressRing>
 			</div>
 
 			<div class="player-progress" aria-label={`Routine progress: ${Math.round(routineProgress * 100)} percent`}>
-				<div class="spread small muted">
-					<span>Routine progress</span>
-					<span>{segmentNumber} / {player.segments.length} segments · {Math.round(routineProgress * 100)}%</span>
+				<div class="spread small muted" style="margin-bottom: 0.2rem">
+					<span>Progress</span>
+					<span>{segmentNumber} / {player.segments.length} · {Math.round(routineProgress * 100)}%</span>
 				</div>
 				<div class="progress-track"><div class="progress-fill" style={`width: ${routineProgress * 100}%`}></div></div>
 			</div>
 
-			<div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; width: 100%">
-				{#if photoUrl}
-					<img class="stretch-photo" src={photoUrl} alt={segment.label} />
-				{/if}
-				{#if segment.stretch?.description}
-					<p class="player-desc small">{segment.stretch.description}</p>
-				{/if}
-			</div>
+			{#if photoUrl || segment.stretch?.description}
+				<div class="player-info-strip">
+					{#if photoUrl}
+						<img class="player-strip-photo" src={photoUrl} alt={segment.label} />
+					{/if}
+					{#if segment.stretch?.description}
+						<div class="player-desc-box">
+							<p class="player-desc-text">{segment.stretch.description}</p>
+						</div>
+					{/if}
+				</div>
+			{/if}
 		{/if}
 
 		<div class="player-controls">
-			<button class="ctrl" onclick={back} title="Previous">⏮</button>
-			<button class="ctrl main" onclick={togglePause} title={player.status === 'paused' ? 'Resume' : 'Pause'}>
+			<button class="ctrl" onclick={back} title="Previous segment" aria-label="Previous">⏮</button>
+			<button class="ctrl main" onclick={togglePause} title={player.status === 'paused' ? 'Resume' : 'Pause'} aria-label={player.status === 'paused' ? 'Resume' : 'Pause'}>
 				{player.status === 'paused' ? '▶' : '⏸'}
 			</button>
-			<button class="ctrl" onclick={skip} title="Skip">⏭</button>
+			<button class="ctrl" onclick={skip} title="Skip segment" aria-label="Skip">⏭</button>
 		</div>
 
 		<div class="segment-map" aria-label="Routine segments">
-			<div class="muted small" style="margin-bottom: 0.35rem">Routine map · tap a segment to jump</div>
 			<div class="segment-map-list">
 				{#each player.segments as item, i (i)}
 					<button
@@ -224,9 +258,9 @@
 			<p style="margin: 0">
 				Day credited{streakNow > 1 ? ` — ${streakNow}-day streak 🔥` : streakNow === 1 ? ' — streak started!' : ''}
 			</p>
-			<div class="row">
-				<button class="btn primary" onclick={done}>Done</button>
-				<button class="btn" onclick={restart}>Play again</button>
+			<div class="row" style="margin-top: 0.5rem; gap: 0.75rem">
+				<button class="btn primary" onclick={done} style="min-width: 6rem">Done</button>
+				<button class="btn" onclick={restart} style="min-width: 6rem">Play again</button>
 			</div>
 		</div>
 	{/if}

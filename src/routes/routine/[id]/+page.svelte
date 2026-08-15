@@ -1,5 +1,5 @@
 <script lang="ts">
-		import { page } from '$app/state';
+	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { deletePhotoData, getPhotoData, savePhotoData } from '$lib/storage';
 	import { deleteRoutine, getRoutine, newStretch, saveAll } from '$lib/stores.svelte';
@@ -14,6 +14,8 @@
 	let editingId = $state<string | null>(null);
 	let dragIndex = $state<number | null>(null);
 	let overIndex = $state<number | null>(null);
+	let touchDraggingIndex = $state<number | null>(null);
+	let touchOverIndex = $state<number | null>(null);
 
 	function addStretch(): void {
 		if (!routine) return;
@@ -71,6 +73,51 @@
 		overIndex = null;
 	}
 
+	/* ---------------- Touch & Pointer Drag Reordering ---------------- */
+	function handlePointerDown(e: PointerEvent, index: number): void {
+		if (e.button !== 0 && e.pointerType === 'mouse') return;
+		const target = e.currentTarget as HTMLElement;
+		target.setPointerCapture(e.pointerId);
+		touchDraggingIndex = index;
+		touchOverIndex = index;
+	}
+
+	function handlePointerMove(e: PointerEvent): void {
+		if (touchDraggingIndex === null) return;
+		const wrappers = document.querySelectorAll<HTMLElement>('.stretch-card-wrapper');
+		for (let i = 0; i < wrappers.length; i++) {
+			const rect = wrappers[i].getBoundingClientRect();
+			if (e.clientY >= rect.top && e.clientY <= rect.bottom) {
+				touchOverIndex = i;
+				break;
+			}
+		}
+	}
+
+	function handlePointerUp(e: PointerEvent): void {
+		if (touchDraggingIndex === null) return;
+		const from = touchDraggingIndex;
+		const to = touchOverIndex;
+		touchDraggingIndex = null;
+		touchOverIndex = null;
+		try {
+			(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+		} catch {}
+		if (to !== null && from !== to && routine) {
+			const [item] = routine.stretches.splice(from, 1);
+			routine.stretches.splice(to, 0, item);
+			saveAll();
+			if (typeof navigator !== 'undefined' && navigator.vibrate) {
+				navigator.vibrate(15);
+			}
+		}
+	}
+
+	function handlePointerCancel(): void {
+		touchDraggingIndex = null;
+		touchOverIndex = null;
+	}
+
 	function removeRoutine(): void {
 		if (!routine) return;
 		if (confirm(`Delete "${routine.name}"? This cannot be undone.`)) {
@@ -121,10 +168,11 @@
 
 	{#each routine.stretches as s, i (s.id)}
 		<div
-			class="card stretch-card"
+			class="card stretch-card stretch-card-wrapper"
 			role="group"
 			class:editor={editingId === s.id}
-			class:over={overIndex === i}
+			class:over={overIndex === i || (touchDraggingIndex !== null && touchOverIndex === i)}
+			class:is-dragging={touchDraggingIndex === i}
 			ondragover={(e) => {
 				e.preventDefault();
 				overIndex = i;
@@ -138,73 +186,82 @@
 				overIndex = null;
 			}}
 		>
-			<span
-				class="drag-handle"
-				role="button"
-				tabindex="-1"
-				aria-label="Drag to reorder"
-				draggable="true"
-				ondragstart={(e) => {
-					dragIndex = i;
-					if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
-				}}
-				title="Drag to reorder"
-				>⠿</span
-			>
+			<div class="stretch-card-main-row">
+				<span
+					class="drag-handle"
+					role="button"
+					tabindex="0"
+					aria-label="Drag to reorder"
+					onpointerdown={(e) => handlePointerDown(e, i)}
+					onpointermove={handlePointerMove}
+					onpointerup={handlePointerUp}
+					onpointercancel={handlePointerCancel}
+					draggable="true"
+					ondragstart={(e) => {
+						dragIndex = i;
+						if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
+					}}
+					title="Drag to reorder"
+					>⠿</span
+				>
 
-			<PhotoThumb photoId={s.photoId} />
+				<PhotoThumb photoId={s.photoId} />
 
-			<div class="stretch-main">
-				{#if editingId === s.id}
-					<input
-						type="text"
-						bind:value={s.name}
-						oninput={saveAll}
-						placeholder="Stretch name"
-						style="margin-bottom: 0.4rem"
-					/>
-				{:else}
-					<div class="stretch-name">{s.name || 'Untitled stretch'}</div>
-				{/if}
-				<div class="stretch-meta">
-					<span class="badge">{stretchDurationLabel(s)}</span>
-					{#if s.sides === 'two'}
-						<span class="badge">L → R</span>
+				<div class="stretch-main">
+					{#if editingId === s.id}
+						<input
+							type="text"
+							bind:value={s.name}
+							oninput={saveAll}
+							placeholder="Stretch name"
+							style="margin-bottom: 0.35rem"
+						/>
+					{:else}
+						<div class="stretch-name">{s.name || 'Untitled stretch'}</div>
 					{/if}
-					{#if s.description}
-						<span>{s.description.length > 60 ? s.description.slice(0, 60) + '…' : s.description}</span>
-					{/if}
+					<div class="stretch-meta">
+						<span class="badge">{stretchDurationLabel(s)}</span>
+						{#if s.sides === 'two'}
+							<span class="badge">L → R</span>
+						{/if}
+					</div>
+				</div>
+
+				<div class="stretch-reorder-arrows">
+					<button class="icon-btn arrow-btn" onclick={() => move(i, -1)} disabled={i === 0} aria-label="Move up">↑</button>
+					<button
+						class="icon-btn arrow-btn"
+						onclick={() => move(i, 1)}
+						disabled={i === routine.stretches.length - 1}
+						aria-label="Move down"
+						>↓</button
+					>
+				</div>
+
+				<div class="row stretch-card-actions">
+					<button class="btn small" onclick={() => (editingId = editingId === s.id ? null : s.id)}>
+						{editingId === s.id ? 'Done' : 'Edit'}
+					</button>
+					<button class="btn small" onclick={() => duplicateStretch(i)}>Copy</button>
+					<button class="btn small danger" onclick={() => deleteStretch(i)}>✕</button>
 				</div>
 			</div>
 
-			<div class="row" style="flex-direction: column; gap: 0.15rem; align-items: stretch">
-				<button class="icon-btn" onclick={() => move(i, -1)} disabled={i === 0} aria-label="Move up">↑</button>
-				<button
-					class="icon-btn"
-					onclick={() => move(i, 1)}
-					disabled={i === routine.stretches.length - 1}
-					aria-label="Move down"
-					>↓</button
-				>
-			</div>
-
-			<div class="row">
-				<button class="btn small" onclick={() => (editingId = editingId === s.id ? null : s.id)}>
-					{editingId === s.id ? 'Done' : 'Edit'}
-				</button>
-				<button class="btn small" onclick={() => duplicateStretch(i)}>Copy</button>
-				<button class="btn small danger" onclick={() => deleteStretch(i)}>✕</button>
-			</div>
+			{#if s.description && editingId !== s.id}
+				<div class="stretch-desc-preview">
+					<p>{s.description}</p>
+				</div>
+			{/if}
 		</div>
 
 		{#if editingId === s.id}
-			<div class="card editor" style="margin-top: -0.25rem">
+			<div class="card editor" style="margin-top: -0.25rem; margin-bottom: 0.75rem">
 				<div class="field">
 					<span class="flabel">Description</span>
 					<textarea
 						bind:value={s.description}
 						oninput={saveAll}
-						placeholder="How to do this stretch (optional)"
+						placeholder="How to do this stretch (optional instructions, posture cues...)"
 					></textarea>
 				</div>
 
@@ -241,12 +298,12 @@
 				{#if s.sides === 'one'}
 					<div class="field">
 						<span class="flabel">Duration</span>
-						<Stepper bind:value={s.durationSeconds} onchange={saveAll} />
+						<Stepper bind:value={s.durationSeconds} min={5} step={5} onchange={saveAll} />
 					</div>
 				{:else}
 					<div class="field">
 						<span class="flabel">Duration for each side</span>
-						<Stepper bind:value={s.durationSeconds} onchange={saveAll} />
+						<Stepper bind:value={s.durationSeconds} min={5} step={5} onchange={saveAll} />
 						<div class="muted small" style="margin-top: 0.3rem">The same countdown is used for Left and Right.</div>
 					</div>
 				{/if}

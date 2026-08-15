@@ -284,3 +284,10 @@ export function applyFixer(): boolean {
 	saveAll();
 	return true;
 }
+
+/** Clear all streak history, resetting completed days and fixers. */
+export function clearStreakHistory(): void {
+	streak.completedDates = [];
+	streak.fixersUsed = 0;
+	saveAll();
+}
