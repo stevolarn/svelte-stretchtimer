@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import {
 		addRoutine,
+		applyFixer,
 		deleteRoutine,
 		duplicateRoutine,
 		exportBackup,
@@ -14,7 +15,7 @@
 		type StarterRoutineKind
 	} from '$lib/stores.svelte';
 	import { buildTimeline, timelineTotal } from '$lib/timeline';
-	import { currentStreak, fixersAvailable, fixerProgress } from '$lib/streak';
+	import { currentStreak, fixersAvailable, fixerProgress, repairTarget } from '$lib/streak';
 	import { formatSeconds } from '$lib/time';
 	import { type Routine } from '$lib/types';
 	import StarterArt from '$lib/components/StarterArt.svelte';
@@ -106,6 +107,15 @@
 
 	const streakNow = $derived(currentStreak(streak));
 	const fixers = $derived(fixersAvailable(streak));
+	const repair = $derived(repairTarget(streak));
+	const canRepair = $derived(repair !== null && fixers > 0);
+
+	function handleRepairStreak(): void {
+		if (!repair) return;
+		if (confirm(`Use 1 streak fixer to fill in ${repair} and repair your streak?`)) {
+			applyFixer();
+		}
+	}
 </script>
 
 <svelte:head>
@@ -113,14 +123,21 @@
 </svelte:head>
 
 <section class="card streak-banner" style="margin-bottom: 0.9rem">
-	<div class="spread">
+	<div class="spread" style="align-items: center">
 		<div>
 			<h2 style="font-size: 1.15rem">🔥 {streakNow} day streak</h2>
 			<p class="muted small" style="margin: 0.25rem 0 0">
 				{fixers} streak fixer{fixers === 1 ? '' : 's'} · {fixerProgress(streak)}/7 days to next
 			</p>
 		</div>
-		<a class="btn small" href="/stats">Details</a>
+		<div class="row" style="gap: 0.4rem">
+			{#if canRepair}
+				<button class="btn primary small" onclick={handleRepairStreak} title={`Repair missed day (${repair})`}>
+					🩹 Fix streak
+				</button>
+			{/if}
+			<a class="btn small" href="/stats">Details</a>
+		</div>
 	</div>
 </section>
 
