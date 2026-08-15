@@ -33,154 +33,238 @@
 	<rect width="100" height="80" rx={typeof rounded === 'number' ? rounded : 12} fill="url(#ill-bg)" />
 
 	{#if key === 'neck-release'}
-		<!-- Head tilted gently with guide curve -->
 		<circle cx="50" cy="24" r="9" fill="var(--ill-skin)" />
 		<path d="M42 36c4-3 12-3 16 0l4 26H38z" fill="var(--ill-body)" />
 		<path d="M30 20c8-8 26-8 36 0" fill="none" stroke="var(--ill-accent)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="3 3" />
 		<path d="M68 22l-2-6 5 2" fill="none" stroke="var(--ill-accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+
 	{:else if key === 'shoulder-rolls'}
-		<!-- Shoulders with circular motion arrows -->
 		<circle cx="50" cy="24" r="8" fill="var(--ill-skin)" />
 		<path d="M40 35c5-4 15-4 20 0l3 26H37z" fill="var(--ill-body)" />
 		<path d="M30 36a10 10 0 1 1 5 12" fill="none" stroke="var(--ill-accent)" stroke-width="2.5" stroke-linecap="round" />
 		<path d="M36 49l-2-5-4 4" fill="none" stroke="var(--ill-accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
 		<path d="M70 36a10 10 0 1 0-5 12" fill="none" stroke="var(--ill-accent)" stroke-width="2.5" stroke-linecap="round" />
 		<path d="M64 49l2-5 4 4" fill="none" stroke="var(--ill-accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+
+	{:else if key === 'arm-circles'}
+		<circle cx="50" cy="24" r="7" fill="var(--ill-skin)" />
+		<path d="M50 32v24M50 56l-8 16M50 56l8 16" stroke="var(--ill-body)" stroke-width="5" stroke-linecap="round" />
+		<path d="M50 36H16M50 36h34" stroke="var(--ill-body)" stroke-width="4.5" stroke-linecap="round" />
+		<path d="M16 28a8 8 0 1 0 0 16" fill="none" stroke="var(--ill-accent)" stroke-width="2.5" stroke-linecap="round" />
+		<path d="M84 28a8 8 0 1 1 0 16" fill="none" stroke="var(--ill-accent)" stroke-width="2.5" stroke-linecap="round" />
+
 	{:else if key === 'chest-opener'}
-		<!-- Clasp hands behind, open chest -->
 		<circle cx="50" cy="22" r="8" fill="var(--ill-skin)" />
 		<path d="M41 33c6-3 12-3 18 0l3 32H38z" fill="var(--ill-body)" />
 		<path d="M41 37l-15 12 12 7" fill="none" stroke="var(--ill-skin)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
 		<path d="M59 37l15 12-12 7" fill="none" stroke="var(--ill-skin)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
 		<circle cx="50" cy="56" r="4" fill="var(--ill-gold)" />
+
 	{:else if key === 'wrist-forearm'}
-		<!-- Arm extended with hand pull -->
 		<path d="M15 42h48" stroke="var(--ill-skin)" stroke-width="6" stroke-linecap="round" />
 		<path d="M63 42l10-14" stroke="var(--ill-skin)" stroke-width="5" stroke-linecap="round" />
 		<path d="M76 22l-6 18" stroke="var(--ill-body)" stroke-width="4.5" stroke-linecap="round" />
 		<circle cx="32" cy="42" r="3" fill="var(--ill-accent)" opacity=".8" />
+
 	{:else if key === 'cross-body-shoulder'}
-		<!-- Arm crossed over body -->
 		<circle cx="50" cy="22" r="8" fill="var(--ill-skin)" />
 		<path d="M42 33c5-3 11-3 16 0l3 32H39z" fill="var(--ill-body)" />
 		<path d="M38 38h32" stroke="var(--ill-skin)" stroke-width="5" stroke-linecap="round" />
 		<path d="M56 32v20" stroke="var(--ill-gold)" stroke-width="4" stroke-linecap="round" />
+
 	{:else if key === 'overhead-triceps'}
-		<!-- Arm bent overhead -->
 		<circle cx="50" cy="26" r="8" fill="var(--ill-skin)" />
 		<path d="M42 37c5-3 11-3 16 0l3 28H39z" fill="var(--ill-body)" />
 		<path d="M58 38l6-20-14-3" fill="none" stroke="var(--ill-skin)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
 		<path d="M42 38l-4-15 10-6" fill="none" stroke="var(--ill-gold)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
+
 	{:else if key === 'cat-cow'}
-		<!-- Cat Cow arched spine on four limbs -->
 		<circle cx="26" cy="38" r="6" fill="var(--ill-skin)" />
 		<path d="M26 44v18M38 48v14M72 48v14M78 44v18" stroke="var(--ill-body)" stroke-width="4.5" stroke-linecap="round" />
 		<path d="M26 44c12-16 36-16 52 0" fill="none" stroke="var(--ill-accent)" stroke-width="5" stroke-linecap="round" />
 		<circle cx="52" cy="32" r="3" fill="var(--ill-gold)" />
+
 	{:else if key === 'childs-pose'}
-		<!-- Grounded child's pose -->
 		<circle cx="75" cy="48" r="6" fill="var(--ill-skin)" />
 		<path d="M72 52c-8-12-24-12-42 0" fill="none" stroke="var(--ill-body)" stroke-width="6" stroke-linecap="round" />
 		<path d="M30 52H14" stroke="var(--ill-skin)" stroke-width="4.5" stroke-linecap="round" />
 		<path d="M12 60h76" stroke="var(--ill-mat)" stroke-width="2.5" stroke-linecap="round" />
+
 	{:else if key === 'cobra-stretch'}
-		<!-- Prone chest lift -->
 		<circle cx="28" cy="24" r="7" fill="var(--ill-skin)" />
 		<path d="M28 31c2 12 16 18 52 24" fill="none" stroke="var(--ill-body)" stroke-width="6" stroke-linecap="round" />
 		<path d="M26 36l8 19" stroke="var(--ill-skin)" stroke-width="4.5" stroke-linecap="round" />
 		<path d="M14 58h74" stroke="var(--ill-mat)" stroke-width="2.5" stroke-linecap="round" />
+
 	{:else if key === 'standing-side-bend'}
-		<!-- Side reach overhead -->
 		<circle cx="48" cy="18" r="7" fill="var(--ill-skin)" />
 		<path d="M46 26c-8 12-4 22 2 36" fill="none" stroke="var(--ill-body)" stroke-width="6" stroke-linecap="round" />
 		<path d="M48 26l-18-6c8-10 18-10 26-2" fill="none" stroke="var(--ill-accent)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
 		<path d="M48 62v10M52 62v10" stroke="var(--ill-body)" stroke-width="4" stroke-linecap="round" />
+
 	{:else if key === 'seated-twist'}
-		<!-- Seated spinal twist -->
 		<circle cx="50" cy="20" r="7" fill="var(--ill-skin)" />
 		<path d="M45 28c5-2 10-2 14 2l-2 22-16 0z" fill="var(--ill-body)" />
 		<path d="M40 52c-8 0-14 8 0 10h22c10-2 6-10-2-10z" fill="var(--ill-body)" />
 		<path d="M38 36l18-4 6 16" fill="none" stroke="var(--ill-skin)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+
 	{:else if key === 'thoracic-rotation'}
-		<!-- Quadruped elbow to sky -->
 		<circle cx="34" cy="38" r="6" fill="var(--ill-skin)" />
 		<path d="M34 44v18M72 44v18" stroke="var(--ill-body)" stroke-width="4.5" stroke-linecap="round" />
 		<path d="M34 44h38" stroke="var(--ill-body)" stroke-width="6" stroke-linecap="round" />
 		<path d="M46 42l8-22-6 8" fill="none" stroke="var(--ill-accent)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+
 	{:else if key === 'low-lunge'}
-		<!-- Deep lunge front knee bent, back knee grounded -->
 		<circle cx="50" cy="18" r="7" fill="var(--ill-skin)" />
 		<path d="M48 26v16" stroke="var(--ill-body)" stroke-width="6" stroke-linecap="round" />
 		<path d="M48 42l18 4v16" fill="none" stroke="var(--ill-body)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
 		<path d="M48 42l-22 8 8 12" fill="none" stroke="var(--ill-body)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
 		<path d="M12 62h76" stroke="var(--ill-mat)" stroke-width="2.5" stroke-linecap="round" />
+
 	{:else if key === 'pigeon-pose'}
-		<!-- Pigeon / Figure 4 hip opener -->
 		<circle cx="68" cy="30" r="7" fill="var(--ill-skin)" />
 		<path d="M66 38l-22 8-12 12" fill="none" stroke="var(--ill-body)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
 		<path d="M44 46l28 8 16 0" fill="none" stroke="var(--ill-body)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
 		<path d="M14 62h74" stroke="var(--ill-mat)" stroke-width="2.5" stroke-linecap="round" />
+
 	{:else if key === 'butterfly-stretch'}
-		<!-- Butterfly seated knees wide -->
 		<circle cx="50" cy="20" r="7" fill="var(--ill-skin)" />
 		<path d="M44 28c4-2 8-2 12 0l2 24H42z" fill="var(--ill-body)" />
 		<path d="M42 52L26 50l24 6 24-6-16 2" fill="none" stroke="var(--ill-body)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
 		<circle cx="50" cy="56" r="3.5" fill="var(--ill-gold)" />
+
 	{:else if key === 'quad-stretch'}
-		<!-- Standing on one foot holding the other -->
 		<circle cx="48" cy="16" r="7" fill="var(--ill-skin)" />
 		<path d="M47 24v20" stroke="var(--ill-body)" stroke-width="5.5" stroke-linecap="round" />
 		<path d="M47 44v24" stroke="var(--ill-body)" stroke-width="4.5" stroke-linecap="round" />
 		<path d="M47 44l-12 10 4-18" fill="none" stroke="var(--ill-body)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
 		<path d="M47 30l-8 6" stroke="var(--ill-skin)" stroke-width="4" stroke-linecap="round" />
-	{:else if key === 'hip-flexor-release'}
-		<!-- Half kneeling hip squeeze -->
-		<circle cx="48" cy="18" r="7" fill="var(--ill-skin)" />
-		<path d="M48 26v16" stroke="var(--ill-body)" stroke-width="6" stroke-linecap="round" />
-		<path d="M48 42l16 2v18" fill="none" stroke="var(--ill-body)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
-		<path d="M48 42l-14 8v12" fill="none" stroke="var(--ill-body)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
-		<circle cx="48" cy="42" r="3" fill="var(--ill-accent)" />
-	{:else if key === 'happy-baby'}
-		<!-- Reclined with knees wide -->
-		<path d="M25 54h50" stroke="var(--ill-body)" stroke-width="6" stroke-linecap="round" />
-		<circle cx="22" cy="54" r="6" fill="var(--ill-skin)" />
-		<path d="M42 54l-8-22 14-2" fill="none" stroke="var(--ill-body)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
-		<path d="M58 54l8-22-14-2" fill="none" stroke="var(--ill-body)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
-		<path d="M34 32l14 0M66 32l-14 0" stroke="var(--ill-skin)" stroke-width="3" stroke-linecap="round" />
+
 	{:else if key === 'forward-fold'}
-		<!-- Standing or seated forward fold -->
 		<circle cx="34" cy="44" r="7" fill="var(--ill-skin)" />
 		<path d="M56 22l-18 20 8 18" fill="none" stroke="var(--ill-body)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
 		<path d="M56 22v42" stroke="var(--ill-body)" stroke-width="5" stroke-linecap="round" />
 		<path d="M38 42l4 18" stroke="var(--ill-skin)" stroke-width="3.5" stroke-linecap="round" />
 		<path d="M20 64h60" stroke="var(--ill-mat)" stroke-width="2.5" stroke-linecap="round" />
+
 	{:else if key === 'standing-calf'}
-		<!-- Wall calf press -->
 		<circle cx="38" cy="20" r="7" fill="var(--ill-skin)" />
 		<path d="M38 28l12 12-6 24" fill="none" stroke="var(--ill-body)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
 		<path d="M50 40l-24 24" stroke="var(--ill-body)" stroke-width="5" stroke-linecap="round" />
 		<path d="M38 30l28-6" stroke="var(--ill-skin)" stroke-width="4" stroke-linecap="round" />
 		<path d="M68 12v54" stroke="var(--ill-body)" stroke-width="3" stroke-linecap="round" />
+
 	{:else if key === 'hamstring-fold'}
-		<!-- Seated reach to toes -->
 		<circle cx="34" cy="30" r="7" fill="var(--ill-skin)" />
 		<path d="M34 38l22 10 24 0" fill="none" stroke="var(--ill-body)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" />
 		<path d="M34 38l38 8" stroke="var(--ill-skin)" stroke-width="4" stroke-linecap="round" />
 		<path d="M14 56h72" stroke="var(--ill-mat)" stroke-width="2.5" stroke-linecap="round" />
+
 	{:else if key === 'worlds-greatest'}
-		<!-- Dynamic lunge with arm reaching high -->
 		<circle cx="46" cy="34" r="6" fill="var(--ill-skin)" />
 		<path d="M46 40l18 4v18" fill="none" stroke="var(--ill-body)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
 		<path d="M46 40l-26 12 10 10" fill="none" stroke="var(--ill-body)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
 		<path d="M46 40L64 16" stroke="var(--ill-accent)" stroke-width="4.5" stroke-linecap="round" />
 		<circle cx="66" cy="14" r="4" fill="var(--ill-gold)" />
 		<path d="M12 64h76" stroke="var(--ill-mat)" stroke-width="2.5" stroke-linecap="round" />
-	{:else if key === 'overhead-reach'}
-		<!-- Full body reach -->
+
+	{:else if key === 'plank-hold'}
+		<!-- Straight plank hold -->
+		<circle cx="20" cy="32" r="6" fill="var(--ill-skin)" />
+		<path d="M22 36l58 14" stroke="var(--ill-body)" stroke-width="6.5" stroke-linecap="round" />
+		<path d="M30 40v18" stroke="var(--ill-skin)" stroke-width="4.5" stroke-linecap="round" />
+		<path d="M78 50v8" stroke="var(--ill-body)" stroke-width="4.5" stroke-linecap="round" />
+		<path d="M12 60h76" stroke="var(--ill-mat)" stroke-width="2.5" stroke-linecap="round" />
+
+	{:else if key === 'wall-sit'}
+		<!-- Wall sit 90 degree knees -->
+		<circle cx="36" cy="20" r="7" fill="var(--ill-skin)" />
+		<path d="M36 28v20" stroke="var(--ill-body)" stroke-width="6" stroke-linecap="round" />
+		<path d="M36 48h22v22" fill="none" stroke="var(--ill-body)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" />
+		<path d="M26 12v60" stroke="var(--ill-mat)" stroke-width="4" stroke-linecap="round" />
+		<path d="M24 72h54" stroke="var(--ill-mat)" stroke-width="2.5" stroke-linecap="round" />
+
+	{:else if key === 'squat'}
+		<!-- Squat pose -->
 		<circle cx="50" cy="22" r="7" fill="var(--ill-skin)" />
-		<path d="M50 30v26M50 56l-6 16M50 56l6 16" stroke="var(--ill-body)" stroke-width="5" stroke-linecap="round" />
-		<path d="M50 30l-12-18M50 30l12-18" stroke="var(--ill-accent)" stroke-width="4.5" stroke-linecap="round" />
+		<path d="M50 30v14" stroke="var(--ill-body)" stroke-width="6" stroke-linecap="round" />
+		<path d="M50 44l-18 8 10 18M50 44l18 8-10 18" fill="none" stroke="var(--ill-body)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+		<path d="M50 34l-14 8M50 34l14 8" stroke="var(--ill-skin)" stroke-width="4" stroke-linecap="round" />
+
+	{:else if key === 'push-up'}
+		<!-- Push-up horizontal body with bent elbows -->
+		<circle cx="22" cy="38" r="6" fill="var(--ill-skin)" />
+		<path d="M24 42l56 10" stroke="var(--ill-body)" stroke-width="6" stroke-linecap="round" />
+		<path d="M34 44l-6 14" stroke="var(--ill-skin)" stroke-width="4.5" stroke-linecap="round" />
+		<path d="M78 52v6" stroke="var(--ill-body)" stroke-width="4.5" stroke-linecap="round" />
+		<path d="M12 60h76" stroke="var(--ill-mat)" stroke-width="2.5" stroke-linecap="round" />
+
+	{:else if key === 'bridge-hold'}
+		<!-- Glute bridge lift -->
+		<circle cx="22" cy="54" r="6" fill="var(--ill-skin)" />
+		<path d="M24 56l28-18 22 18" fill="none" stroke="var(--ill-body)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+		<path d="M74 56v8" stroke="var(--ill-body)" stroke-width="4.5" stroke-linecap="round" />
+		<circle cx="52" cy="34" r="3.5" fill="var(--ill-gold)" />
+		<path d="M12 64h76" stroke="var(--ill-mat)" stroke-width="2.5" stroke-linecap="round" />
+
+	{:else if key === 'downward-dog'}
+		<!-- Inverted V yoga pose -->
+		<circle cx="34" cy="46" r="6" fill="var(--ill-skin)" />
+		<path d="M54 22L28 54M54 22L76 56" stroke="var(--ill-body)" stroke-width="6" stroke-linecap="round" />
+		<path d="M28 54H16M76 56h8" stroke="var(--ill-body)" stroke-width="3" stroke-linecap="round" />
+		<path d="M12 60h76" stroke="var(--ill-mat)" stroke-width="2.5" stroke-linecap="round" />
+
+	{:else if key === 'warrior-two'}
+		<!-- Warrior 2 stance -->
+		<circle cx="50" cy="20" r="7" fill="var(--ill-skin)" />
+		<path d="M50 28v18" stroke="var(--ill-body)" stroke-width="6" stroke-linecap="round" />
+		<path d="M50 46l-22 4v18M50 46l26 12-4 10" fill="none" stroke="var(--ill-body)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+		<path d="M50 32H20M50 32h30" stroke="var(--ill-accent)" stroke-width="4.5" stroke-linecap="round" />
+
+	{:else if key === 'triangle-pose'}
+		<!-- Triangle yoga reach -->
+		<circle cx="44" cy="22" r="6" fill="var(--ill-skin)" />
+		<path d="M44 28l-14 26M44 28l26 26" stroke="var(--ill-body)" stroke-width="5.5" stroke-linecap="round" />
+		<path d="M30 54L18 36M30 54L48 14" stroke="var(--ill-accent)" stroke-width="4" stroke-linecap="round" />
+		<circle cx="48" cy="12" r="3.5" fill="var(--ill-gold)" />
+
+	{:else if key === 'tree-pose'}
+		<!-- Tree pose balance -->
+		<circle cx="50" cy="18" r="7" fill="var(--ill-skin)" />
+		<path d="M50 26v22M50 48v22" stroke="var(--ill-body)" stroke-width="5" stroke-linecap="round" />
+		<path d="M50 52l-14-6 14-8" fill="none" stroke="var(--ill-body)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+		<path d="M50 32L34 24M50 32l16-8" stroke="var(--ill-skin)" stroke-width="4" stroke-linecap="round" />
 		<circle cx="50" cy="10" r="3.5" fill="var(--ill-gold)" />
+
+	{:else if key === 'jumping-jacks'}
+		<!-- Star jumping jack -->
+		<circle cx="50" cy="20" r="7" fill="var(--ill-skin)" />
+		<path d="M50 28v20M50 48L30 68M50 48l20 20" stroke="var(--ill-body)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" />
+		<path d="M50 34L26 18M50 34l24-18" stroke="var(--ill-accent)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+		<circle cx="24" cy="16" r="3.5" fill="var(--ill-gold)" /><circle cx="76" cy="16" r="3.5" fill="var(--ill-gold)" />
+
+	{:else if key === 'mountain-climbers'}
+		<!-- Mountain climber running plank -->
+		<circle cx="24" cy="34" r="6" fill="var(--ill-skin)" />
+		<path d="M26 38l54 12" stroke="var(--ill-body)" stroke-width="6" stroke-linecap="round" />
+		<path d="M44 42l-12 12 16 2" fill="none" stroke="var(--ill-accent)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+		<path d="M30 42v16" stroke="var(--ill-skin)" stroke-width="4" stroke-linecap="round" />
+		<path d="M12 60h76" stroke="var(--ill-mat)" stroke-width="2.5" stroke-linecap="round" />
+
+	{:else if key === 'leg-swings'}
+		<!-- Standing leg swing -->
+		<circle cx="45" cy="18" r="7" fill="var(--ill-skin)" />
+		<path d="M45 26v22M45 48v22" stroke="var(--ill-body)" stroke-width="5" stroke-linecap="round" />
+		<path d="M45 48l22-12" stroke="var(--ill-accent)" stroke-width="5" stroke-linecap="round" />
+		<path d="M67 36a12 12 0 0 1-18 20" fill="none" stroke="var(--ill-gold)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="2 3" />
+
+	{:else if key === 'deep-squat-pry'}
+		<!-- Malasana deep squat pry -->
+		<circle cx="50" cy="28" r="7" fill="var(--ill-skin)" />
+		<path d="M50 36v12" stroke="var(--ill-body)" stroke-width="6" stroke-linecap="round" />
+		<path d="M50 48L28 56l12 12M50 48l22 8-12 12" fill="none" stroke="var(--ill-body)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+		<path d="M38 46h24" stroke="var(--ill-skin)" stroke-width="4.5" stroke-linecap="round" />
+
 	{:else}
 		<!-- General Pose Silhouette -->
 		<circle cx="50" cy="22" r="8" fill="var(--ill-skin)" />

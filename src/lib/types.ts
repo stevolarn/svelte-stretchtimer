@@ -16,12 +16,29 @@ export interface Stretch {
 	iconKey?: string;
 }
 
-export type StockCategory = 'all' | 'upper-body' | 'spine' | 'hips' | 'legs';
+export type MovementType =
+	| 'all'
+	| 'static'
+	| 'dynamic'
+	| 'isometrics'
+	| 'calisthenics'
+	| 'mobility'
+	| 'yoga'
+	| 'cardio';
+
+export type MovementPosition = 'all' | 'standing' | 'seated' | 'floor';
+
+export type BodyArea = 'all' | 'upper-body' | 'spine' | 'hips' | 'legs' | 'full-body';
+
+export type StockCategory = BodyArea;
 
 export interface StockStretch {
 	id: string;
 	name: string;
-	category: 'upper-body' | 'spine' | 'hips' | 'legs';
+	type: 'static' | 'dynamic' | 'isometrics' | 'calisthenics' | 'mobility' | 'yoga' | 'cardio';
+	position: 'standing' | 'seated' | 'floor';
+	area: 'upper-body' | 'spine' | 'hips' | 'legs' | 'full-body';
+	category?: 'upper-body' | 'spine' | 'hips' | 'legs' | 'full-body';
 	description: string;
 	sides: 'one' | 'two';
 	defaultSeconds: number;
