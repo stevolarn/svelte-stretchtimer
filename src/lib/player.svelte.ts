@@ -3,6 +3,7 @@ import { beepFinish, beepSideSwitch, beepStart, beepTick } from './audio.ts';
 import { buildTimeline } from './timeline.ts';
 import { creditToday } from './stores.svelte.ts';
 import { formatSeconds } from './time.ts';
+import { autoSaveToFileHandle, isFileAutoBackupConnected } from './backup.ts';
 
 export interface PlayerUiState {
 	status: 'idle' | 'running' | 'paused' | 'finished';
@@ -14,6 +15,7 @@ export interface PlayerUiState {
 	remaining: number;
 	/** seconds elapsed in the current segment */
 	elapsed: number;
+	speed: number;
 }
 
 export const player = $state<PlayerUiState>({
@@ -23,7 +25,8 @@ export const player = $state<PlayerUiState>({
 	segments: [],
 	index: 0,
 	remaining: 0,
-	elapsed: 0
+	elapsed: 0,
+	speed: 1
 });
 
 /* ------------------------- engine internals ------------------------- */
@@ -63,7 +66,8 @@ function enterSegment(index: number, settings: Settings): void {
 	player.remaining = seg.seconds;
 	player.elapsed = 0;
 	lastTick = 0;
-	endAt = Date.now() + seg.seconds * 1000;
+	const speed = player.speed || settings.playbackSpeed || 1;
+	endAt = Date.now() + (seg.seconds / speed) * 1000;
 
 	// Audible cues on segment entry.
 	if (seg.kind === 'stretch' && seg.side === 'right') {
@@ -76,8 +80,9 @@ function enterSegment(index: number, settings: Settings): void {
 
 function tick(): void {
 	const now = Date.now();
-	const remainingMs = Math.max(0, endAt - now);
-	player.remaining = remainingMs / 1000;
+	const speed = player.speed || settingsSnapshot?.playbackSpeed || 1;
+	const remainingRealMs = Math.max(0, endAt - now);
+	player.remaining = (remainingRealMs / 1000) * speed;
 	player.elapsed = Math.max(0, player.segments[player.index].seconds - player.remaining);
 
 	// Last-3-seconds countdown ticks (each stretch and break).
@@ -87,7 +92,7 @@ function tick(): void {
 		if (settingsSnapshot.beepCountdown) beepTick(ceil);
 	}
 
-	if (remainingMs <= 0) {
+	if (remainingRealMs <= 0) {
 		advance();
 		return;
 	}
@@ -113,12 +118,15 @@ function finish(settings: Settings): void {
 	if (!finished) {
 		finished = true;
 		creditToday();
+		if (settings.autoBackupOnFinish && isFileAutoBackupConnected()) {
+			void autoSaveToFileHandle().catch(() => {});
+		}
 	}
 }
 
 function startTimer(): void {
 	if (timer !== null) clearInterval(timer);
-	timer = setInterval(tick, 200);
+	timer = setInterval(tick, 100);
 }
 
 /* ----------------------------- public API ----------------------------- */
@@ -128,6 +136,7 @@ function startTimer(): void {
 export function startPlayer(routine: Routine, currentSettings: Settings): void {
 	clearTimer();
 	settingsSnapshot = { ...currentSettings };
+	player.speed = currentSettings.playbackSpeed || 1;
 	finished = false;
 	const segments = buildTimeline(routine, currentSettings);
 	player.status = segments.length > 0 ? 'running' : 'idle';
@@ -139,14 +148,22 @@ export function startPlayer(routine: Routine, currentSettings: Settings): void {
 	startTimer();
 }
 
-export function togglePause(): void {
+export function setPlaybackSpeed(speed: number): void {
+	player.speed = speed;
 	if (player.status === 'running') {
-		player.remaining = Math.max(0, (endAt - Date.now()) / 1000);
+		endAt = Date.now() + (player.remaining / speed) * 1000;
+	}
+}
+
+export function togglePause(): void {
+	const speed = player.speed || settingsSnapshot?.playbackSpeed || 1;
+	if (player.status === 'running') {
+		player.remaining = Math.max(0, ((endAt - Date.now()) / 1000) * speed);
 		player.status = 'paused';
 		clearTimer();
 	} else if (player.status === 'paused') {
 		player.status = 'running';
-		endAt = Date.now() + player.remaining * 1000;
+		endAt = Date.now() + (player.remaining / speed) * 1000;
 		lastTick = 0;
 		startTimer();
 		updateTitle();
@@ -191,6 +208,27 @@ export function jumpTo(index: number): void {
 	}
 }
 
+/** Testing Mode Helper: Jump current segment remaining time directly to 3s to test countdown ticks. */
+export function jumpToCountdown(seconds = 3): void {
+	if (player.status === 'idle' || player.status === 'finished') return;
+	const speed = player.speed || settingsSnapshot?.playbackSpeed || 1;
+	player.remaining = seconds;
+	endAt = Date.now() + (seconds / speed) * 1000;
+	lastTick = 0;
+	if (player.status === 'paused') {
+		player.status = 'running';
+		startTimer();
+	}
+	updateTitle();
+}
+
+/** Testing Mode Helper: Instant complete entire routine. */
+export function instantComplete(): void {
+	if (settingsSnapshot) {
+		finish(settingsSnapshot);
+	}
+}
+
 /** Restart the routine from the first segment (keeps playing). */
 export function restart(): void {
 	const settings = settingsSnapshot;
@@ -210,6 +248,7 @@ export function stopPlayer(): void {
 	player.index = 0;
 	player.remaining = 0;
 	player.elapsed = 0;
+	player.speed = 1;
 	settingsSnapshot = null;
 }
 

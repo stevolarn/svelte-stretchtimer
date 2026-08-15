@@ -1,8 +1,9 @@
-import type { Routine, Settings, StreakState } from './types.ts';
+import type { Routine, Settings, StreakState, StorageSnapshot } from './types.ts';
 
 const ROUTINES_KEY = 'stretchTimer.routines';
 const SETTINGS_KEY = 'stretchTimer.settings';
 const STREAK_KEY = 'stretchTimer.streak';
+const SNAPSHOTS_KEY = 'stretchTimer.snapshots';
 const PHOTO_DB = 'stretch-timer';
 const PHOTO_STORE = 'photos';
 
@@ -13,7 +14,10 @@ export const defaultSettings: Settings = {
 	beepCountdown: true,
 	beepFinish: true,
 	breaksEnabled: true,
-	breakSeconds: 15
+	breakSeconds: 15,
+	testingMode: false,
+	playbackSpeed: 1,
+	autoBackupOnFinish: false
 };
 
 export const defaultStreak: StreakState = { completedDates: [], fixersUsed: 0 };
@@ -55,6 +59,78 @@ export function loadStreak(): StreakState {
 }
 export function saveStreak(streak: StreakState): void {
 	saveJSON(STREAK_KEY, streak);
+}
+
+/* ------------------------------------------------------------------ */
+/* Persistent Storage API                                             */
+/* ------------------------------------------------------------------ */
+
+export async function requestPersistentStorage(): Promise<boolean> {
+	if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.persist) {
+		try {
+			return await navigator.storage.persist();
+		} catch {
+			return false;
+		}
+	}
+	return false;
+}
+
+export async function checkStoragePersistence(): Promise<boolean> {
+	if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.persisted) {
+		try {
+			return await navigator.storage.persisted();
+		} catch {
+			return false;
+		}
+	}
+	return false;
+}
+
+/* ------------------------------------------------------------------ */
+/* Local Rolling Auto-Snapshots (Protection against accidental loss)  */
+/* ------------------------------------------------------------------ */
+
+const MAX_SNAPSHOTS = 5;
+
+export function loadSnapshots(): StorageSnapshot[] {
+	return loadJSON<StorageSnapshot[]>(SNAPSHOTS_KEY, []);
+}
+
+export function saveSnapshots(snapshots: StorageSnapshot[]): void {
+	saveJSON(SNAPSHOTS_KEY, snapshots.slice(0, MAX_SNAPSHOTS));
+}
+
+export function recordSnapshot(routines: Routine[], streak: StreakState): void {
+	const snapshots = loadSnapshots();
+	const newSnapshot: StorageSnapshot = {
+		id: `snap-${Date.now()}`,
+		timestamp: Date.now(),
+		routineCount: routines.length,
+		streakDays: streak.completedDates.length,
+		routines: JSON.parse(JSON.stringify(routines)),
+		streak: JSON.parse(JSON.stringify(streak))
+	};
+	// Avoid duplicate identical snapshots in succession
+	if (snapshots.length > 0) {
+		const latest = snapshots[0];
+		if (
+			latest.routineCount === newSnapshot.routineCount &&
+			latest.streakDays === newSnapshot.streakDays &&
+			JSON.stringify(latest.routines) === JSON.stringify(newSnapshot.routines) &&
+			JSON.stringify(latest.streak) === JSON.stringify(newSnapshot.streak)
+		) {
+			return;
+		}
+	}
+	snapshots.unshift(newSnapshot);
+	saveSnapshots(snapshots);
+}
+
+export function clearSnapshots(): void {
+	try {
+		localStorage.removeItem(SNAPSHOTS_KEY);
+	} catch {}
 }
 
 /* ------------------------------------------------------------------ */

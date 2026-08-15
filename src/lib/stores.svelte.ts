@@ -1,27 +1,39 @@
-import type { Routine, Settings, Stretch, StreakState } from './types.ts';
+import type { Routine, Settings, Stretch, StreakState, StorageSnapshot } from './types.ts';
 import {
 	deletePhotoData,
 	getPhotoData,
 	loadRoutines,
 	loadSettings,
 	loadStreak,
+	recordSnapshot,
+	requestPersistentStorage,
 	savePhotoData,
 	saveRoutines,
 	saveSettings,
 	saveStreak
 } from './storage.ts';
-import { todayKey } from './time.ts';
+import { addDays, todayKey } from './time.ts';
 import { fixersAvailable, repairTarget } from './streak.ts';
 import { uid } from './util.ts';
+import { autoSaveToFileHandle, isFileAutoBackupConnected } from './backup.ts';
 
 export const routines = $state<Routine[]>(loadRoutines());
 export const settings = $state<Settings>(loadSettings());
 export const streak = $state<StreakState>(loadStreak());
 
+// Auto-request persistent storage on startup in supported browsers
+if (typeof window !== 'undefined') {
+	void requestPersistentStorage().catch(() => {});
+}
+
 export function saveAll(): void {
 	saveRoutines(routines);
 	saveSettings(settings);
 	saveStreak(streak);
+	recordSnapshot(routines, streak);
+	if (isFileAutoBackupConnected()) {
+		void autoSaveToFileHandle().catch(() => {});
+	}
 }
 
 export function newStretch(): Stretch {
@@ -176,6 +188,17 @@ export function updateSettings(patch: Partial<Settings>): void {
 	saveAll();
 }
 
+/* ---------------------------- snapshot restoration ----------------------- */
+
+/** Restore data from an automatic local snapshot point. */
+export function restoreFromSnapshot(snapshot: StorageSnapshot): void {
+	routines.length = 0;
+	routines.push(...JSON.parse(JSON.stringify(snapshot.routines)));
+	streak.completedDates = [...snapshot.streak.completedDates];
+	streak.fixersUsed = snapshot.streak.fixersUsed;
+	saveAll();
+}
+
 /* ---------------------------- backup actions ---------------------------- */
 
 export interface RoutineBackup {
@@ -291,3 +314,67 @@ export function clearStreakHistory(): void {
 	streak.fixersUsed = 0;
 	saveAll();
 }
+
+/* -------------------------- Testing Mode Helpers -------------------------- */
+
+/** Simulate N days of consecutive streak up through today. */
+export function simulateStreak(days = 7): void {
+	const today = todayKey();
+	const list: string[] = [];
+	for (let i = 0; i < days; i++) {
+		list.push(addDays(today, -i));
+	}
+	list.sort();
+	streak.completedDates = list;
+	streak.fixersUsed = 0;
+	saveAll();
+}
+
+/** Simulate a broken streak (gap yesterday) with a prior completed period so a fixer can repair it. */
+export function simulateBrokenStreak(): void {
+	const today = todayKey();
+	const list: string[] = [];
+	// Completed 2, 3, 4, 5, 6, 7, 8 days ago. Yesterday is missed.
+	for (let i = 2; i <= 8; i++) {
+		list.push(addDays(today, -i));
+	}
+	list.sort();
+	streak.completedDates = list;
+	streak.fixersUsed = 0;
+	saveAll();
+}
+
+/** Grant a streak fixer for testing. */
+export function addTestFixer(): void {
+	if (streak.fixersUsed > 0) {
+		streak.fixersUsed -= 1;
+	} else {
+		// Add dummy historical dates to pass the 7-day multiplier
+		const earliest = streak.completedDates[0] || todayKey();
+		const extra: string[] = [];
+		for (let i = 1; i <= 7; i++) {
+			extra.push(addDays(earliest, -100 - i));
+		}
+		streak.completedDates.push(...extra);
+		streak.completedDates.sort();
+	}
+	saveAll();
+}
+
+/** Seed rapid-test routines for feature validation. */
+export function seedTestRoutines(): void {
+	const r1 = newRoutine('⚡ 5s Quick Test Flow');
+	r1.stretches = [
+		{ ...newStretch(), name: 'Test Stretch A', durationSeconds: 5, sides: 'one', description: 'Testing 5s countdown and audio cues' },
+		{ ...newStretch(), name: 'Test Stretch B', durationSeconds: 5, sides: 'one', description: 'Second stretch test' }
+	];
+
+	const r2 = newRoutine('🔄 2-Sided Quick Tester');
+	r2.stretches = [
+		{ ...newStretch(), name: 'Left/Right Test Stretch', durationSeconds: 5, sides: 'two', description: 'Testing Left → Beep → Right transition' }
+	];
+
+	routines.push(r1, r2);
+	saveAll();
+}
+

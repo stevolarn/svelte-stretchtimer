@@ -20,6 +20,19 @@ A fast, phone-first, 100% offline web app for building, timing, and tracking str
 - **In-Player Routine Map & Quick Jump**: Visual progress track and segment chips to jump between stretches.
 - **Keyboard Shortcuts**: `Space` (Play/Pause), `←` (Previous), `→` (Skip), `Esc` (Stop).
 
+### 🔒 Rock-Solid Storage & Automated Backups
+- **Persistent Storage API**: Automatically requests browser persistence (`navigator.storage.persist()`) so mobile browsers (e.g., Chrome on Android) never evict routine or streak data under storage pressure.
+- **Local Rolling Auto-Snapshots**: Automatically saves the last 5 state versions locally with 1-tap rollback/restore in Settings.
+- **1-Tap Save to Google Drive / Files**: Native cloud backup export using the Web Share API (which directly triggers Android's system "Save to Google Drive" dialog).
+- **File System Auto-Sync**: Link a local or cloud-synced backup file (via File System Access API) that auto-updates on every change.
+- **Auto-Backup on Finish**: Optional automatic backup trigger whenever a routine is completed.
+
+### 🧪 Developer & Testing Mode
+- **Speed Multipliers**: Fast-forward player timing at `1x`, `5x`, `10x`, or `30x` speed to test a full routine in seconds.
+- **In-Player Dev HUD**: Quick buttons to jump to the final 3s countdown ticks, skip stretches, or complete a workout immediately.
+- **Streak & Fixer Simulator**: Test 7-day streaks, missed day breaks, and fixer repairs with 1-tap test buttons.
+- **Test Routine Seeder**: Seed pre-configured 5-second quick test routines in seconds.
+
 ### 🔔 Synthesized Audio Cues
 - Built-in Web Audio synthesizer generating crisp, clean tone cues without heavy audio files.
 - Dedicated tones for **Stretch start**, **Side switch (L → R)**, **Final 3-second countdown ticks**, and **Routine finish fanfare**.
@@ -40,12 +53,6 @@ Includes 6 ready-to-use stretching routines with illustrated previews:
 4. **Lower-Body Reset** (5 min) – Calves, quads, hamstrings, hip flexors.
 5. **Runner’s Recovery** (5 min) – Standing calf stretch, figure-four, hip flexor release.
 6. **Full-Body Mobility** (6 min) – Balanced full-body flow.
-
-### 🔒 100% Offline, Private & Portable
-- **Zero Network Dependencies**: Operates completely offline.
-- **Local Storage**: Routines, settings, and streaks saved in `localStorage`.
-- **Photo Attachments**: Photos downscaled and stored locally in `IndexedDB`.
-- **Backup & Restore**: Export and import complete routine libraries (including photos) as standard JSON files.
 
 ---
 

@@ -4,9 +4,12 @@
 	import { goto } from '$app/navigation';
 	import {
 		back,
+		instantComplete,
 		jumpTo,
+		jumpToCountdown,
 		player,
 		restart,
+		setPlaybackSpeed,
 		skip,
 		startPlayer,
 		stopPlayer,
@@ -182,6 +185,27 @@
 			<span class="player-routine">{player.routineName}</span>
 			<button class="btn small ghost player-restart-btn" onclick={restart} title="Restart">↺</button>
 		</div>
+
+		{#if settings.testingMode}
+			<div class="player-test-hud">
+				<div class="test-hud-label">⚡ DEV TEST</div>
+				<div class="test-hud-actions">
+					<div class="speed-selector">
+						{#each [1, 5, 10, 30] as s}
+							<button
+								class="speed-btn"
+								class:active={player.speed === s}
+								onclick={() => setPlaybackSpeed(s)}
+							>
+								{s}x
+							</button>
+						{/each}
+					</div>
+					<button class="btn small test-btn" onclick={() => jumpToCountdown(3)}>⏱ 3s tick</button>
+					<button class="btn small test-btn" onclick={instantComplete}>⚡ Finish</button>
+				</div>
+			</div>
+		{/if}
 
 		{#if segment}
 			<div class="player-ring-section">

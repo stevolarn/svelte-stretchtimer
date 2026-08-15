@@ -31,6 +31,18 @@ export interface Settings {
 	beepFinish: boolean;
 	breaksEnabled: boolean;
 	breakSeconds: number;
+	testingMode: boolean;
+	playbackSpeed: number;
+	autoBackupOnFinish: boolean;
+}
+
+export interface StorageSnapshot {
+	id: string;
+	timestamp: number;
+	routineCount: number;
+	streakDays: number;
+	routines: Routine[];
+	streak: StreakState;
 }
 
 export interface StreakState {
