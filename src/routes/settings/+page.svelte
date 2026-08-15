@@ -35,6 +35,7 @@
 		shareToCloudOrDrive
 	} from '$lib/backup';
 	import { type StorageSnapshot, type Theme } from '$lib/types';
+	import { pwa } from '$lib/pwa.svelte';
 	import Segmented from '$lib/components/Segmented.svelte';
 	import Stepper from '$lib/components/Stepper.svelte';
 	import Toggle from '$lib/components/Toggle.svelte';
@@ -184,6 +185,30 @@
 					{ value: 'system', label: 'System' }
 				]}
 			/>
+		</div>
+	</div>
+
+	<div class="settings-group">
+		<div class="spread" style="align-items: center">
+			<div>
+				<span style="font-weight: 600; display: block">App installation</span>
+				<span class="muted small">
+					{#if pwa.isStandalone || pwa.isInstalled}
+						Running as installed standalone app on your device.
+					{:else if pwa.deferredPrompt}
+						Install Stretch Timer to your home screen for quick offline access.
+					{:else}
+						Installable in Chrome on Android via browser menu or install prompt.
+					{/if}
+				</span>
+			</div>
+			{#if !pwa.isStandalone && !pwa.isInstalled && pwa.deferredPrompt}
+				<button class="btn primary small" onclick={() => pwa.install()}>
+					📲 Install App
+				</button>
+			{:else if pwa.isStandalone || pwa.isInstalled}
+				<span class="badge" style="color: var(--accent); font-weight: 700">Installed ✓</span>
+			{/if}
 		</div>
 	</div>
 

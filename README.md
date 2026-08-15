@@ -6,7 +6,9 @@ A fast, phone-first, 100% offline web app for building, timing, and tracking str
 
 ## ✨ Features
 
-### 📱 Phone-First & App-Like Experience
+### 📱 Phone-First & PWA Installable on Android
+- **Installable from Chrome on Android**: Full Progressive Web App (PWA) with Web App Manifest, offline-first Service Worker, and high-resolution icons (192px, 512px, maskable, and SVG).
+- **Standalone App Experience**: Launches full-screen from your Android home screen with zero browser URL bar or navigation clutter.
 - **Zero-Scroll Player**: Calibrated to fit mobile viewports (e.g. Google Pixel 9 Pro) within `100dvh` without page scrolling.
 - **Mobile Bottom Navigation Bar**: Quick, thumb-friendly access to Routines, Streak, and Settings with safe-area inset padding.
 - **Touch-Native Drag & Drop**: Smooth pointer-event drag-and-drop reordering with haptic feedback, alongside dedicated 1-tap `↑` / `↓` controls.
@@ -50,6 +52,7 @@ A fast, phone-first, 100% offline web app for building, timing, and tracking str
 ### 🔥 Streaks & Streak Fixers
 - **Daily Streak Tracking**: Completing any routine credits the day.
 - **Streak Fixers**: Earn 1 streak fixer for every 7 completed days to repair an accidental missed day.
+- **Complete Streak Repair**: Enforces complete repair of broken streak gaps using available earned fixers.
 - **42-Day Visual Calendar**: Interactive history grid of recent workout activity.
 - **Reset Capability**: Option to clear streak history whenever you want a clean slate.
 
@@ -68,6 +71,7 @@ Includes 6 ready-to-use stretching routines with illustrated previews:
 
 - **Framework**: [Svelte 5](https://svelte.dev/) with modern Runes (`$state`, `$derived`, `$effect`, `$props`)
 - **App Engine**: [SvelteKit 2](https://kit.svelte.dev/)
+- **Service Worker & PWA**: Offline-first caching with `$service-worker`
 - **Language**: TypeScript
 - **Bundler**: [Vite](https://vitejs.dev/)
 - **Styling**: Vanilla CSS Design Tokens (Automatic Light / Dark / System theme)
