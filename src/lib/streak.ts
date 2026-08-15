@@ -55,21 +55,39 @@ export function fixerProgress(state: StreakState): number {
 
 /**
  * The date a repair would fill: the day immediately before the current
- * streak run, when that day is missing AND a completed day exists before it
- * (i.e. the gap actually broke two runs — filling it is a real repair, not
- * just extending the streak). Returns null when there is nothing to repair.
+ * streak run, or the most recent missed day when a streak was broken.
+ * Returns null when there is nothing to repair.
  */
 export function repairTarget(state: StreakState, today: string = todayKey()): string | null {
 	const set = completedSet(state);
 	if (set.size === 0) return null;
-	const day = set.has(today) ? today : addDays(today, -1);
-	if (!set.has(day)) return null; // nothing completed in the current window
-	// Walk back to the first missing day before the current run.
-	let cursor = day;
-	while (set.has(cursor)) cursor = addDays(cursor, -1);
-	const repair = cursor;
-	const earliest = state.completedDates[0];
+
+	const yesterday = addDays(today, -1);
+	const sorted = [...set].sort();
+	const earliest = sorted[0];
+
+	// Case 1: Neither today nor yesterday is completed (streak is currently broken/inactive)
+	if (!set.has(today) && !set.has(yesterday)) {
+		const latestDone = sorted[sorted.length - 1];
+		if (!latestDone) return null;
+
+		// If the most recent completed day is within recent history, the gap immediately following it can be repaired
+		const nextDay = addDays(latestDone, 1);
+		if (nextDay <= today) {
+			return nextDay === today ? yesterday : nextDay;
+		}
+		return null;
+	}
+
+	// Case 2: Today or yesterday is completed (an active run exists)
+	// Walk back through the active run to find the missing date immediately preceding it.
+	const anchor = set.has(today) ? today : yesterday;
+	let cursor = anchor;
+	while (set.has(cursor)) {
+		cursor = addDays(cursor, -1);
+	}
+	const gap = cursor;
 	// Only a genuine break can be repaired: something was completed before it.
-	if (repair <= earliest) return null;
-	return repair;
+	if (gap <= earliest) return null;
+	return gap;
 }

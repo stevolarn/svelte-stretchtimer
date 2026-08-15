@@ -3,6 +3,7 @@
 	import { playCue } from '$lib/audio';
 	import {
 		addTestFixer,
+		applyFixer,
 		clearStreakHistory,
 		exportBackup,
 		importBackup,
@@ -14,6 +15,11 @@
 		simulateStreak,
 		streak
 	} from '$lib/stores.svelte';
+	import {
+		currentStreak,
+		fixersAvailable,
+		repairTarget
+	} from '$lib/streak';
 	import {
 		checkStoragePersistence,
 		clearSnapshots,
@@ -37,6 +43,10 @@
 	let snapshots = $state<StorageSnapshot[]>([]);
 	let backupStatus = $state('');
 	let testStatus = $state('');
+
+	const currentStreakNum = $derived(currentStreak(streak));
+	const fixersAvailableNum = $derived(fixersAvailable(streak));
+	const activeRepairTarget = $derived(repairTarget(streak));
 
 	onMount(async () => {
 		isPersistent = await checkStoragePersistence();
@@ -377,10 +387,26 @@
 
 		<div class="settings-group">
 			<span style="font-weight: 600; display: block; margin-bottom: 0.35rem">Streak & Fixer Simulator</span>
-			<div class="row" style="gap: 0.4rem">
+			<div class="row" style="gap: 0.4rem; margin-bottom: 0.5rem">
 				<button class="btn small" onclick={() => handleSimulateStreak(7)}>🔥 Simulate 7-day streak</button>
 				<button class="btn small" onclick={handleSimulateBreak}>💔 Simulate missed day</button>
 				<button class="btn small" onclick={handleAddFixer}>🩹 Add +1 Fixer</button>
+			</div>
+
+			<div class="snapshot-item" style="margin-top: 0.3rem">
+				<div>
+					<div style="font-weight: 600; font-size: 0.85rem">
+						Current: 🔥 {currentStreakNum} days · 🩹 {fixersAvailableNum} fixer{fixersAvailableNum === 1 ? '' : 's'}
+					</div>
+					<div class="muted small">
+						{activeRepairTarget ? `Broken gap: ${activeRepairTarget}` : 'Streak is unbroken'}
+					</div>
+				</div>
+				{#if activeRepairTarget && fixersAvailableNum > 0}
+					<button class="btn small primary" onclick={() => { applyFixer(); testStatus = 'Streak repaired with 1 fixer!'; }}>
+						🩹 Repair Now
+					</button>
+				{/if}
 			</div>
 		</div>
 
