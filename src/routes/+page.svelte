@@ -156,10 +156,16 @@
 {#if routines.length === 0}
 	<section class="card empty-routines-card">
 		<div class="empty-state-header">
-			<h2>Choose a starter routine</h2>
-			<p class="muted small" style="margin: 0.25rem 0 0.85rem">
-				Pick a ready-to-go stretching flow or start with a blank routine.
+			<h2>Create your first routine</h2>
+			<p class="muted small" style="margin: 0.25rem 0 0.75rem">
+				Start with a blank routine or choose a ready-to-go stretching flow.
 			</p>
+		</div>
+		<button class="btn primary new-blank-button" onclick={createRoutine} style="margin-bottom: 1rem">
+			＋ Create blank routine
+		</button>
+		<div class="muted small" style="font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem">
+			Or choose a starter routine
 		</div>
 		<div class="starter-grid">
 			{#each starterOptions as option (option.kind)}
@@ -173,7 +179,6 @@
 				</button>
 			{/each}
 		</div>
-		<button class="btn new-blank-button" onclick={createRoutine}>＋ Create blank routine</button>
 	</section>
 {:else if visibleRoutines.length === 0}
 	<div class="card">
@@ -217,6 +222,12 @@
 				</div>
 				<button class="icon-btn close-modal-btn" onclick={() => (showNewModal = false)} aria-label="Close">✕</button>
 			</div>
+			<button class="btn primary new-blank-button" onclick={createRoutine} style="margin-bottom: 0.75rem">
+				＋ Create blank routine
+			</button>
+			<div class="muted small" style="font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem">
+				Or choose a quick start routine
+			</div>
 			<div class="starter-grid modal-starter-grid">
 				{#each starterOptions as option (option.kind)}
 					<button class="starter-option" onclick={() => addTemplate(option.kind)}>
@@ -229,7 +240,6 @@
 					</button>
 				{/each}
 			</div>
-			<button class="btn new-blank-button" onclick={createRoutine}>＋ Create blank routine</button>
 		</div>
 	</div>
 {/if}
