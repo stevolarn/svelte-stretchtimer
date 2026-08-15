@@ -19,6 +19,7 @@ export interface Routine {
 	name: string;
 	stretches: Stretch[];
 	createdAt: number;
+	breakSeconds?: number;
 }
 
 export type Theme = 'light' | 'dark' | 'system';

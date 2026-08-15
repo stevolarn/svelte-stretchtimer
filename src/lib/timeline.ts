@@ -15,6 +15,11 @@ export function clampSeconds(value: number, min = 1, max = 3600): number {
 export function buildTimeline(routine: Routine, settings: Settings): Segment[] {
 	const segments: Segment[] = [];
 	const last = routine.stretches.length - 1;
+	const breakSecs =
+		routine.breakSeconds !== undefined
+			? Math.max(0, Math.round(routine.breakSeconds))
+			: Math.max(0, Math.round(settings.breakSeconds));
+
 	routine.stretches.forEach((stretch, i) => {
 		if (stretch.sides === 'one') {
 			segments.push({
@@ -40,12 +45,12 @@ export function buildTimeline(routine: Routine, settings: Settings): Segment[] {
 				label: stretch.name || 'Stretch'
 			});
 		}
-		if (settings.breaksEnabled && i < last) {
+		if (settings.breaksEnabled && i < last && breakSecs > 0) {
 			segments.push({
 				kind: 'break',
 				stretch: null,
 				side: null,
-				seconds: Math.max(0, Math.round(settings.breakSeconds)),
+				seconds: breakSecs,
 				label: 'Break'
 			});
 		}

@@ -165,7 +165,11 @@
 					<span class="badge">{routine.stretches.length} stretch{routine.stretches.length === 1 ? '' : 'es'}</span>
 					<span class="badge">⏱ {formatSeconds(total)}</span>
 					{#if settings.breaksEnabled}
-						<span class="badge">{settings.breakSeconds}s breaks</span>
+						<span class="badge">
+							{(routine.breakSeconds ?? settings.breakSeconds) === 0
+								? 'No breaks'
+								: `${routine.breakSeconds ?? settings.breakSeconds}s breaks`}
+						</span>
 					{/if}
 				</div>
 				<button class="btn primary player-big-start-btn" onclick={begin}>

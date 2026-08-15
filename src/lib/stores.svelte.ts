@@ -49,8 +49,8 @@ export function newStretch(): Stretch {
 	};
 }
 
-export function newRoutine(name = 'New routine'): Routine {
-	return { id: uid(), name, stretches: [], createdAt: Date.now() };
+export function newRoutine(name = 'New routine', breakSeconds = 5): Routine {
+	return { id: uid(), name, stretches: [], createdAt: Date.now(), breakSeconds };
 }
 
 export type StarterRoutineKind =
@@ -166,7 +166,14 @@ export function deleteRoutine(id: string): void {
 export async function duplicateRoutine(id: string): Promise<Routine> {
 	const src = getRoutine(id);
 	if (!src) throw new Error('Routine not found');
-	const copy: Routine = { ...src, id: uid(), name: `${src.name} copy`, stretches: [], createdAt: Date.now() };
+	const copy: Routine = {
+		...src,
+		id: uid(),
+		name: `${src.name} copy`,
+		breakSeconds: src.breakSeconds,
+		stretches: [],
+		createdAt: Date.now()
+	};
 	for (const s of src.stretches) {
 		const cs: Stretch = { ...s, id: uid(), photoId: null };
 		if (s.photoId) {
@@ -249,6 +256,7 @@ export async function importBackup(raw: string): Promise<{ added: number; skippe
 			id: uid(),
 			name: candidate.name.trim() || 'Imported routine',
 			createdAt: typeof candidate.createdAt === 'number' ? candidate.createdAt : Date.now(),
+			breakSeconds: typeof candidate.breakSeconds === 'number' ? candidate.breakSeconds : undefined,
 			stretches: []
 		};
 

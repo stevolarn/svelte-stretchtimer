@@ -2,8 +2,9 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { deletePhotoData, getPhotoData, savePhotoData } from '$lib/storage';
-	import { deleteRoutine, getRoutine, newStretch, saveAll } from '$lib/stores.svelte';
-	import { stretchDurationLabel } from '$lib/timeline';
+	import { deleteRoutine, getRoutine, newStretch, saveAll, settings } from '$lib/stores.svelte';
+	import { buildTimeline, stretchDurationLabel, timelineTotal } from '$lib/timeline';
+	import { formatSeconds } from '$lib/time';
 	import { uid } from '$lib/util';
 	import { type Stretch } from '$lib/types';
 	import Stepper from '$lib/components/Stepper.svelte';
@@ -11,6 +12,14 @@
 	import PhotoThumb from '$lib/components/PhotoThumb.svelte';
 
 	const routine = $derived(getRoutine(page.params.id ?? '') ?? null);
+	const total = $derived(routine ? timelineTotal(buildTimeline(routine, settings)) : 0);
+
+	$effect(() => {
+		if (routine && routine.breakSeconds === undefined) {
+			routine.breakSeconds = settings.breakSeconds;
+		}
+	});
+
 	let editingId = $state<string | null>(null);
 	let dragIndex = $state<number | null>(null);
 	let overIndex = $state<number | null>(null);
@@ -139,11 +148,16 @@
 {:else}
 	<div class="spread" style="margin-bottom: 0.9rem">
 		<a class="btn small ghost" href="/">← Routines</a>
-		<button class="btn small danger" onclick={removeRoutine}>Delete routine</button>
+		<div class="row" style="gap: 0.4rem">
+			<button class="btn small primary" onclick={() => goto(`/player/${routine.id}`)} disabled={routine.stretches.length === 0}>
+				▶ Play
+			</button>
+			<button class="btn small danger" onclick={removeRoutine}>Delete</button>
+		</div>
 	</div>
 
 	<section class="card" style="margin-bottom: 0.9rem">
-		<div class="field" style="margin: 0">
+		<div class="field" style="margin-bottom: 0.75rem">
 			<label for="routine-name">Routine name</label>
 			<input
 				id="routine-name"
@@ -151,6 +165,35 @@
 				bind:value={routine.name}
 				oninput={saveAll}
 				placeholder="e.g. Morning mobility"
+			/>
+		</div>
+
+		<div class="spread" style="align-items: center; padding: 0.5rem 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border)">
+			<div class="row" style="gap: 0.45rem; flex-wrap: wrap">
+				<span class="badge" style="background: var(--accent); color: #fff; font-weight: 700">
+					⏱ Total: {formatSeconds(total)}
+				</span>
+				<span class="badge">
+					{routine.stretches.length} stretch{routine.stretches.length === 1 ? '' : 'es'}
+				</span>
+				<span class="badge">
+					{routine.breakSeconds === 0 ? 'No breaks' : `${routine.breakSeconds ?? settings.breakSeconds}s breaks`}
+				</span>
+			</div>
+		</div>
+
+		<div class="spread" style="align-items: center; padding-top: 0.65rem">
+			<div>
+				<div style="font-weight: 600; font-size: 0.92rem">Break between stretches</div>
+				<div class="muted small">
+					{routine.breakSeconds === 0 ? 'No breaks between stretches' : `${routine.breakSeconds ?? settings.breakSeconds}s break between stretches`}
+				</div>
+			</div>
+			<Stepper
+				bind:value={routine.breakSeconds}
+				min={0}
+				step={5}
+				onchange={saveAll}
 			/>
 		</div>
 	</section>

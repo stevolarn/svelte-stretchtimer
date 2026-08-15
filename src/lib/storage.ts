@@ -14,7 +14,7 @@ export const defaultSettings: Settings = {
 	beepCountdown: true,
 	beepFinish: true,
 	breaksEnabled: true,
-	breakSeconds: 15,
+	breakSeconds: 5,
 	testingMode: false,
 	playbackSpeed: 1,
 	autoBackupOnFinish: false
