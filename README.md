@@ -21,7 +21,8 @@ in `localStorage` (routines, settings, streak) and IndexedDB (photos).
 - **Streaks** — finishing a routine credits the day; consecutive days build a streak and missing a
   day breaks it. Every 7 completed days earns a **streak fixer** that repairs the most recent break.
 - **Quick starts** — begin with Desk reset or Morning mobility templates and customize them like any
-  other routine.
+	other routine. The menu also includes Bedtime wind-down, Lower-body reset, Runner’s recovery, and
+	Full-body mobility, each with an illustrated preview.
 - **Routine library tools** — search and sort routines, plus export/import versioned JSON backups that
   include locally stored photos. Restores are additive and generate fresh ids.
 - **Player navigation** — see whole-routine progress and jump directly to any stretch or break from

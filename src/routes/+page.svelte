@@ -17,10 +17,23 @@
 	import { currentStreak, fixersAvailable, fixerProgress } from '$lib/streak';
 	import { formatSeconds } from '$lib/time';
 	import { type Routine } from '$lib/types';
+	import StarterArt from '$lib/components/StarterArt.svelte';
+
+	const starterOptions: Array<{ kind: StarterRoutineKind; title: string; duration: string; description: string }> = [
+		{ kind: 'desk-reset', title: 'Desk reset', duration: '3 min', description: 'Neck, shoulders and wrists' },
+		{ kind: 'morning-mobility', title: 'Morning mobility', duration: '5 min', description: 'Wake up your whole body' },
+		{ kind: 'bedtime-wind-down', title: 'Bedtime wind-down', duration: '5 min', description: 'Slow, gentle evening movement' },
+		{ kind: 'lower-body-reset', title: 'Lower-body reset', duration: '5 min', description: 'Hips, legs and calves' },
+		{ kind: 'runner-recovery', title: 'Runner’s recovery', duration: '5 min', description: 'Easy post-run release' },
+		{ kind: 'full-body-mobility', title: 'Full-body mobility', duration: '6 min', description: 'A balanced daily flow' }
+	];
+
+	let newRoutineMenu = $state<HTMLDetailsElement>();
 
 	function createRoutine(): void {
 		const r = newRoutine('New routine');
 		addRoutine(r);
+		if (newRoutineMenu) newRoutineMenu.open = false;
 		goto(`/routine/${r.id}`);
 	}
 
@@ -50,6 +63,7 @@
 	function addTemplate(kind: StarterRoutineKind): void {
 		const routine = starterRoutine(kind);
 		addRoutine(routine);
+		if (newRoutineMenu) newRoutineMenu.open = false;
 		goto(`/routine/${routine.id}`);
 	}
 
@@ -110,30 +124,38 @@
 	</div>
 </section>
 
-<div class="spread" style="margin-bottom: 0.9rem">
+<div class="spread routine-heading" style="margin-bottom: 0.9rem">
 	<h1 style="font-size: 1.3rem">Routines</h1>
-	<div class="row">
+	<div class="row routine-heading-actions">
 		<button class="btn small" onclick={downloadBackup}>⇩ Back up</button>
 		<label class="btn small" class:disabled={importing}>
 			⇧ Restore
 			<input class="sr-only" type="file" accept="application/json,.json" onchange={restoreBackup} disabled={importing} />
 		</label>
-		<button class="btn primary" onclick={createRoutine}>＋ New routine</button>
+		<details class="new-routine-menu" bind:this={newRoutineMenu}>
+			<summary class="btn primary">＋ New routine <span class="menu-chevron">⌄</span></summary>
+			<div class="new-routine-panel">
+				<div class="new-routine-panel-heading">
+					<strong>Choose a quick start</strong>
+					<span class="muted small">or start from scratch</span>
+				</div>
+				<div class="starter-grid">
+					{#each starterOptions as option (option.kind)}
+						<button class="starter-option" onclick={() => addTemplate(option.kind)}>
+							<StarterArt kind={option.kind} />
+							<span class="starter-option-copy">
+								<strong>{option.title}</strong>
+								<span class="muted small">{option.description}</span>
+								<span class="starter-duration">{option.duration}</span>
+							</span>
+						</button>
+					{/each}
+				</div>
+				<button class="btn new-blank-button" onclick={createRoutine}>＋ Blank routine</button>
+			</div>
+		</details>
 	</div>
 </div>
-
-<section class="card quick-start" style="margin-bottom: 0.9rem">
-	<div class="spread">
-		<div>
-			<h2>Quick starts</h2>
-			<p class="muted small" style="margin: 0.15rem 0 0">Start with a guided routine, then customize it.</p>
-		</div>
-		<div class="row">
-			<button class="btn small" onclick={() => addTemplate('desk-reset')}>Desk reset · 3 min</button>
-			<button class="btn small" onclick={() => addTemplate('morning-mobility')}>Morning mobility · 5 min</button>
-		</div>
-	</div>
-</section>
 
 {#if routines.length > 0}
 	<div class="routine-tools">
