@@ -13,7 +13,7 @@ import {
 	saveStreak
 } from './storage.ts';
 import { addDays, todayKey } from './time.ts';
-import { fixersAvailable, repairTarget } from './streak.ts';
+import { fixersAvailable, repairGap, canRepairStreak } from './streak.ts';
 import { uid } from './util.ts';
 import { autoSaveToFileHandle, isFileAutoBackupConnected } from './backup.ts';
 
@@ -305,14 +305,20 @@ export function creditToday(now: Date = new Date()): void {
 	}
 }
 
-/** Spend one available fixer to repair the most recent broken day. */
+/** Spend available fixers to completely repair a broken streak gap. */
 export function applyFixer(): boolean {
-	if (fixersAvailable(streak) <= 0) return false;
-	const target = repairTarget(streak);
-	if (!target) return false;
-	streak.completedDates.push(target);
+	const gap = repairGap(streak);
+	if (gap.length === 0) return false;
+	const available = fixersAvailable(streak);
+	if (available < gap.length) return false;
+
+	for (const date of gap) {
+		if (!streak.completedDates.includes(date)) {
+			streak.completedDates.push(date);
+		}
+	}
 	streak.completedDates.sort();
-	streak.fixersUsed += 1;
+	streak.fixersUsed += gap.length;
 	saveAll();
 	return true;
 }

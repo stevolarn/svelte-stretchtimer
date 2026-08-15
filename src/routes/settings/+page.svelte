@@ -18,7 +18,8 @@
 	import {
 		currentStreak,
 		fixersAvailable,
-		repairTarget
+		repairGap,
+		canRepairStreak
 	} from '$lib/streak';
 	import {
 		checkStoragePersistence,
@@ -46,7 +47,8 @@
 
 	const currentStreakNum = $derived(currentStreak(streak));
 	const fixersAvailableNum = $derived(fixersAvailable(streak));
-	const activeRepairTarget = $derived(repairTarget(streak));
+	const activeGap = $derived(repairGap(streak));
+	const canRepair = $derived(canRepairStreak(streak));
 
 	onMount(async () => {
 		isPersistent = await checkStoragePersistence();
@@ -399,12 +401,25 @@
 						Current: 🔥 {currentStreakNum} days · 🩹 {fixersAvailableNum} fixer{fixersAvailableNum === 1 ? '' : 's'}
 					</div>
 					<div class="muted small">
-						{activeRepairTarget ? `Broken gap: ${activeRepairTarget}` : 'Streak is unbroken'}
+						{#if activeGap.length > 0}
+							Broken gap: {activeGap.length === 1 ? activeGap[0] : `${activeGap.length} days (${activeGap[0]} to ${activeGap[activeGap.length - 1]})`}
+							{#if !canRepair}
+								(needs {activeGap.length} fixers)
+							{/if}
+						{:else}
+							Streak is unbroken
+						{/if}
 					</div>
 				</div>
-				{#if activeRepairTarget && fixersAvailableNum > 0}
-					<button class="btn small primary" onclick={() => { applyFixer(); testStatus = 'Streak repaired with 1 fixer!'; }}>
-						🩹 Repair Now
+				{#if canRepair}
+					<button
+						class="btn small primary"
+						onclick={() => {
+							applyFixer();
+							testStatus = `Streak repaired with ${activeGap.length} fixer${activeGap.length === 1 ? '' : 's'}!`;
+						}}
+					>
+						🩹 Repair ({activeGap.length})
 					</button>
 				{/if}
 			</div>

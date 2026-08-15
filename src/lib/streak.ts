@@ -54,40 +54,65 @@ export function fixerProgress(state: StreakState): number {
 }
 
 /**
- * The date a repair would fill: the day immediately before the current
- * streak run, or the most recent missed day when a streak was broken.
- * Returns null when there is nothing to repair.
+ * Returns the exact list of missing dates needed to completely bridge the
+ * broken streak to the current day/yesterday.
+ * Returns [] when no broken streak can be reconnected.
  */
-export function repairTarget(state: StreakState, today: string = todayKey()): string | null {
+export function repairGap(state: StreakState, today: string = todayKey()): string[] {
 	const set = completedSet(state);
-	if (set.size === 0) return null;
+	if (set.size === 0) return [];
 
 	const yesterday = addDays(today, -1);
 	const sorted = [...set].sort();
 	const earliest = sorted[0];
 
-	// Case 1: Neither today nor yesterday is completed (streak is currently broken/inactive)
+	// Case 1: Inactive streak (neither today nor yesterday is completed).
+	// The gap is all consecutive missing days from (latest completed + 1) up to yesterday.
 	if (!set.has(today) && !set.has(yesterday)) {
 		const latestDone = sorted[sorted.length - 1];
-		if (!latestDone) return null;
+		if (!latestDone) return [];
 
-		// If the most recent completed day is within recent history, the gap immediately following it can be repaired
-		const nextDay = addDays(latestDone, 1);
-		if (nextDay <= today) {
-			return nextDay === today ? yesterday : nextDay;
+		const gapDates: string[] = [];
+		let cursor = addDays(latestDone, 1);
+		while (cursor <= yesterday) {
+			gapDates.push(cursor);
+			cursor = addDays(cursor, 1);
 		}
-		return null;
+		return gapDates;
 	}
 
-	// Case 2: Today or yesterday is completed (an active run exists)
-	// Walk back through the active run to find the missing date immediately preceding it.
+	// Case 2: Active run exists ending at today or yesterday.
+	// Walk back through the active run to find the missing gap immediately preceding it.
 	const anchor = set.has(today) ? today : yesterday;
 	let cursor = anchor;
 	while (set.has(cursor)) {
 		cursor = addDays(cursor, -1);
 	}
-	const gap = cursor;
-	// Only a genuine break can be repaired: something was completed before it.
-	if (gap <= earliest) return null;
-	return gap;
+
+	// Now cursor is at the first missing date. Walk backwards collecting all missing dates
+	// until we either hit a completed date in `set` or go earlier than `earliest`.
+	const gapDates: string[] = [];
+	while (!set.has(cursor) && cursor >= earliest) {
+		gapDates.unshift(cursor);
+		cursor = addDays(cursor, -1);
+	}
+
+	// Only return the gap if there is a completed day before it to connect to!
+	if (cursor < earliest) {
+		return [];
+	}
+
+	return gapDates;
+}
+
+/** Returns true only if a broken streak exists and the user has enough fixers to completely repair it. */
+export function canRepairStreak(state: StreakState, today: string = todayKey()): boolean {
+	const gap = repairGap(state, today);
+	return gap.length > 0 && fixersAvailable(state) >= gap.length;
+}
+
+/** Legacy helper for single-date target (returns first missing date or null). */
+export function repairTarget(state: StreakState, today: string = todayKey()): string | null {
+	const gap = repairGap(state, today);
+	return gap.length > 0 ? gap[0] : null;
 }

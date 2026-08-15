@@ -5,7 +5,8 @@
 		fixerProgress,
 		fixersAvailable,
 		longestStreak,
-		repairTarget
+		repairGap,
+		canRepairStreak
 	} from '$lib/streak';
 	import { addDays, todayKey } from '$lib/time';
 
@@ -15,8 +16,8 @@
 	const totalDays = $derived(streak.completedDates.length);
 	const fixers = $derived(fixersAvailable(streak));
 	const toNext = $derived(fixerProgress(streak));
-	const repair = $derived(repairTarget(streak));
-	const canRepair = $derived(repair !== null && fixers > 0);
+	const gap = $derived(repairGap(streak));
+	const canRepair = $derived(gap.length > 0 && fixers >= gap.length);
 
 	const calendar = $derived(
 		Array.from({ length: 42 }, (_, i) => {
@@ -26,8 +27,10 @@
 	);
 
 	function repairStreak(): void {
-		if (!repair) return;
-		if (confirm(`Use 1 streak fixer to fill in ${repair} and repair the streak?`)) {
+		if (!canRepair) return;
+		const dateDesc = gap.length === 1 ? gap[0] : `${gap.length} missed days (${gap[0]} to ${gap[gap.length - 1]})`;
+		const fixerDesc = gap.length === 1 ? '1 streak fixer' : `${gap.length} streak fixers`;
+		if (confirm(`Use ${fixerDesc} to fill in ${dateDesc} and completely restore your streak?`)) {
 			applyFixer();
 		}
 	}
@@ -69,12 +72,18 @@
 		<div>
 			<h2>Repair a broken streak</h2>
 			<p class="muted small" style="margin: 0.2rem 0 0">
-				{repair
-					? `Missing day: ${repair} — ${canRepair ? 'a fixer can fill it in.' : 'you need a fixer (earn 1 per 7 completed days).'}`
-					: 'Your streak is unbroken — nothing to repair right now.'}
+				{#if gap.length > 0}
+					Missing: {gap.length === 1 ? gap[0] : `${gap.length} days (${gap[0]} to ${gap[gap.length - 1]})`} — {canRepair
+						? `you have enough fixers to completely restore your streak.`
+						: `you need ${gap.length} fixer${gap.length === 1 ? '' : 's'} to completely restore your streak (${fixers} available).`}
+				{:else}
+					Your streak is unbroken — nothing to repair right now.
+				{/if}
 			</p>
 		</div>
-		<button class="btn small" onclick={repairStreak} disabled={!canRepair}>Repair (1 fixer)</button>
+		<button class="btn small" onclick={repairStreak} disabled={!canRepair}>
+			{gap.length > 1 ? `Repair (${gap.length} fixers)` : 'Repair (1 fixer)'}
+		</button>
 	</div>
 </section>
 
@@ -89,7 +98,7 @@
 	</div>
 	<p class="muted small" style="margin: 0.75rem 0 0">
 		Finish a routine to credit the day. Missing a day breaks the streak; every 7 completed days earns a fixer
-		that repairs the most recent break.
+		that can repair a broken streak when you have enough fixers to completely bridge the gap.
 	</p>
 </section>
 

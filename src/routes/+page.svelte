@@ -15,7 +15,7 @@
 		type StarterRoutineKind
 	} from '$lib/stores.svelte';
 	import { buildTimeline, timelineTotal } from '$lib/timeline';
-	import { currentStreak, fixersAvailable, fixerProgress, repairTarget } from '$lib/streak';
+	import { currentStreak, fixersAvailable, fixerProgress, repairGap, canRepairStreak } from '$lib/streak';
 	import { formatSeconds } from '$lib/time';
 	import { type Routine } from '$lib/types';
 	import StarterArt from '$lib/components/StarterArt.svelte';
@@ -107,12 +107,14 @@
 
 	const streakNow = $derived(currentStreak(streak));
 	const fixers = $derived(fixersAvailable(streak));
-	const repair = $derived(repairTarget(streak));
-	const canRepair = $derived(repair !== null && fixers > 0);
+	const gap = $derived(repairGap(streak));
+	const canRepair = $derived(gap.length > 0 && fixers >= gap.length);
 
 	function handleRepairStreak(): void {
-		if (!repair) return;
-		if (confirm(`Use 1 streak fixer to fill in ${repair} and repair your streak?`)) {
+		if (gap.length === 0 || fixers < gap.length) return;
+		const dateDesc = gap.length === 1 ? gap[0] : `${gap.length} missed days (${gap[0]} to ${gap[gap.length - 1]})`;
+		const fixerDesc = gap.length === 1 ? '1 streak fixer' : `${gap.length} streak fixers`;
+		if (confirm(`Use ${fixerDesc} to fill in ${dateDesc} and completely restore your streak?`)) {
 			applyFixer();
 		}
 	}
@@ -132,8 +134,12 @@
 		</div>
 		<div class="row" style="gap: 0.4rem">
 			{#if canRepair}
-				<button class="btn primary small" onclick={handleRepairStreak} title={`Repair missed day (${repair})`}>
-					🩹 Fix streak
+				<button
+					class="btn primary small"
+					onclick={handleRepairStreak}
+					title={`Repair broken streak (${gap.length} fixer${gap.length === 1 ? '' : 's'})`}
+				>
+					🩹 Fix streak ({gap.length})
 				</button>
 			{/if}
 			<a class="btn small" href="/stats">Details</a>
