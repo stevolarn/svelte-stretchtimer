@@ -37,24 +37,7 @@
 	const routineProgress = $derived(total > 0 ? Math.min(1, routineElapsed / total) : 0);
 
 	let photoUrl = $state<string | null>(null);
-	let ringSize = $state(230);
-
-	function updateRingSize(): void {
-		if (typeof window === 'undefined') return;
-		const h = window.innerHeight;
-		const w = window.innerWidth;
-		if (h < 750 || w < 380) {
-			ringSize = 200;
-		} else if (h < 880 || w < 500) {
-			ringSize = 225;
-		} else {
-			ringSize = 260;
-		}
-	}
-
-	$effect(() => {
-		updateRingSize();
-	});
+	let showZoomModal = $state(false);
 
 	$effect(() => {
 		let cancelled = false;
@@ -97,14 +80,11 @@
 	});
 
 	onMount(() => {
-		updateRingSize();
-		window.addEventListener('resize', updateRingSize);
 		const onVis = () => {
 			if (document.visibilityState === 'visible' && player.status === 'running') void requestWake();
 		};
 		document.addEventListener('visibilitychange', onVis);
 		return () => {
-			window.removeEventListener('resize', updateRingSize);
 			document.removeEventListener('visibilitychange', onVis);
 			stopPlayer();
 		};
@@ -213,25 +193,75 @@
 		{/if}
 
 		{#if segment}
-			<div class="player-ring-section">
-				<div class="player-badge-row">
+			<div class="player-hero-stage">
+				<!-- Side Badge & Label Header -->
+				<div class="player-stage-header">
+					<div class="player-badge-row">
+						{#if segment.kind === 'break'}
+							<span class="side-badge break-badge">BREAK</span>
+						{:else if segment.side}
+							<span class="side-badge">{segment.side === 'left' ? 'LEFT SIDE' : 'RIGHT SIDE'}</span>
+						{:else}
+							<span class="side-badge side-badge-neutral">STRETCH</span>
+						{/if}
+					</div>
+					<h2 class="player-hero-title">{segment.label}</h2>
+				</div>
+
+				<!-- BIG HERO VISUAL -->
+				<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+				<div
+					class="player-hero-visual-card"
+					onclick={() => (showZoomModal = true)}
+					title="Tap to zoom"
+					role="button"
+					tabindex="0"
+				>
 					{#if segment.kind === 'break'}
-						<span class="side-badge break-badge">BREAK</span>
-					{:else if segment.side}
-						<span class="side-badge">{segment.side === 'left' ? 'LEFT SIDE' : 'RIGHT SIDE'}</span>
-					{:else}
-						<span class="side-badge side-badge-neutral">STRETCH</span>
+						<div class="player-break-hero">
+							<span class="player-break-icon">☕</span>
+							{#if nextSegment}
+								<div class="player-break-next-box">
+									<span class="player-next-sub">Next up</span>
+									<span class="player-next-main">{nextSegment.label}</span>
+								</div>
+							{/if}
+						</div>
+					{:else if photoUrl}
+						<img class="player-hero-photo" src={photoUrl} alt={segment.label} />
+					{:else if segment.stretch}
+						<div class="player-hero-illustration">
+							<StretchIllustration
+								iconKey={segment.stretch.iconKey}
+								name={segment.stretch.name}
+								size="100%"
+								rounded={16}
+								animated={true}
+							/>
+						</div>
 					{/if}
 				</div>
-				<ProgressRing progress={fraction} size={ringSize}>
-					<div class="time">{formatSeconds(player.remaining)}</div>
-					<div class="player-segment-name">{segment.label}</div>
-					{#if segment.kind === 'break' && nextSegment}
-						<div class="muted small player-next-cue">Next: {nextSegment.label}</div>
-					{/if}
-				</ProgressRing>
+
+				<!-- PROMINENT COUNTDOWN & SEGMENT RING TIMER -->
+				<div class="player-timer-strip">
+					<div class="player-mini-ring-wrap">
+						<ProgressRing progress={fraction} size={76} stroke={7}>
+							<span class="player-ring-inner-time">{player.remaining}</span>
+						</ProgressRing>
+					</div>
+
+					<div class="player-timer-info">
+						<div class="time">{formatSeconds(player.remaining)}</div>
+						{#if segment.kind === 'break' && nextSegment}
+							<span class="muted small player-cue-text">Prepare for {nextSegment.label}</span>
+						{:else if segment.stretch?.description}
+							<p class="player-cue-text">{segment.stretch.description}</p>
+						{/if}
+					</div>
+				</div>
 			</div>
 
+			<!-- Routine Progress Bar -->
 			<div class="player-progress" aria-label={`Routine progress: ${Math.round(routineProgress * 100)} percent`}>
 				<div class="spread small muted" style="margin-bottom: 0.2rem">
 					<span>Progress</span>
@@ -239,28 +269,6 @@
 				</div>
 				<div class="progress-track"><div class="progress-fill" style={`width: ${routineProgress * 100}%`}></div></div>
 			</div>
-
-			{#if segment.stretch}
-				<div class="player-info-strip">
-					{#if photoUrl}
-						<img class="player-strip-photo" src={photoUrl} alt={segment.label} />
-					{:else}
-						<div class="player-strip-photo-wrap">
-							<StretchIllustration
-								iconKey={segment.stretch.iconKey}
-								name={segment.stretch.name}
-								size={54}
-								rounded={8}
-							/>
-						</div>
-					{/if}
-					{#if segment.stretch.description}
-						<div class="player-desc-box">
-							<p class="player-desc-text">{segment.stretch.description}</p>
-						</div>
-					{/if}
-				</div>
-			{/if}
 		{/if}
 
 		<div class="player-controls">
@@ -288,6 +296,53 @@
 			</div>
 		</div>
 	</div>
+
+	<!-- Fullscreen / Zoom Modal for Player Visual -->
+	{#if showZoomModal && segment}
+		<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+		<div class="modal-backdrop" onclick={() => (showZoomModal = false)}>
+			<div class="modal-sheet player-zoom-modal" onclick={(e) => e.stopPropagation()}>
+				<div class="modal-header">
+					<div>
+						<h2 style="font-size: 1.25rem; margin: 0">{segment.label}</h2>
+						{#if segment.side}
+							<span class="badge" style="margin-top: 0.2rem">
+								{segment.side === 'left' ? 'Left side' : 'Right side'}
+							</span>
+						{/if}
+					</div>
+					<button class="icon-btn close-modal-btn" onclick={() => (showZoomModal = false)} aria-label="Close">✕</button>
+				</div>
+
+				<div class="player-zoom-content">
+					{#if photoUrl}
+						<img class="player-zoom-photo" src={photoUrl} alt={segment.label} />
+					{:else if segment.stretch}
+						<div class="player-zoom-ill-wrap">
+							<StretchIllustration
+								iconKey={segment.stretch.iconKey}
+								name={segment.stretch.name}
+								size={280}
+								rounded={18}
+								animated={true}
+							/>
+						</div>
+					{/if}
+
+					{#if segment.stretch?.description}
+						<div class="player-zoom-desc-box">
+							<span class="player-zoom-desc-title">Posture Guidance</span>
+							<p class="player-zoom-desc-text">{segment.stretch.description}</p>
+						</div>
+					{/if}
+				</div>
+
+				<button class="btn primary small" style="width: 100%; font-weight: 700" onclick={() => (showZoomModal = false)}>
+					Return to Timer
+				</button>
+			</div>
+		</div>
+	{/if}
 
 	{#if player.status === 'finished'}
 		<div class="finish-overlay">

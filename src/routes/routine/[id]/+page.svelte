@@ -10,6 +10,7 @@
 	import Stepper from '$lib/components/Stepper.svelte';
 	import PhotoPicker from '$lib/components/PhotoPicker.svelte';
 	import PhotoThumb from '$lib/components/PhotoThumb.svelte';
+	import StretchIllustration from '$lib/components/StretchIllustration.svelte';
 	import StockStretchPicker from '$lib/components/StockStretchPicker.svelte';
 
 	const routine = $derived(getRoutine(page.params.id ?? '') ?? null);
@@ -23,10 +24,27 @@
 
 	let editingId = $state<string | null>(null);
 	let showPicker = $state(false);
+	let previewStretch = $state<Stretch | null>(null);
+	let previewPhotoUrl = $state<string | null>(null);
+
 	let dragIndex = $state<number | null>(null);
 	let overIndex = $state<number | null>(null);
 	let touchDraggingIndex = $state<number | null>(null);
 	let touchOverIndex = $state<number | null>(null);
+
+	$effect(() => {
+		if (previewStretch?.photoId) {
+			getPhotoData(previewStretch.photoId)
+				.then((url) => {
+					previewPhotoUrl = url;
+				})
+				.catch(() => {
+					previewPhotoUrl = null;
+				});
+		} else {
+			previewPhotoUrl = null;
+		}
+	});
 
 	function handleSelectStock(stock: StockStretch): void {
 		if (!routine) return;
@@ -61,6 +79,7 @@
 		saveAll();
 		if (removed.photoId) void deletePhotoData(removed.photoId).catch(() => {});
 		if (editingId === removed.id) editingId = null;
+		if (previewStretch?.id === removed.id) previewStretch = null;
 	}
 
 	async function duplicateStretch(index: number): Promise<void> {
@@ -269,9 +288,28 @@
 					>⠿</span
 				>
 
-				<PhotoThumb photoId={s.photoId} iconKey={s.iconKey} name={s.name} />
+				<!-- Clickable thumbnail to open large modal -->
+				<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+				<div
+					class="stretch-thumb-click-wrap"
+					onclick={() => (previewStretch = s)}
+					title="Click to view large preview"
+					role="button"
+					tabindex="0"
+				>
+					<PhotoThumb photoId={s.photoId} iconKey={s.iconKey} name={s.name} />
+				</div>
 
-				<div class="stretch-main">
+				<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+				<div
+					class="stretch-main"
+					class:clickable-area={editingId !== s.id}
+					onclick={() => {
+						if (editingId !== s.id) {
+							previewStretch = s;
+						}
+					}}
+				>
 					{#if editingId === s.id}
 						<input
 							type="text"
@@ -312,7 +350,8 @@
 			</div>
 
 			{#if s.description && editingId !== s.id}
-				<div class="stretch-desc-preview">
+				<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+				<div class="stretch-desc-preview clickable-area" onclick={() => (previewStretch = s)}>
 					<p>{s.description}</p>
 				</div>
 			{/if}
@@ -342,7 +381,7 @@
 									saveAll();
 								}}
 							/>
-							One side
+							One side / single countdown
 						</span>
 						<span>
 							<input
@@ -393,4 +432,153 @@
 			onclose={() => (showPicker = false)}
 		/>
 	{/if}
+
+	{#if previewStretch}
+		<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+		<div class="modal-backdrop" onclick={() => (previewStretch = null)}>
+			<div class="modal-sheet stretch-view-modal" onclick={(e) => e.stopPropagation()}>
+				<div class="modal-header">
+					<div>
+						<div class="row" style="gap: 0.35rem; margin-bottom: 0.2rem">
+							<span class="badge" style="background: var(--accent); color: #fff; font-weight: 700">
+								⏱ {stretchDurationLabel(previewStretch)}
+							</span>
+							{#if previewStretch.sides === 'two'}
+								<span class="badge">Two sides (L → R)</span>
+							{:else}
+								<span class="badge">Single side</span>
+							{/if}
+						</div>
+						<h2 style="font-size: 1.35rem; margin: 0">{previewStretch.name || 'Untitled Stretch'}</h2>
+					</div>
+					<button class="icon-btn close-modal-btn" onclick={() => (previewStretch = null)} aria-label="Close">✕</button>
+				</div>
+
+				<div class="stretch-view-content">
+					<div class="stretch-view-media">
+						{#if previewPhotoUrl}
+							<img class="stretch-view-big-photo" src={previewPhotoUrl} alt={previewStretch.name} />
+						{:else}
+							<StretchIllustration
+								iconKey={previewStretch.iconKey}
+								name={previewStretch.name}
+								size={220}
+								rounded={16}
+							/>
+						{/if}
+					</div>
+
+					{#if previewStretch.description}
+						<div class="stretch-view-desc-box">
+							<span class="stretch-view-desc-title">Posture & Guidance</span>
+							<p class="stretch-view-desc-text">{previewStretch.description}</p>
+						</div>
+					{/if}
+				</div>
+
+				<div class="stretch-view-actions">
+					<button
+						class="btn primary"
+						style="width: 100%; font-weight: 700"
+						onclick={() => {
+							if (previewStretch) {
+								editingId = previewStretch.id;
+								previewStretch = null;
+							}
+						}}
+					>
+						✏ Edit this stretch
+					</button>
+					<button class="btn ghost small" onclick={() => (previewStretch = null)}>
+						Close
+					</button>
+				</div>
+			</div>
+		</div>
+	{/if}
 {/if}
+
+<style>
+	.stretch-thumb-click-wrap {
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		transition: transform 0.1s ease;
+	}
+	.stretch-thumb-click-wrap:hover {
+		transform: scale(1.06);
+	}
+
+	.clickable-area {
+		cursor: pointer;
+	}
+
+	.stretch-view-modal {
+		max-width: 440px;
+		max-height: 90dvh;
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.stretch-view-content {
+		overflow-y: auto;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.85rem;
+		padding: 0.25rem 0;
+	}
+
+	.stretch-view-media {
+		width: 100%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		padding: 0.4rem 0;
+	}
+
+	.stretch-view-big-photo {
+		width: 100%;
+		max-width: 260px;
+		height: auto;
+		max-height: 220px;
+		object-fit: cover;
+		border-radius: 16px;
+		border: 1px solid var(--border);
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+	}
+
+	.stretch-view-desc-box {
+		width: 100%;
+		background: var(--surface-2);
+		border: 1px solid var(--border);
+		border-radius: 12px;
+		padding: 0.75rem 0.9rem;
+		text-align: left;
+	}
+
+	.stretch-view-desc-title {
+		display: block;
+		font-size: 0.76rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: var(--muted);
+		margin-bottom: 0.35rem;
+	}
+
+	.stretch-view-desc-text {
+		margin: 0;
+		font-size: 0.88rem;
+		line-height: 1.45;
+		color: var(--text);
+	}
+
+	.stretch-view-actions {
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+		flex-shrink: 0;
+	}
+</style>
