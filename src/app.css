@@ -862,6 +862,15 @@ textarea {
 	flex-shrink: 0;
 }
 
+.player-strip-photo-wrap {
+	height: 3.8rem;
+	width: auto;
+	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
 .player-desc-box {
 	background: color-mix(in srgb, var(--surface) 80%, transparent);
 	border: 1px solid var(--border);

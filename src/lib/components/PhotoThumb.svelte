@@ -1,7 +1,20 @@
 <script lang="ts">
-		import { getPhotoData } from '$lib/storage';
+	import { getPhotoData } from '$lib/storage';
+	import StretchIllustration from '$lib/components/StretchIllustration.svelte';
 
-	let { photoId }: { photoId: string | null } = $props();
+	let {
+		photoId = null,
+		iconKey,
+		name,
+		size = 44,
+		rounded = 8
+	}: {
+		photoId?: string | null;
+		iconKey?: string;
+		name?: string;
+		size?: number;
+		rounded?: number;
+	} = $props();
 
 	let url = $state<string | null>(null);
 
@@ -22,7 +35,12 @@
 </script>
 
 {#if url}
-	<img class="thumb-sm" src={url} alt="" />
+	<img
+		class="thumb-sm"
+		src={url}
+		alt={name || 'Stretch photo'}
+		style="width: {size}px; height: {Math.round(size * 0.8)}px; border-radius: {rounded}px; object-fit: cover;"
+	/>
 {:else}
-	<span class="thumb-ph">📷</span>
+	<StretchIllustration {iconKey} {name} {size} {rounded} />
 {/if}

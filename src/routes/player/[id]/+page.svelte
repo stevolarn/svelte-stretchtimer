@@ -21,6 +21,7 @@
 	import { currentStreak } from '$lib/streak';
 	import { getPhotoData } from '$lib/storage';
 	import ProgressRing from '$lib/components/ProgressRing.svelte';
+	import StretchIllustration from '$lib/components/StretchIllustration.svelte';
 
 	const routine = $derived(getRoutine(page.params.id ?? ''));
 	const total = $derived(routine ? timelineTotal(buildTimeline(routine, settings)) : 0);
@@ -239,12 +240,21 @@
 				<div class="progress-track"><div class="progress-fill" style={`width: ${routineProgress * 100}%`}></div></div>
 			</div>
 
-			{#if photoUrl || segment.stretch?.description}
+			{#if segment.stretch}
 				<div class="player-info-strip">
 					{#if photoUrl}
 						<img class="player-strip-photo" src={photoUrl} alt={segment.label} />
+					{:else}
+						<div class="player-strip-photo-wrap">
+							<StretchIllustration
+								iconKey={segment.stretch.iconKey}
+								name={segment.stretch.name}
+								size={54}
+								rounded={8}
+							/>
+						</div>
 					{/if}
-					{#if segment.stretch?.description}
+					{#if segment.stretch.description}
 						<div class="player-desc-box">
 							<p class="player-desc-text">{segment.stretch.description}</p>
 						</div>

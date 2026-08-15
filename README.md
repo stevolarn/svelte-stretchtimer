@@ -12,7 +12,15 @@ A fast, phone-first, 100% offline web app for building, timing, and tracking str
 - **Touch-Native Drag & Drop**: Smooth pointer-event drag-and-drop reordering with haptic feedback, alongside dedicated 1-tap `↑` / `↓` controls.
 - **Screen Wake Lock**: Automatically prevents your phone screen from dimming or sleeping during routine playback using the Screen Wake Lock API.
 
+### 🧘 Curated Stock Stretches Library & Illustrations
+- **Stock Stretches Catalog**: 20+ built-in stretching movements organized by category (Upper Body, Spine & Core, Hips & Glutes, Legs & Calves).
+- **1-Tap Stretch Adding**: Add ready-to-go stretches with pre-filled names, cues, sides, and recommended durations.
+- **Custom Stretch Support**: Create blank custom stretches at any time with custom names, durations, side configurations, and camera photos.
+- **Dynamic Vector Pose Artwork**: Crisp, modern SVG pose illustrations displayed in stretch cards, thumbnails, the picker modal, and during workout playback.
+
 ### ⏱ Accurate Timed Playback
+- **Live Total Routine Time**: Automatically computes and displays the live total time of any routine while creating or editing.
+- **Per-Routine Break Length**: Configure custom break intervals (`0s`, `5s`, `10s`...) per routine, with a 5-second global default.
 - **Adaptive Progress Ring**: High-contrast countdown timer with real-time circular SVG animation.
 - **Deadline-Based Timing**: Accurate millisecond-precise timing driven by `Date.now()` that never drifts even if backgrounded.
 - **Single & Two-Sided Stretches**: Configurable one-side or two-sided stretches (`Left` → beep → `Right`).

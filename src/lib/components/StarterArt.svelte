@@ -2,59 +2,84 @@
 	let { kind }: { kind: string } = $props();
 </script>
 
-<svg class="starter-art" viewBox="0 0 96 72" aria-hidden="true">
+<svg class="starter-art {kind}" viewBox="0 0 100 75" aria-hidden="true">
 	<defs>
-		<linearGradient id="art-bg" x1="0" x2="1" y1="0" y2="1">
-			<stop offset="0" stop-color="var(--art-a)" />
-			<stop offset="1" stop-color="var(--art-b)" />
+		<linearGradient id="grad-{kind}" x1="0" x2="1" y1="0" y2="1">
+			{#if kind === 'desk-reset'}
+				<stop offset="0%" stop-color="#38bdf8" stop-opacity="0.25" />
+				<stop offset="100%" stop-color="#0284c7" stop-opacity="0.85" />
+			{:else if kind === 'morning-mobility'}
+				<stop offset="0%" stop-color="#fbbf24" stop-opacity="0.3" />
+				<stop offset="100%" stop-color="#f97316" stop-opacity="0.8" />
+			{:else if kind === 'bedtime-wind-down'}
+				<stop offset="0%" stop-color="#a855f7" stop-opacity="0.25" />
+				<stop offset="100%" stop-color="#6366f1" stop-opacity="0.85" />
+			{:else if kind === 'lower-body-reset'}
+				<stop offset="0%" stop-color="#34d399" stop-opacity="0.25" />
+				<stop offset="100%" stop-color="#059669" stop-opacity="0.8" />
+			{:else if kind === 'runner-recovery'}
+				<stop offset="0%" stop-color="#f43f5e" stop-opacity="0.25" />
+				<stop offset="100%" stop-color="#e11d48" stop-opacity="0.8" />
+			{:else}
+				<stop offset="0%" stop-color="#2dd4bf" stop-opacity="0.25" />
+				<stop offset="100%" stop-color="#0d9488" stop-opacity="0.85" />
+			{/if}
 		</linearGradient>
 	</defs>
-	<rect width="96" height="72" rx="16" fill="url(#art-bg)" />
+
+	<!-- Rounded Cover Box -->
+	<rect width="100" height="75" rx="14" fill="url(#grad-{kind})" />
 
 	{#if kind === 'desk-reset'}
-		<circle cx="27" cy="24" r="7" fill="#f6c9a9" />
-		<path d="M22 32c1-5 10-5 12 0l4 14H24z" fill="#30415d" />
-		<path d="M36 37l14 5 7-8" fill="none" stroke="#f6c9a9" stroke-linecap="round" stroke-width="4" />
-		<path d="M48 49h32M55 42v16" fill="none" stroke="#fff" stroke-linecap="round" stroke-width="3" opacity=".9" />
-		<rect x="58" y="25" width="20" height="15" rx="2" fill="#fff" opacity=".9" />
-		<path d="M63 29h10M63 33h7" stroke="#93a7c3" stroke-linecap="round" stroke-width="2" />
+		<!-- Sitting at desk, neck/shoulder release -->
+		<circle cx="32" cy="24" r="8" fill="#fde047" />
+		<path d="M26 34c3-4 10-4 13 0l3 16H23z" fill="#0f172a" />
+		<path d="M38 38l14 4 6-6" fill="none" stroke="#fde047" stroke-linecap="round" stroke-width="4" />
+		<path d="M46 54h36M54 44v22" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-width="3" opacity=".95" />
+		<rect x="58" y="27" width="22" height="15" rx="3" fill="#ffffff" opacity=".95" />
+		<path d="M63 32h12M63 36h8" stroke="#38bdf8" stroke-linecap="round" stroke-width="2" />
 	{:else if kind === 'morning-mobility'}
-		<circle cx="73" cy="19" r="9" fill="#ffd66b" />
-		<path d="M10 52c12-14 24-18 37-16 11 1 20 7 38 1" fill="none" stroke="#fff" stroke-linecap="round" stroke-width="3" opacity=".8" />
-		<circle cx="43" cy="25" r="6" fill="#f6c9a9" />
-		<path d="M42 32l-4 14 12 7M40 36l-13 7M39 46l-10 9M48 52l13 4" fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" />
+		<!-- Sunrise morning stretch -->
+		<circle cx="78" cy="18" r="10" fill="#fde047" />
+		<path d="M12 56c14-14 26-18 40-16 12 1 22 7 40 1" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-width="3.5" opacity=".85" />
+		<circle cx="44" cy="24" r="7" fill="#fde047" />
+		<path d="M44 32l-5 16 14 8M42 36l-14 8M41 48l-12 10M50 56l14 4" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="4.5" />
 	{:else if kind === 'bedtime-wind-down'}
-		<path d="M69 13a16 16 0 1 0 9 25A14 14 0 1 1 69 13z" fill="#fff" opacity=".9" />
-		<circle cx="25" cy="22" r="5" fill="#f6c9a9" />
-		<path d="M30 30c8-4 17 0 21 7l7 9H30c-8 0-11-9 0-16z" fill="#fff" opacity=".92" />
-		<path d="M28 46h45" stroke="#9e83bd" stroke-linecap="round" stroke-width="3" />
-		<circle cx="80" cy="21" r="1.5" fill="#fff" /><circle cx="84" cy="31" r="1.5" fill="#fff" />
+		<!-- Crescent moon and child's pose -->
+		<path d="M74 12a15 15 0 1 0 10 24A13 13 0 1 1 74 12z" fill="#ffffff" opacity=".95" />
+		<circle cx="86" cy="20" r="1.5" fill="#fde047" /><circle cx="90" cy="30" r="1.5" fill="#fde047" />
+		<circle cx="28" cy="46" r="6" fill="#fde047" />
+		<path d="M34 50c12-10 24-8 38 0H18" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="5" />
+		<path d="M14 62h72" stroke="#ffffff" stroke-linecap="round" stroke-width="2.5" opacity=".7" />
 	{:else if kind === 'lower-body-reset'}
-		<circle cx="48" cy="17" r="6" fill="#f6c9a9" />
-		<path d="M47 24l-2 17M46 29l-16 10M45 40l-13 16M45 40l20 10 9-1M31 56l-7 4M74 49l8 4" fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" />
-		<path d="M15 58h66" stroke="#b6dbcf" stroke-linecap="round" stroke-width="3" opacity=".9" />
+		<!-- Deep lunge / leg stretch -->
+		<circle cx="50" cy="18" r="7" fill="#fde047" />
+		<path d="M49 26v16" stroke="#ffffff" stroke-linecap="round" stroke-width="5.5" />
+		<path d="M49 42l20 4v16" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="5" />
+		<path d="M49 42l-22 8 8 12" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="5" />
+		<path d="M14 62h74" stroke="#ffffff" stroke-linecap="round" stroke-width="3" opacity=".8" />
 	{:else if kind === 'runner-recovery'}
-		<circle cx="48" cy="16" r="6" fill="#f6c9a9" />
-		<path d="M47 23l-5 15 12 8 12-10M43 31L28 28M54 45l-8 13M54 45l17 8M27 28l-7 6" fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" />
-		<path d="M13 58h70" stroke="#ffc46b" stroke-linecap="round" stroke-width="3" /><path d="M17 52l7-3M74 48l7-3" stroke="#fff" stroke-linecap="round" stroke-width="2" opacity=".8" />
+		<!-- Runner standing quad/hamstring stretch -->
+		<circle cx="48" cy="16" r="7" fill="#fde047" />
+		<path d="M48 24v20M48 44v20" stroke="#ffffff" stroke-linecap="round" stroke-width="5.5" />
+		<path d="M48 44l-14 10 4-18" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="5" />
+		<path d="M48 30l-10 6" stroke="#fde047" stroke-linecap="round" stroke-width="4.5" />
+		<path d="M14 64h72" stroke="#ffffff" stroke-linecap="round" stroke-width="2.5" opacity=".7" />
 	{:else}
-		<circle cx="48" cy="17" r="6" fill="#f6c9a9" />
-		<path d="M48 24v20M48 28L25 16M48 28l23-12M48 44L34 59M48 44l14 15" fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" />
-		<circle cx="24" cy="15" r="4" fill="#ffd66b" /><circle cx="72" cy="15" r="4" fill="#ffd66b" />
+		<!-- Full body reach star -->
+		<circle cx="50" cy="20" r="7" fill="#fde047" />
+		<path d="M50 28v20M50 48L32 66M50 48l18 18" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="5" />
+		<path d="M50 32L24 16M50 32l26-16" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="5" />
+		<circle cx="22" cy="14" r="4.5" fill="#fde047" /><circle cx="78" cy="14" r="4.5" fill="#fde047" />
 	{/if}
-	</svg>
+</svg>
 
 <style>
 	.starter-art {
-		--art-a: #d9ecff;
-		--art-b: #8fc5e7;
 		display: block;
 		width: 100%;
 		height: auto;
 		border-radius: 0.9rem;
-	}
-	:global(html.dark) .starter-art {
-		--art-a: #30445f;
-		--art-b: #526f8c;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 	}
 </style>

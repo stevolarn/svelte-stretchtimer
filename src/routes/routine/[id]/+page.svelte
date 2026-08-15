@@ -6,10 +6,11 @@
 	import { buildTimeline, stretchDurationLabel, timelineTotal } from '$lib/timeline';
 	import { formatSeconds } from '$lib/time';
 	import { uid } from '$lib/util';
-	import { type Stretch } from '$lib/types';
+	import { type Stretch, type StockStretch } from '$lib/types';
 	import Stepper from '$lib/components/Stepper.svelte';
 	import PhotoPicker from '$lib/components/PhotoPicker.svelte';
 	import PhotoThumb from '$lib/components/PhotoThumb.svelte';
+	import StockStretchPicker from '$lib/components/StockStretchPicker.svelte';
 
 	const routine = $derived(getRoutine(page.params.id ?? '') ?? null);
 	const total = $derived(routine ? timelineTotal(buildTimeline(routine, settings)) : 0);
@@ -21,17 +22,37 @@
 	});
 
 	let editingId = $state<string | null>(null);
+	let showPicker = $state(false);
 	let dragIndex = $state<number | null>(null);
 	let overIndex = $state<number | null>(null);
 	let touchDraggingIndex = $state<number | null>(null);
 	let touchOverIndex = $state<number | null>(null);
 
-	function addStretch(): void {
+	function handleSelectStock(stock: StockStretch): void {
+		if (!routine) return;
+		const s: Stretch = {
+			id: uid(),
+			name: stock.name,
+			description: stock.description,
+			sides: stock.sides,
+			durationSeconds: stock.defaultSeconds,
+			leftSeconds: stock.defaultSeconds,
+			rightSeconds: stock.defaultSeconds,
+			photoId: null,
+			iconKey: stock.iconKey
+		};
+		routine.stretches.push(s);
+		saveAll();
+		showPicker = false;
+	}
+
+	function handleAddCustom(): void {
 		if (!routine) return;
 		const s = newStretch();
 		routine.stretches.push(s);
 		saveAll();
 		editingId = s.id;
+		showPicker = false;
 	}
 
 	function deleteStretch(index: number): void {
@@ -200,7 +221,7 @@
 
 	<div class="spread" style="margin-bottom: 0.6rem">
 		<h2 style="font-size: 1.1rem">Stretches</h2>
-		<button class="btn primary small" onclick={addStretch}>＋ Add stretch</button>
+		<button class="btn primary small" onclick={() => (showPicker = true)}>＋ Add stretch</button>
 	</div>
 
 	{#if routine.stretches.length === 0}
@@ -248,7 +269,7 @@
 					>⠿</span
 				>
 
-				<PhotoThumb photoId={s.photoId} />
+				<PhotoThumb photoId={s.photoId} iconKey={s.iconKey} name={s.name} />
 
 				<div class="stretch-main">
 					{#if editingId === s.id}
@@ -364,4 +385,12 @@
 			</div>
 		{/if}
 	{/each}
+
+	{#if showPicker}
+		<StockStretchPicker
+			onselect={handleSelectStock}
+			oncustom={handleAddCustom}
+			onclose={() => (showPicker = false)}
+		/>
+	{/if}
 {/if}

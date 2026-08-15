@@ -67,55 +67,55 @@ const starterDefinitions: Record<StarterRoutineKind, { name: string; stretches: 
 	'desk-reset': {
 		name: 'Desk reset',
 		stretches: [
-			{ name: 'Neck release', description: 'Relax your shoulders and gently look left and right.', sides: 'one', durationSeconds: 30 },
-			{ name: 'Shoulder rolls', description: 'Roll slowly backwards, then reverse direction.', sides: 'one', durationSeconds: 45 },
-			{ name: 'Wrist and forearm stretch', description: 'Keep your elbow straight and use the other hand for light pressure.', sides: 'two', durationSeconds: 30 },
-			{ name: 'Chest opener', description: 'Clasp your hands behind you or rest them on your lower back.', sides: 'one', durationSeconds: 45 }
+			{ name: 'Neck release', description: 'Relax your shoulders and gently look left and right.', sides: 'one', durationSeconds: 30, iconKey: 'neck-release' },
+			{ name: 'Shoulder rolls', description: 'Roll slowly backwards, then reverse direction.', sides: 'one', durationSeconds: 45, iconKey: 'shoulder-rolls' },
+			{ name: 'Wrist and forearm stretch', description: 'Keep your elbow straight and use the other hand for light pressure.', sides: 'two', durationSeconds: 30, iconKey: 'wrist-forearm' },
+			{ name: 'Chest opener', description: 'Clasp your hands behind you or rest them on your lower back.', sides: 'one', durationSeconds: 45, iconKey: 'chest-opener' }
 		]
 	},
 	'morning-mobility': {
 		name: 'Morning mobility',
 		stretches: [
-			{ name: 'Cat-cow', description: 'Move slowly between a rounded and gently extended spine.', sides: 'one', durationSeconds: 60 },
-			{ name: 'Low lunge', description: 'Keep your hips facing forward and breathe into the front of the hip.', sides: 'two', durationSeconds: 45 },
-			{ name: 'Standing side bend', description: 'Reach overhead and lengthen through the side body.', sides: 'two', durationSeconds: 30 },
-			{ name: 'Forward fold', description: 'Soften your knees and let your head and neck relax.', sides: 'one', durationSeconds: 60 }
+			{ name: 'Cat-cow', description: 'Move slowly between a rounded and gently extended spine.', sides: 'one', durationSeconds: 60, iconKey: 'cat-cow' },
+			{ name: 'Low lunge', description: 'Keep your hips facing forward and breathe into the front of the hip.', sides: 'two', durationSeconds: 45, iconKey: 'low-lunge' },
+			{ name: 'Standing side bend', description: 'Reach overhead and lengthen through the side body.', sides: 'two', durationSeconds: 30, iconKey: 'standing-side-bend' },
+			{ name: 'Forward fold', description: 'Soften your knees and let your head and neck relax.', sides: 'one', durationSeconds: 60, iconKey: 'forward-fold' }
 		]
 	},
 	'bedtime-wind-down': {
 		name: 'Bedtime wind-down',
 		stretches: [
-			{ name: 'Child’s pose', description: 'Let your breath slow down as your back and shoulders relax.', sides: 'one', durationSeconds: 60 },
-			{ name: 'Seated forward fold', description: 'Keep the stretch gentle and let your neck soften.', sides: 'one', durationSeconds: 60 },
-			{ name: 'Reclined twist', description: 'Keep both shoulders heavy and move slowly between sides.', sides: 'two', durationSeconds: 45 },
-			{ name: 'Quiet breathing', description: 'Use this final minute to settle into a calm, comfortable rhythm.', sides: 'one', durationSeconds: 60 }
+			{ name: 'Child’s pose', description: 'Let your breath slow down as your back and shoulders relax.', sides: 'one', durationSeconds: 60, iconKey: 'childs-pose' },
+			{ name: 'Seated forward fold', description: 'Keep the stretch gentle and let your neck soften.', sides: 'one', durationSeconds: 60, iconKey: 'hamstring-fold' },
+			{ name: 'Reclined twist', description: 'Keep both shoulders heavy and move slowly between sides.', sides: 'two', durationSeconds: 45, iconKey: 'seated-twist' },
+			{ name: 'Quiet breathing', description: 'Use this final minute to settle into a calm, comfortable rhythm.', sides: 'one', durationSeconds: 60, iconKey: 'neck-release' }
 		]
 	},
 	'lower-body-reset': {
 		name: 'Lower-body reset',
 		stretches: [
-			{ name: 'Calf stretch', description: 'Press through the heel and keep the toes pointing ahead.', sides: 'two', durationSeconds: 45 },
-			{ name: 'Quad stretch', description: 'Keep your knees close and hold onto a wall if needed.', sides: 'two', durationSeconds: 45 },
-			{ name: 'Hamstring fold', description: 'Hinge from the hips and avoid forcing the range of motion.', sides: 'two', durationSeconds: 45 },
-			{ name: 'Hip flexor lunge', description: 'Tuck the pelvis gently and breathe into the front of the hip.', sides: 'two', durationSeconds: 45 }
+			{ name: 'Calf stretch', description: 'Press through the heel and keep the toes pointing ahead.', sides: 'two', durationSeconds: 45, iconKey: 'standing-calf' },
+			{ name: 'Quad stretch', description: 'Keep your knees close and hold onto a wall if needed.', sides: 'two', durationSeconds: 45, iconKey: 'quad-stretch' },
+			{ name: 'Hamstring fold', description: 'Hinge from the hips and avoid forcing the range of motion.', sides: 'two', durationSeconds: 45, iconKey: 'hamstring-fold' },
+			{ name: 'Hip flexor lunge', description: 'Tuck the pelvis gently and breathe into the front of the hip.', sides: 'two', durationSeconds: 45, iconKey: 'hip-flexor-release' }
 		]
 	},
 	'runner-recovery': {
 		name: 'Runner’s recovery',
 		stretches: [
-			{ name: 'Standing calf stretch', description: 'Use a wall for balance and ease the heel toward the floor.', sides: 'two', durationSeconds: 45 },
-			{ name: 'Figure-four stretch', description: 'Sit back slowly while keeping your standing knee comfortable.', sides: 'two', durationSeconds: 45 },
-			{ name: 'Hip flexor release', description: 'Keep your ribs stacked over your hips and breathe steadily.', sides: 'two', durationSeconds: 45 },
-			{ name: 'Forward fold', description: 'Finish with a relaxed fold and a few easy breaths.', sides: 'one', durationSeconds: 60 }
+			{ name: 'Standing calf stretch', description: 'Use a wall for balance and ease the heel toward the floor.', sides: 'two', durationSeconds: 45, iconKey: 'standing-calf' },
+			{ name: 'Figure-four stretch', description: 'Sit back slowly while keeping your standing knee comfortable.', sides: 'two', durationSeconds: 45, iconKey: 'pigeon-pose' },
+			{ name: 'Hip flexor release', description: 'Keep your ribs stacked over your hips and breathe steadily.', sides: 'two', durationSeconds: 45, iconKey: 'hip-flexor-release' },
+			{ name: 'Forward fold', description: 'Finish with a relaxed fold and a few easy breaths.', sides: 'one', durationSeconds: 60, iconKey: 'forward-fold' }
 		]
 	},
 	'full-body-mobility': {
 		name: 'Full-body mobility',
 		stretches: [
-			{ name: 'Overhead reach', description: 'Reach through both hands and lengthen from your feet to your fingertips.', sides: 'one', durationSeconds: 45 },
-			{ name: 'Thoracic rotation', description: 'Rotate from your upper back while keeping your hips steady.', sides: 'two', durationSeconds: 45 },
-			{ name: 'World’s greatest stretch', description: 'Move between the lunge and rotation with control.', sides: 'two', durationSeconds: 60 },
-			{ name: 'Full-body fold', description: 'Breathe out and release any remaining tension.', sides: 'one', durationSeconds: 60 }
+			{ name: 'Overhead reach', description: 'Reach through both hands and lengthen from your feet to your fingertips.', sides: 'one', durationSeconds: 45, iconKey: 'overhead-reach' },
+			{ name: 'Thoracic rotation', description: 'Rotate from your upper back while keeping your hips steady.', sides: 'two', durationSeconds: 45, iconKey: 'thoracic-rotation' },
+			{ name: 'World’s greatest stretch', description: 'Move between the lunge and rotation with control.', sides: 'two', durationSeconds: 60, iconKey: 'worlds-greatest' },
+			{ name: 'Full-body fold', description: 'Breathe out and release any remaining tension.', sides: 'one', durationSeconds: 60, iconKey: 'forward-fold' }
 		]
 	}
 };
@@ -271,7 +271,8 @@ export async function importBackup(raw: string): Promise<{ added: number; skippe
 				durationSeconds: typeof item.durationSeconds === 'number' ? item.durationSeconds : 30,
 				leftSeconds: typeof item.leftSeconds === 'number' ? item.leftSeconds : 30,
 				rightSeconds: typeof item.rightSeconds === 'number' ? item.rightSeconds : 30,
-				photoId: null
+				photoId: null,
+				iconKey: typeof item.iconKey === 'string' ? item.iconKey : undefined
 			};
 			if (originalPhotoId && typeof photos[originalPhotoId] === 'string') {
 				stretch.photoId = uid();

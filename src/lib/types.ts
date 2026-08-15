@@ -12,6 +12,20 @@ export interface Stretch {
 	rightSeconds: number;
 	/** key into the IndexedDB photo store, null when no photo */
 	photoId: string | null;
+	/** key for stock illustration (e.g. 'cat-cow', 'childs-pose') */
+	iconKey?: string;
+}
+
+export type StockCategory = 'all' | 'upper-body' | 'spine' | 'hips' | 'legs';
+
+export interface StockStretch {
+	id: string;
+	name: string;
+	category: 'upper-body' | 'spine' | 'hips' | 'legs';
+	description: string;
+	sides: 'one' | 'two';
+	defaultSeconds: number;
+	iconKey: string;
 }
 
 export interface Routine {
