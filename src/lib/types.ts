@@ -4,9 +4,10 @@ export interface Stretch {
 	id: string;
 	name: string;
 	description: string;
-	/** one = single duration, two = left/right sides with independent durations */
+	/** one = single duration, two = left/right sides sharing this duration */
 	sides: 'one' | 'two';
 	durationSeconds: number;
+	/** Legacy fields retained so older local data and backups remain readable. */
 	leftSeconds: number;
 	rightSeconds: number;
 	/** key into the IndexedDB photo store, null when no photo */

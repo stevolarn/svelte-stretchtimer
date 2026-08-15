@@ -9,8 +9,8 @@ in `localStorage` (routines, settings, streak) and IndexedDB (photos).
 - **Build routines** — add, edit, reorder (drag handle or ↑/↓ arrows), duplicate, and delete named
   stretches; each with an optional photo (file picker, downscaled into app-private IndexedDB
   storage), a description, and a duration.
-- **One- or two-sided stretches** — two-sided stretches play Left → beep → Right with independent
-  per-side durations.
+- **One- or two-sided stretches** — two-sided stretches play Left → beep → Right with one shared
+	duration set once for both sides.
 - **Timed playback** — full-screen player with a progress ring, mm:ss countdown, current photo and
   description, Left/Right badge, "Next: …" during breaks, and pause/resume, back, skip, and restart
   controls. Timing is deadline-based (`Date.now()`), so the countdown stays accurate when the tab is
@@ -20,6 +20,12 @@ in `localStorage` (routines, settings, streak) and IndexedDB (photos).
 - **Optional fixed breaks** between stretches, configured in Settings.
 - **Streaks** — finishing a routine credits the day; consecutive days build a streak and missing a
   day breaks it. Every 7 completed days earns a **streak fixer** that repairs the most recent break.
+- **Quick starts** — begin with Desk reset or Morning mobility templates and customize them like any
+  other routine.
+- **Routine library tools** — search and sort routines, plus export/import versioned JSON backups that
+  include locally stored photos. Restores are additive and generate fresh ids.
+- **Player navigation** — see whole-routine progress and jump directly to any stretch or break from
+  the in-player routine map.
 - **Polish** — light/dark/system theme, seconds steppers on all duration fields.
 
 ## Develop

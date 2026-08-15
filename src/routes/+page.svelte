@@ -4,10 +4,14 @@
 		addRoutine,
 		deleteRoutine,
 		duplicateRoutine,
+		exportBackup,
+		importBackup,
 		newRoutine,
 		routines,
 		settings,
-		streak
+		streak,
+		starterRoutine,
+		type StarterRoutineKind
 	} from '$lib/stores.svelte';
 	import { buildTimeline, timelineTotal } from '$lib/timeline';
 	import { currentStreak, fixersAvailable, fixerProgress } from '$lib/streak';
@@ -26,6 +30,54 @@
 
 	function edit(r: Routine): void {
 		goto(`/routine/${r.id}`);
+	}
+
+	let query = $state('');
+	let sort = $state<'recent' | 'name' | 'duration'>('recent');
+	let importStatus = $state('');
+	let importing = $state(false);
+
+	const visibleRoutines = $derived(
+		routines
+			.filter((r) => r.name.toLowerCase().includes(query.trim().toLowerCase()))
+			.toSorted((a, b) => {
+				if (sort === 'name') return a.name.localeCompare(b.name);
+				if (sort === 'duration') return timelineTotal(buildTimeline(b, settings)) - timelineTotal(buildTimeline(a, settings));
+				return b.createdAt - a.createdAt;
+			})
+	);
+
+	function addTemplate(kind: StarterRoutineKind): void {
+		const routine = starterRoutine(kind);
+		addRoutine(routine);
+		goto(`/routine/${routine.id}`);
+	}
+
+	async function downloadBackup(): Promise<void> {
+		const blob = new Blob([await exportBackup()], { type: 'application/json' });
+		const url = URL.createObjectURL(blob);
+		const link = document.createElement('a');
+		link.href = url;
+		link.download = `stretch-timer-backup-${new Date().toISOString().slice(0, 10)}.json`;
+		link.click();
+		URL.revokeObjectURL(url);
+		importStatus = 'Backup downloaded.';
+	}
+
+	async function restoreBackup(event: Event): Promise<void> {
+		const input = event.currentTarget as HTMLInputElement;
+		const file = input.files?.[0];
+		if (!file) return;
+		importing = true;
+		try {
+			const result = await importBackup(await file.text());
+			importStatus = `${result.added} routine${result.added === 1 ? '' : 's'} restored${result.skipped ? ` · ${result.skipped} skipped` : ''}.`;
+		} catch (error) {
+			importStatus = error instanceof Error ? error.message : 'Could not restore that backup.';
+		} finally {
+			importing = false;
+			input.value = '';
+		}
 	}
 
 	function remove(r: Routine): void {
@@ -60,15 +112,54 @@
 
 <div class="spread" style="margin-bottom: 0.9rem">
 	<h1 style="font-size: 1.3rem">Routines</h1>
-	<button class="btn primary" onclick={createRoutine}>＋ New routine</button>
+	<div class="row">
+		<button class="btn small" onclick={downloadBackup}>⇩ Back up</button>
+		<label class="btn small" class:disabled={importing}>
+			⇧ Restore
+			<input class="sr-only" type="file" accept="application/json,.json" onchange={restoreBackup} disabled={importing} />
+		</label>
+		<button class="btn primary" onclick={createRoutine}>＋ New routine</button>
+	</div>
 </div>
+
+<section class="card quick-start" style="margin-bottom: 0.9rem">
+	<div class="spread">
+		<div>
+			<h2>Quick starts</h2>
+			<p class="muted small" style="margin: 0.15rem 0 0">Start with a guided routine, then customize it.</p>
+		</div>
+		<div class="row">
+			<button class="btn small" onclick={() => addTemplate('desk-reset')}>Desk reset · 3 min</button>
+			<button class="btn small" onclick={() => addTemplate('morning-mobility')}>Morning mobility · 5 min</button>
+		</div>
+	</div>
+</section>
+
+{#if routines.length > 0}
+	<div class="routine-tools">
+		<input type="text" bind:value={query} placeholder="Search routines" aria-label="Search routines" />
+		<select bind:value={sort} aria-label="Sort routines">
+			<option value="recent">Recently created</option>
+			<option value="name">Name</option>
+			<option value="duration">Longest first</option>
+		</select>
+	</div>
+{/if}
+
+{#if importStatus}
+	<p class="muted small import-status" role="status">{importStatus}</p>
+{/if}
 
 {#if routines.length === 0}
 	<div class="card">
 		<p class="muted" style="margin: 0">No routines yet. Create one to start timing your stretches.</p>
 	</div>
+{:else if visibleRoutines.length === 0}
+	<div class="card">
+		<p class="muted" style="margin: 0">No routines match “{query}”.</p>
+	</div>
 {:else}
-	{#each routines as r (r.id)}
+	{#each visibleRoutines as r (r.id)}
 		<div class="card routine-card">
 			<div class="spread">
 				<span class="routine-title">{r.name}</span>

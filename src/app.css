@@ -183,6 +183,22 @@ button {
 	opacity: 0.45;
 	cursor: not-allowed;
 }
+.btn.disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
+}
+
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
 
 .icon-btn {
 	border: none;
@@ -244,6 +260,30 @@ textarea {
 	justify-content: space-between;
 	gap: 0.5rem;
 	flex-wrap: wrap;
+}
+.quick-start {
+	background: color-mix(in srgb, var(--accent) 6%, var(--surface));
+}
+.routine-tools {
+	display: flex;
+	gap: 0.5rem;
+	margin-bottom: 0.75rem;
+}
+.routine-tools input {
+	flex: 1;
+	min-width: 0;
+}
+.routine-tools select {
+	background: var(--surface);
+	color: var(--text);
+	border: 1px solid var(--border);
+	border-radius: 10px;
+	padding: 0.55rem 0.65rem;
+	font: inherit;
+	font-size: 0.9rem;
+}
+.import-status {
+	margin: -0.35rem 0 0.7rem;
 }
 
 /* ----------------------------- dashboard ------------------------------ */
@@ -397,6 +437,66 @@ textarea {
 	align-items: center;
 	gap: 1rem;
 }
+.player-progress {
+	width: min(100%, 27rem);
+}
+.progress-track {
+	height: 0.45rem;
+	background: var(--surface-2);
+	border: 1px solid var(--border);
+	border-radius: 999px;
+	overflow: hidden;
+	margin-top: 0.35rem;
+}
+.progress-fill {
+	height: 100%;
+	background: var(--accent);
+	border-radius: inherit;
+	transition: width 0.2s linear;
+}
+.segment-map {
+	width: min(100%, 38rem);
+	padding: 0.5rem 0.7rem;
+	background: color-mix(in srgb, var(--surface) 75%, transparent);
+	border: 1px solid var(--border);
+	border-radius: 12px;
+}
+.segment-map-list {
+	display: flex;
+	gap: 0.35rem;
+	overflow-x: auto;
+	padding-bottom: 0.15rem;
+}
+.segment-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
+	flex: 0 0 auto;
+	border: 1px solid var(--border);
+	background: var(--surface-2);
+	color: var(--muted);
+	border-radius: 999px;
+	padding: 0.3rem 0.55rem;
+	font: inherit;
+	font-size: 0.75rem;
+	font-weight: 600;
+	cursor: pointer;
+	max-width: 11rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.segment-chip span {
+	font-variant-numeric: tabular-nums;
+}
+.segment-chip.current {
+	background: var(--accent);
+	border-color: var(--accent);
+	color: #fff;
+}
+.segment-chip.complete {
+	color: var(--ok);
+}
 .ctrl {
 	width: 3.6rem;
 	height: 3.6rem;
@@ -509,5 +609,14 @@ textarea {
 @media (max-width: 480px) {
 	.time {
 		font-size: 2.8rem;
+	}
+	.routine-tools {
+		flex-direction: column;
+	}
+	.quick-start .row {
+		width: 100%;
+	}
+	.quick-start .btn {
+		flex: 1;
 	}
 }

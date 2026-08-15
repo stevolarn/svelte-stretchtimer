@@ -244,15 +244,10 @@
 						<Stepper bind:value={s.durationSeconds} onchange={saveAll} />
 					</div>
 				{:else}
-					<div class="row" style="margin-bottom: 0.9rem">
-						<div class="field" style="margin: 0">
-							<span class="flabel">Left side</span>
-							<Stepper bind:value={s.leftSeconds} onchange={saveAll} />
-						</div>
-						<div class="field" style="margin: 0">
-							<span class="flabel">Right side</span>
-							<Stepper bind:value={s.rightSeconds} onchange={saveAll} />
-						</div>
+					<div class="field">
+						<span class="flabel">Duration for each side</span>
+						<Stepper bind:value={s.durationSeconds} onchange={saveAll} />
+						<div class="muted small" style="margin-top: 0.3rem">The same countdown is used for Left and Right.</div>
 					</div>
 				{/if}
 

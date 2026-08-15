@@ -179,6 +179,18 @@ export function skip(): void {
 	}
 }
 
+/** Jump directly to a segment from the in-player routine map. */
+export function jumpTo(index: number): void {
+	const settings = settingsSnapshot;
+	if (!settings || player.status === 'idle' || index < 0 || index >= player.segments.length) return;
+	enterSegment(index, settings);
+	if (player.status === 'finished') player.status = 'running';
+	if (player.status === 'running') {
+		startTimer();
+		updateTitle();
+	}
+}
+
 /** Restart the routine from the first segment (keeps playing). */
 export function restart(): void {
 	const settings = settingsSnapshot;

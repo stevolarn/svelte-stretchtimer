@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import {
 		back,
+		jumpTo,
 		player,
 		restart,
 		skip,
@@ -25,6 +26,11 @@
 	const nextSegment = $derived(player.segments[player.index + 1] ?? null);
 	const fraction = $derived(segment && segment.seconds > 0 ? player.remaining / segment.seconds : 0);
 	const streakNow = $derived(currentStreak(streak));
+	const segmentNumber = $derived(player.segments.length > 0 ? player.index + 1 : 0);
+	const routineElapsed = $derived(
+		player.segments.slice(0, player.index).reduce((sum, item) => sum + item.seconds, 0) + player.elapsed
+	);
+	const routineProgress = $derived(total > 0 ? Math.min(1, routineElapsed / total) : 0);
 
 	let photoUrl = $state<string | null>(null);
 
@@ -166,6 +172,14 @@
 				</ProgressRing>
 			</div>
 
+			<div class="player-progress" aria-label={`Routine progress: ${Math.round(routineProgress * 100)} percent`}>
+				<div class="spread small muted">
+					<span>Routine progress</span>
+					<span>{segmentNumber} / {player.segments.length} segments · {Math.round(routineProgress * 100)}%</span>
+				</div>
+				<div class="progress-track"><div class="progress-fill" style={`width: ${routineProgress * 100}%`}></div></div>
+			</div>
+
 			<div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; width: 100%">
 				{#if photoUrl}
 					<img class="stretch-photo" src={photoUrl} alt={segment.label} />
@@ -182,6 +196,24 @@
 				{player.status === 'paused' ? '▶' : '⏸'}
 			</button>
 			<button class="ctrl" onclick={skip} title="Skip">⏭</button>
+		</div>
+
+		<div class="segment-map" aria-label="Routine segments">
+			<div class="muted small" style="margin-bottom: 0.35rem">Routine map · tap a segment to jump</div>
+			<div class="segment-map-list">
+				{#each player.segments as item, i (i)}
+					<button
+						class="segment-chip"
+						class:current={i === player.index}
+						class:complete={i < player.index}
+						onclick={() => jumpTo(i)}
+						title={`Jump to ${item.label}`}
+					>
+						<span>{i < player.index ? '✓' : i + 1}</span>
+						{item.kind === 'break' ? 'Break' : `${item.label}${item.side ? ` · ${item.side === 'left' ? 'L' : 'R'}` : ''}`}
+					</button>
+				{/each}
+			</div>
 		</div>
 	</div>
 

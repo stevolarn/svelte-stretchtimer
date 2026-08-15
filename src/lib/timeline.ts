@@ -9,7 +9,7 @@ export function clampSeconds(value: number, min = 1, max = 3600): number {
 /**
  * Build the playable timeline from a routine + settings:
  * one-sided stretches become a single segment, two-sided stretches become
- * Left then Right segments, and (when enabled) a fixed break is inserted
+ * Left then Right segments using the same shared duration, and (when enabled) a fixed break is inserted
  * between consecutive stretches.
  */
 export function buildTimeline(routine: Routine, settings: Settings): Segment[] {
@@ -29,14 +29,14 @@ export function buildTimeline(routine: Routine, settings: Settings): Segment[] {
 				kind: 'stretch',
 				stretch,
 				side: 'left',
-				seconds: clampSeconds(stretch.leftSeconds),
+				seconds: clampSeconds(stretch.durationSeconds),
 				label: stretch.name || 'Stretch'
 			});
 			segments.push({
 				kind: 'stretch',
 				stretch,
 				side: 'right',
-				seconds: clampSeconds(stretch.rightSeconds),
+				seconds: clampSeconds(stretch.durationSeconds),
 				label: stretch.name || 'Stretch'
 			});
 		}
@@ -57,8 +57,8 @@ export function timelineTotal(segments: Segment[]): number {
 	return segments.reduce((sum, s) => sum + s.seconds, 0);
 }
 
-/** Short summary of a stretch's duration, e.g. "45s" or "L 30s · R 30s". */
+/** Short summary of a stretch's duration, e.g. "45s" or "L/R 30s". */
 export function stretchDurationLabel(stretch: Routine['stretches'][number]): string {
 	if (stretch.sides === 'one') return `${stretch.durationSeconds}s`;
-	return `L ${stretch.leftSeconds}s · R ${stretch.rightSeconds}s`;
+	return `L/R ${stretch.durationSeconds}s`;
 }
