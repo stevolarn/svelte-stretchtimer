@@ -248,7 +248,12 @@
 
 	<div class="settings-group">
 		<h3>Breaks</h3>
-		<Toggle bind:checked={settings.breaksEnabled} onchange={saveAll} label="Breaks between stretches" />
+		<Toggle
+			bind:checked={settings.breaksEnabled}
+			onchange={saveAll}
+			label="Breaks between stretches & sides"
+			hint="Rest countdown between consecutive stretches and left/right sides"
+		/>
 		{#if settings.breaksEnabled}
 			<div class="row" style="justify-content: space-between; padding: 0.4rem 0">
 				<span style="font-weight: 600">Break length</span>

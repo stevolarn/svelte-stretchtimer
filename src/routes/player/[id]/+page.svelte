@@ -166,9 +166,20 @@
 {:else}
 	<div class="player player-active-view">
 		<div class="player-top">
-			<button class="btn small ghost player-stop-btn" onclick={done}>✕ Stop</button>
+			<button class="btn small ghost player-stop-btn" onclick={done}>
+				<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.3rem">
+					<line x1="18" y1="6" x2="6" y2="18"></line>
+					<line x1="6" y1="6" x2="18" y2="18"></line>
+				</svg>
+				Stop
+			</button>
 			<span class="player-routine">{player.routineName}</span>
-			<button class="btn small ghost player-restart-btn" onclick={restart} title="Restart">↺</button>
+			<button class="btn small ghost player-restart-btn" onclick={restart} title="Restart" aria-label="Restart">
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+					<path d="M3 3v5h5"/>
+				</svg>
+			</button>
 		</div>
 
 		{#if settings.testingMode}
@@ -223,7 +234,7 @@
 							{#if nextSegment}
 								<div class="player-break-next-box">
 									<span class="player-next-sub">Next up</span>
-									<span class="player-next-main">{nextSegment.label}</span>
+									<span class="player-next-main">{nextSegment.label}{nextSegment.side ? ` · ${nextSegment.side === 'left' ? 'Left' : 'Right'}` : ''}</span>
 								</div>
 							{/if}
 						</div>
@@ -242,23 +253,29 @@
 					{/if}
 				</div>
 
-				<!-- PROMINENT COUNTDOWN & SEGMENT RING TIMER -->
-				<div class="player-timer-strip">
-					<div class="player-mini-ring-wrap">
-						<ProgressRing progress={fraction} size={76} stroke={7}>
-							<span class="player-ring-inner-time">{player.remaining}</span>
-						</ProgressRing>
-					</div>
-
-					<div class="player-timer-info">
-						<div class="time">{formatSeconds(player.remaining)}</div>
-						{#if segment.kind === 'break' && nextSegment}
-							<span class="muted small player-cue-text">Prepare for {nextSegment.label}</span>
-						{:else if segment.stretch?.description}
-							<p class="player-cue-text">{segment.stretch.description}</p>
-						{/if}
-					</div>
+				<!-- PROMINENT COUNTDOWN WHEEL TIMER (1 NUMBER, BIGGER) -->
+				<div class="player-wheel-container">
+					<ProgressRing progress={fraction} size={148} stroke={10}>
+						<div class="player-ring-center-content">
+							<span class="player-countdown-num">
+								{Math.ceil(player.remaining) >= 60 ? formatSeconds(Math.ceil(player.remaining)) : Math.ceil(player.remaining)}
+							</span>
+							{#if Math.ceil(player.remaining) < 60}
+								<span class="player-countdown-unit">SEC</span>
+							{/if}
+						</div>
+					</ProgressRing>
 				</div>
+
+				{#if segment.kind === 'break' && nextSegment}
+					<div class="player-cue-strip">
+						<span class="player-cue-text">Get ready for <strong>{nextSegment.label}{nextSegment.side ? ` (${nextSegment.side === 'left' ? 'Left' : 'Right'})` : ''}</strong></span>
+					</div>
+				{:else if segment.stretch?.description}
+					<div class="player-cue-strip">
+						<p class="player-cue-text">{segment.stretch.description}</p>
+					</div>
+				{/if}
 			</div>
 
 			<!-- Routine Progress Bar -->
@@ -272,11 +289,27 @@
 		{/if}
 
 		<div class="player-controls">
-			<button class="ctrl" onclick={back} title="Previous segment" aria-label="Previous">⏮</button>
-			<button class="ctrl main" onclick={togglePause} title={player.status === 'paused' ? 'Resume' : 'Pause'} aria-label={player.status === 'paused' ? 'Resume' : 'Pause'}>
-				{player.status === 'paused' ? '▶' : '⏸'}
+			<button class="ctrl" onclick={back} title="Previous segment" aria-label="Previous">
+				<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+					<path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+				</svg>
 			</button>
-			<button class="ctrl" onclick={skip} title="Skip segment" aria-label="Skip">⏭</button>
+			<button class="ctrl main" onclick={togglePause} title={player.status === 'paused' ? 'Resume' : 'Pause'} aria-label={player.status === 'paused' ? 'Resume' : 'Pause'}>
+				{#if player.status === 'paused'}
+					<svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" style="margin-left: 3px">
+						<path d="M8 5v14l11-7z"/>
+					</svg>
+				{:else}
+					<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+						<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+					</svg>
+				{/if}
+			</button>
+			<button class="ctrl" onclick={skip} title="Skip segment" aria-label="Skip">
+				<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+					<path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+				</svg>
+			</button>
 		</div>
 
 		<div class="segment-map" aria-label="Routine segments">

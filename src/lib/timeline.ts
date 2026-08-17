@@ -37,6 +37,15 @@ export function buildTimeline(routine: Routine, settings: Settings): Segment[] {
 				seconds: clampSeconds(stretch.durationSeconds),
 				label: stretch.name || 'Stretch'
 			});
+			if (settings.breaksEnabled && breakSecs > 0) {
+				segments.push({
+					kind: 'break',
+					stretch: null,
+					side: null,
+					seconds: breakSecs,
+					label: 'Break'
+				});
+			}
 			segments.push({
 				kind: 'stretch',
 				stretch,

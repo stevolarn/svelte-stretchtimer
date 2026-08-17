@@ -224,9 +224,9 @@
 
 		<div class="spread" style="align-items: center; padding-top: 0.65rem">
 			<div>
-				<div style="font-weight: 600; font-size: 0.92rem">Break between stretches</div>
+				<div style="font-weight: 600; font-size: 0.92rem">Break between stretches & sides</div>
 				<div class="muted small">
-					{routine.breakSeconds === 0 ? 'No breaks between stretches' : `${routine.breakSeconds ?? settings.breakSeconds}s break between stretches`}
+					{routine.breakSeconds === 0 ? 'No breaks' : `${routine.breakSeconds ?? settings.breakSeconds}s rest between stretches and sides`}
 				</div>
 			</div>
 			<Stepper
@@ -302,29 +302,16 @@
 
 				<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 				<div
-					class="stretch-main"
-					class:clickable-area={editingId !== s.id}
+					class="stretch-main clickable-area"
 					onclick={() => {
-						if (editingId !== s.id) {
-							previewStretch = s;
-						}
+						editingId = editingId === s.id ? null : s.id;
 					}}
 				>
-					{#if editingId === s.id}
-						<input
-							type="text"
-							bind:value={s.name}
-							oninput={saveAll}
-							placeholder="Stretch name"
-							style="margin-bottom: 0.35rem"
-						/>
-					{:else}
-						<div class="stretch-name">{s.name || 'Untitled stretch'}</div>
-					{/if}
+					<div class="stretch-name">{s.name || 'Untitled stretch'}</div>
 					<div class="stretch-meta">
 						<span class="badge">{stretchDurationLabel(s)}</span>
 						{#if s.sides === 'two'}
-							<span class="badge">L → R</span>
+							<span class="badge">Two sides</span>
 						{/if}
 					</div>
 				</div>
@@ -341,37 +328,54 @@
 				</div>
 
 				<div class="row stretch-card-actions">
-					<button class="btn small" onclick={() => (editingId = editingId === s.id ? null : s.id)}>
+					<button
+						class="btn small stretch-edit-btn"
+						class:primary={editingId === s.id}
+						onclick={() => (editingId = editingId === s.id ? null : s.id)}
+					>
 						{editingId === s.id ? 'Done' : 'Edit'}
 					</button>
-					<button class="btn small" onclick={() => duplicateStretch(i)}>Copy</button>
-					<button class="btn small danger" onclick={() => deleteStretch(i)}>✕</button>
+					<button class="btn small ghost stretch-copy-btn" onclick={() => duplicateStretch(i)} title="Copy stretch">Copy</button>
+					<button class="btn small danger ghost stretch-delete-btn" onclick={() => deleteStretch(i)} title="Delete stretch" aria-label="Delete">✕</button>
 				</div>
 			</div>
 
 			{#if s.description && editingId !== s.id}
 				<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-				<div class="stretch-desc-preview clickable-area" onclick={() => (previewStretch = s)}>
+				<div class="stretch-desc-preview clickable-area" onclick={() => (editingId = s.id)}>
 					<p>{s.description}</p>
 				</div>
 			{/if}
 		</div>
 
 		{#if editingId === s.id}
-			<div class="card editor" style="margin-top: -0.25rem; margin-bottom: 0.75rem">
+			<div class="card stretch-editor-drawer" style="margin-top: -0.25rem; margin-bottom: 0.85rem">
 				<div class="field">
-					<span class="flabel">Description</span>
+					<label class="flabel" for={`stretch-name-input-${s.id}`}>Stretch Name</label>
+					<input
+						id={`stretch-name-input-${s.id}`}
+						type="text"
+						bind:value={s.name}
+						oninput={saveAll}
+						placeholder="e.g. Band stretch, Hamstring stretch..."
+					/>
+				</div>
+
+				<div class="field">
+					<label class="flabel" for={`stretch-desc-input-${s.id}`}>Description & Guidance (optional)</label>
 					<textarea
+						id={`stretch-desc-input-${s.id}`}
 						bind:value={s.description}
 						oninput={saveAll}
-						placeholder="How to do this stretch (optional instructions, posture cues...)"
+						rows={2}
+						placeholder="How to do this stretch (posture cues, breathing tips...)"
 					></textarea>
 				</div>
 
 				<div class="field">
 					<span class="flabel">Sides</span>
-					<label class="row" style="gap: 1rem; font-weight: 400">
-						<span>
+					<div class="sides-toggle-grid">
+						<label class="side-option-card" class:selected={s.sides === 'one'}>
 							<input
 								type="radio"
 								name={`sides-${s.id}`}
@@ -381,9 +385,12 @@
 									saveAll();
 								}}
 							/>
-							One side / single countdown
-						</span>
-						<span>
+							<div class="side-option-text">
+								<span class="side-option-title">Single side</span>
+								<span class="side-option-sub">One single timer countdown</span>
+							</div>
+						</label>
+						<label class="side-option-card" class:selected={s.sides === 'two'}>
 							<input
 								type="radio"
 								name={`sides-${s.id}`}
@@ -393,26 +400,24 @@
 									saveAll();
 								}}
 							/>
-							Two sides (Left → beep → Right)
-						</span>
-					</label>
+							<div class="side-option-text">
+								<span class="side-option-title">Two sides</span>
+								<span class="side-option-sub">Left side → Rest → Right side</span>
+							</div>
+						</label>
+					</div>
 				</div>
 
-				{#if s.sides === 'one'}
-					<div class="field">
-						<span class="flabel">Duration</span>
+				<div class="field">
+					<span class="flabel">{s.sides === 'two' ? 'Duration (each side)' : 'Duration'}</span>
+					<div class="stretch-duration-row">
+						<span class="muted small">{s.sides === 'two' ? 'Seconds per side (Left & Right each)' : 'Total countdown seconds'}</span>
 						<Stepper bind:value={s.durationSeconds} min={5} step={5} onchange={saveAll} />
 					</div>
-				{:else}
-					<div class="field">
-						<span class="flabel">Duration for each side</span>
-						<Stepper bind:value={s.durationSeconds} min={5} step={5} onchange={saveAll} />
-						<div class="muted small" style="margin-top: 0.3rem">The same countdown is used for Left and Right.</div>
-					</div>
-				{/if}
+				</div>
 
-				<div class="field" style="margin: 0">
-					<span class="flabel">Photo (optional)</span>
+				<div class="field" style="margin-bottom: 0.75rem">
+					<span class="flabel">Custom Photo (optional)</span>
 					<PhotoPicker
 						photoId={s.photoId}
 						onphoto={(id) => {
@@ -420,6 +425,12 @@
 							saveAll();
 						}}
 					/>
+				</div>
+
+				<div class="editor-drawer-actions">
+					<button class="btn primary small" onclick={() => (editingId = null)} style="font-weight: 700">
+						✓ Done editing
+					</button>
 				</div>
 			</div>
 		{/if}
