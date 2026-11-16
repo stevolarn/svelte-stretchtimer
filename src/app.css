@@ -40,7 +40,8 @@ html,
 body {
 	margin: 0;
 	padding: 0;
-	overflow-x: hidden;
+	/* clip (not hidden) so body doesn't become a scroll container and break position: sticky */
+	overflow-x: clip;
 	-webkit-tap-highlight-color: transparent;
 }
 
@@ -387,11 +388,6 @@ textarea {
 	font-size: 1.45rem;
 }
 
-.routine-heading-actions {
-	justify-content: flex-end;
-	gap: 0.4rem;
-}
-
 /* ------------------------ Starter grid & modals ----------------------- */
 .starter-grid {
 	display: grid;
@@ -554,10 +550,6 @@ textarea {
 	padding: 0.6rem 0.75rem;
 	font: inherit;
 	font-size: 0.9rem;
-}
-
-.import-status {
-	margin: -0.35rem 0 0.7rem;
 }
 
 .streak-banner {
@@ -782,14 +774,6 @@ textarea {
 	margin: 1rem 0 0.5rem;
 }
 
-.stat-row {
-	display: flex;
-	gap: 0.5rem;
-	flex-wrap: wrap;
-	color: var(--muted);
-	font-size: 0.85rem;
-}
-
 .badge {
 	display: inline-flex;
 	align-items: center;
@@ -801,66 +785,7 @@ textarea {
 	font-weight: 600;
 }
 
-/* ----------------------------- editor --------------------------------- */
-.stretch-card {
-	display: flex;
-	flex-direction: column;
-	gap: 0.4rem;
-	transition: transform 0.1s, box-shadow 0.1s;
-	padding: 0.75rem 0.85rem;
-}
-
-.stretch-card-main-row {
-	display: flex;
-	align-items: center;
-	gap: 0.55rem;
-	width: 100%;
-}
-
-.stretch-main {
-	flex: 1;
-	min-width: 0;
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-}
-
-.stretch-name {
-	font-weight: 700;
-	font-size: 0.95rem;
-	line-height: 1.25;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-.stretch-meta {
-	color: var(--muted);
-	font-size: 0.78rem;
-	display: flex;
-	gap: 0.35rem;
-	flex-wrap: wrap;
-	align-items: center;
-	margin-top: 0.2rem;
-}
-
-.stretch-desc-preview {
-	margin-top: 0.2rem;
-	padding-left: 2rem;
-}
-
-.stretch-desc-preview p {
-	margin: 0;
-	font-size: 0.82rem;
-	line-height: 1.4;
-	color: var(--muted);
-	display: -webkit-box;
-	-webkit-line-clamp: 2;
-	line-clamp: 2;
-	-webkit-box-orient: vertical;
-	overflow: hidden;
-}
-
+/* ----------------------------- thumbnails ----------------------------- */
 .thumb-sm {
 	width: 2.5rem;
 	height: 2.5rem;
@@ -879,165 +804,6 @@ textarea {
 	place-items: center;
 	font-size: 1.05rem;
 	flex-shrink: 0;
-}
-
-.editor {
-	border-left: 4px solid var(--accent);
-}
-
-.stretch-editor-drawer {
-	border-left: 4px solid var(--accent);
-	background: color-mix(in srgb, var(--surface) 95%, var(--accent) 5%);
-	padding: 1rem;
-	display: flex;
-	flex-direction: column;
-	gap: 0.85rem;
-}
-
-.stretch-editor-drawer .field {
-	margin-bottom: 0;
-	display: flex;
-	flex-direction: column;
-	gap: 0.3rem;
-}
-
-.stretch-editor-drawer input[type="text"],
-.stretch-editor-drawer textarea {
-	width: 100%;
-	box-sizing: border-box;
-}
-
-.sides-toggle-grid {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 0.5rem;
-}
-
-@media (max-width: 480px) {
-	.sides-toggle-grid {
-		grid-template-columns: 1fr;
-	}
-}
-
-.side-option-card {
-	display: flex;
-	align-items: flex-start;
-	gap: 0.55rem;
-	padding: 0.65rem 0.75rem;
-	background: var(--surface-2);
-	border: 1px solid var(--border);
-	border-radius: 10px;
-	cursor: pointer;
-	transition: border-color 0.12s, background 0.12s;
-}
-
-.side-option-card.selected {
-	border-color: var(--accent);
-	background: color-mix(in srgb, var(--accent) 10%, var(--surface-2));
-}
-
-.side-option-card input[type="radio"] {
-	margin-top: 0.15rem;
-	cursor: pointer;
-}
-
-.side-option-text {
-	display: flex;
-	flex-direction: column;
-	gap: 0.1rem;
-}
-
-.side-option-title {
-	font-size: 0.88rem;
-	font-weight: 700;
-	color: var(--text);
-}
-
-.side-option-sub {
-	font-size: 0.75rem;
-	color: var(--muted);
-	line-height: 1.25;
-}
-
-.stretch-duration-row {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 0.75rem;
-	background: var(--surface-2);
-	border: 1px solid var(--border);
-	border-radius: 10px;
-	padding: 0.5rem 0.75rem;
-}
-
-.editor-drawer-actions {
-	display: flex;
-	justify-content: flex-end;
-	padding-top: 0.35rem;
-}
-
-.drag-handle {
-	cursor: grab;
-	user-select: none;
-	-webkit-user-select: none;
-	font-size: 1.2rem;
-	padding: 0.3rem 0.15rem;
-	color: var(--muted);
-	touch-action: none;
-	line-height: 1;
-	display: grid;
-	place-items: center;
-	border-radius: 6px;
-	flex-shrink: 0;
-}
-
-.drag-handle:active {
-	cursor: grabbing;
-	color: var(--accent);
-}
-
-.stretch-reorder-arrows {
-	display: flex;
-	flex-direction: column;
-	gap: 0.1rem;
-	align-items: center;
-	flex-shrink: 0;
-}
-
-.stretch-reorder-arrows .arrow-btn {
-	padding: 0.15rem 0.35rem;
-	font-size: 0.85rem;
-	line-height: 1;
-}
-
-.stretch-card-actions {
-	display: flex;
-	align-items: center;
-	gap: 0.3rem;
-	flex-shrink: 0;
-}
-
-.stretch-edit-btn {
-	font-weight: 600;
-	padding-inline: 0.65rem;
-}
-
-.stretch-copy-btn,
-.stretch-delete-btn {
-	padding-inline: 0.5rem;
-}
-
-.stretch-card.over {
-	outline: 2px dashed var(--accent);
-	outline-offset: 2px;
-	border-radius: 16px;
-}
-
-.stretch-card.is-dragging {
-	box-shadow: var(--shadow-lg);
-	border-color: var(--accent);
-	background: color-mix(in srgb, var(--accent) 6%, var(--surface));
-	transform: scale(1.01);
 }
 
 /* ------------------------------ player -------------------------------- */

@@ -97,6 +97,12 @@ export function timelineTotal(segments: Segment[]): number {
 
 /** Short summary of a stretch's duration, e.g. "45s" or "L/R 30s". */
 export function stretchDurationLabel(stretch: Routine['stretches'][number]): string {
-	if (stretch.sides === 'one') return `${stretch.durationSeconds}s`;
-	return `L/R ${stretch.durationSeconds}s`;
+	const time = durationText(stretch.durationSeconds);
+	return stretch.sides === 'one' ? time : `${time} each side`;
+}
+
+/** Compact duration: '45s' under a minute, otherwise '1:30'. */
+export function durationText(seconds: number): string {
+	const s = Math.max(0, Math.round(seconds));
+	return s < 60 ? `${s}s` : `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }

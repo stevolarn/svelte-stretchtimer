@@ -5,6 +5,8 @@
 		max = 3600,
 		step = 5,
 		suffix = 's',
+		label,
+		format,
 		onchange
 	}: {
 		value?: number;
@@ -12,6 +14,10 @@
 		max?: number;
 		step?: number;
 		suffix?: string;
+		/** Accessible name, e.g. "Break length". */
+		label?: string;
+		/** Custom display for the value; defaults to `${value}${suffix}`. */
+		format?: (value: number) => string;
 		onchange?: () => void;
 	} = $props();
 
@@ -29,10 +35,10 @@
 	}
 </script>
 
-<div class="stepper">
-	<button type="button" onclick={dec} disabled={value <= min} aria-label="Decrease">−</button>
-	<span class="value">{value}{suffix}</span>
-	<button type="button" onclick={inc} disabled={value >= max} aria-label="Increase">+</button>
+<div class="stepper" role="group" aria-label={label}>
+	<button type="button" onclick={dec} disabled={value <= min} aria-label={label ? `Decrease ${label.toLowerCase()}` : 'Decrease'}>−</button>
+	<span class="value" aria-live="polite">{format ? format(value) : `${value}${suffix}`}</span>
+	<button type="button" onclick={inc} disabled={value >= max} aria-label={label ? `Increase ${label.toLowerCase()}` : 'Increase'}>+</button>
 </div>
 
 <style>
