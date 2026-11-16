@@ -910,9 +910,15 @@ export const poses: Record<string, PoseDef> = {
 
 	/* ------------------------------------------------------------ Fallback */
 	stretch: {
-		still: 1,
+		still: 0,
 		view: 'front',
-		frames: [FRONT, { arm: 160, forearm: 166, farArm: -160, farForearm: -166 }],
-		dur: 3.4
+		frames: [
+			{ ...FRONT, torso: 180, head: 180, arm: 150, forearm: 222, farArm: -150, farForearm: -222 },
+			{ torso: 172, head: 174, arm: 142, forearm: 214, farArm: -158, farForearm: -230 },
+			{ torso: 180, head: 180, arm: 150, forearm: 222, farArm: -150, farForearm: -222 },
+			{ torso: 188, head: 186, arm: 158, forearm: 230, farArm: -142, farForearm: -214 }
+		],
+		loop: true,
+		dur: 6
 	}
 };
