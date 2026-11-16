@@ -47,7 +47,7 @@
 	let showNewModal = $state(false);
 
 	function createRoutine(): void {
-		const r = newRoutine('New routine');
+		const r = newRoutine('New routine', settings.breakSeconds);
 		addRoutine(r);
 		showNewModal = false;
 		goto(`/routine/${r.id}`);

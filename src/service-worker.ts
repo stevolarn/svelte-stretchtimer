@@ -12,7 +12,7 @@ self.addEventListener('install', (event: ExtendableEvent) => {
 	event.waitUntil(
 		caches
 			.open(CACHE_NAME)
-			.then((cache) => cache.addAll(ASSETS))
+			.then((cache) => cache.addAll([...ASSETS, '/']))
 			.then(() => (self as unknown as ServiceWorkerGlobalScope).skipWaiting())
 	);
 });
@@ -28,42 +28,43 @@ self.addEventListener('activate', (event: ExtendableEvent) => {
 	);
 });
 
-self.addEventListener('fetch', (event: FetchEvent) => {
+const sw = self as unknown as ServiceWorkerGlobalScope;
+const PRECACHED = new Set(ASSETS);
+/** Every route renders the same client-side shell, so any cached page can stand in offline. */
+const SHELL = '/';
+
+async function networkFirst(request: Request): Promise<Response> {
+	const cache = await caches.open(CACHE_NAME);
+	try {
+		const response = await fetch(request);
+		if (response.ok) {
+			cache.put(request.mode === 'navigate' ? SHELL : request, response.clone()).catch(() => {});
+		}
+		return response;
+	} catch {
+		const cached = (await cache.match(request)) ?? (request.mode === 'navigate' ? await cache.match(SHELL) : undefined);
+		if (cached) return cached;
+		return new Response('You’re offline and this page isn’t saved yet.', {
+			status: 503,
+			headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+		});
+	}
+}
+
+sw.addEventListener('fetch', (event: FetchEvent) => {
+	// Vite serves source modules in development; never shadow them with a cache.
+	if (import.meta.env.DEV) return;
 	if (event.request.method !== 'GET') return;
 
 	const url = new URL(event.request.url);
+	if (url.origin !== sw.location.origin) return;
 
-	// Only handle requests on the same origin (ignore chrome-extension://, external, etc.)
-	if (url.origin !== self.origin) return;
+	// Hashed build files and static assets never change within a version: cache first.
+	if (PRECACHED.has(url.pathname)) {
+		event.respondWith(caches.match(url.pathname).then((cached) => cached ?? fetch(event.request)));
+		return;
+	}
 
-	event.respondWith(
-		caches.match(event.request).then((cachedResponse) => {
-			if (cachedResponse) {
-				return cachedResponse;
-			}
-
-			return fetch(event.request)
-				.then((networkResponse) => {
-					if (networkResponse.status === 200) {
-						const responseClone = networkResponse.clone();
-						caches.open(CACHE_NAME).then((cache) => {
-							cache.put(event.request, responseClone).catch(() => {});
-						});
-					}
-					return networkResponse;
-				})
-				.catch(async () => {
-					// If offline and navigating to a page, serve the cached root or cached match
-					if (event.request.mode === 'navigate') {
-						const cachedRoot = await caches.match('/');
-						if (cachedRoot) return cachedRoot;
-					}
-					return new Response('Offline - please check your connection', {
-						status: 503,
-						statusText: 'Service Unavailable',
-						headers: { 'Content-Type': 'text/plain' }
-					});
-				});
-		})
-	);
+	// Pages and anything else: fresh when online, cached when offline.
+	event.respondWith(networkFirst(event.request));
 });
