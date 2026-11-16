@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Modal from './Modal.svelte';
 	import { stockStretches } from '$lib/stockStretches';
 	import type { BodyArea, MovementPosition, MovementType, StockStretch } from '$lib/types';
 	import StretchIllustration from './StretchIllustration.svelte';
@@ -98,17 +99,7 @@
 	}
 </script>
 
-<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-<div class="modal-backdrop" onclick={onclose}>
-	<div class="modal-sheet stock-picker-sheet" onclick={(e) => e.stopPropagation()}>
-		<div class="modal-header">
-			<div>
-				<h2 style="font-size: 1.2rem; margin: 0">Add Movement</h2>
-				<p class="muted small" style="margin: 0.15rem 0 0">Filter by type, position, and target body area</p>
-			</div>
-			<button class="icon-btn close-modal-btn" onclick={onclose} aria-label="Close">✕</button>
-		</div>
-
+<Modal title="Add a stretch" subtitle="Pick from the library or create your own" class="stock-picker-sheet" {onclose}>
 		<div class="stock-picker-top">
 			<button class="btn primary custom-blank-btn" onclick={oncustom}>
 				＋ Create custom blank stretch
@@ -201,8 +192,19 @@
 				</div>
 			{:else}
 				{#each filteredStretches as stock (stock.id)}
-					<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-					<div class="stock-stretch-card" onclick={() => (previewStock = stock)}>
+					<div
+						class="stock-stretch-card"
+						role="button"
+						tabindex="0"
+						aria-label={`${stock.name} — show details`}
+						onclick={() => (previewStock = stock)}
+						onkeydown={(e) => {
+							if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+								e.preventDefault();
+								previewStock = stock;
+							}
+						}}
+					>
 						<StretchIllustration iconKey={stock.iconKey} size={56} rounded={10} />
 						<div class="stock-stretch-info">
 							<div class="stock-title-row">
@@ -235,31 +237,20 @@
 				{/each}
 			{/if}
 		</div>
-	</div>
-</div>
+</Modal>
 
 {#if previewStock}
-	<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-	<div class="modal-backdrop preview-backdrop" onclick={() => (previewStock = null)}>
-		<div class="modal-sheet preview-modal-sheet" onclick={(e) => e.stopPropagation()}>
-			<div class="modal-header">
-				<div>
-					<div class="row" style="gap: 0.35rem; margin-bottom: 0.3rem">
-						<span class="badge" style="background: var(--accent); color: #fff; font-weight: 700">
-							{formatLabel(previewStock.type)}
-						</span>
-						<span class="badge">
-							{formatLabel(previewStock.position)}
-						</span>
-						<span class="badge">
-							{formatLabel(previewStock.area)}
-						</span>
-					</div>
-					<h2 style="font-size: 1.3rem; margin: 0">{previewStock.name}</h2>
-				</div>
-				<button class="icon-btn close-modal-btn" onclick={() => (previewStock = null)} aria-label="Close">✕</button>
+	<Modal class="preview-modal-sheet" onclose={() => (previewStock = null)}>
+		{#snippet header()}
+			<div class="row" style="gap: 0.35rem; margin-bottom: 0.3rem">
+				<span class="badge" style="background: var(--accent); color: #fff; font-weight: 700">
+					{formatLabel(previewStock!.type)}
+				</span>
+				<span class="badge">{formatLabel(previewStock!.position)}</span>
+				<span class="badge">{formatLabel(previewStock!.area)}</span>
 			</div>
-
+			<h2 style="font-size: 1.3rem; margin: 0">{previewStock!.name}</h2>
+		{/snippet}
 			<div class="preview-content">
 				<div class="preview-illustration-box">
 					<StretchIllustration iconKey={previewStock.iconKey} size={220} rounded={16} />
@@ -296,12 +287,11 @@
 					← Back to list
 				</button>
 			</div>
-		</div>
-	</div>
+	</Modal>
 {/if}
 
 <style>
-	.stock-picker-sheet {
+	:global(.stock-picker-sheet) {
 		max-height: 90dvh;
 		display: flex;
 		flex-direction: column;
@@ -427,6 +417,10 @@
 		background: var(--surface);
 		border-color: var(--accent);
 	}
+	.stock-stretch-card:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
+	}
 	.stock-stretch-card:active {
 		transform: scale(0.99);
 	}
@@ -496,11 +490,7 @@
 	}
 
 	/* ------------------ Detail Preview Modal ------------------ */
-	.preview-backdrop {
-		z-index: 1100;
-	}
-
-	.preview-modal-sheet {
+	:global(.preview-modal-sheet) {
 		max-width: 440px;
 		max-height: 90dvh;
 		display: flex;
