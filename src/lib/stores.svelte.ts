@@ -1,4 +1,5 @@
 import type { Routine, Settings, Stretch, StreakState, StorageSnapshot } from './types.ts';
+import { showToast } from './toast.svelte.ts';
 import {
 	deletePhotoData,
 	getPhotoData,
@@ -256,14 +257,43 @@ export function updateRoutine(id: string, patch: Partial<Routine>): void {
 }
 
 export function deleteRoutine(id: string): void {
+	removeRoutine(id)?.commit();
+}
+
+/**
+ * Remove a routine but keep its photos until `commit`, so the removal can be
+ * undone with `undo` (which puts it back where it was).
+ */
+export function removeRoutine(id: string): { routine: Routine; undo: () => void; commit: () => void } | null {
 	const idx = routines.findIndex((r) => r.id === id);
-	if (idx < 0) return;
+	if (idx < 0) return null;
 	const [removed] = routines.splice(idx, 1);
 	saveAll();
-	// Clean up photos owned by this routine.
-	for (const s of removed.stretches) {
-		if (s.photoId) void deletePhotoData(s.photoId).catch(() => {});
-	}
+	return {
+		routine: removed,
+		undo() {
+			if (getRoutine(removed.id)) return;
+			routines.splice(Math.min(idx, routines.length), 0, removed);
+			saveAll();
+		},
+		commit() {
+			if (getRoutine(removed.id)) return;
+			for (const s of removed.stretches) {
+				if (s.photoId) void deletePhotoData(s.photoId).catch(() => {});
+			}
+		}
+	};
+}
+
+/** Delete a routine and offer an Undo toast; photos are removed once it expires. */
+export function deleteRoutineWithUndo(id: string): void {
+	const removal = removeRoutine(id);
+	if (!removal) return;
+	showToast(`Deleted “${removal.routine.name || 'Untitled routine'}”`, {
+		action: 'Undo',
+		onAction: removal.undo,
+		onExpire: removal.commit
+	});
 }
 
 /** Deep-copy a routine (and its photos) with fresh ids, then add it. */

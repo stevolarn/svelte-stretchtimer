@@ -3,10 +3,8 @@
 	import {
 		addRoutine,
 		applyFixer,
-		deleteRoutine,
+		deleteRoutineWithUndo,
 		duplicateRoutine,
-		exportBackup,
-		importBackup,
 		newRoutine,
 		routines,
 		settings,
@@ -19,6 +17,10 @@
 	import { formatSeconds } from '$lib/time';
 	import { type Routine } from '$lib/types';
 	import StarterArt from '$lib/components/StarterArt.svelte';
+	import Modal from '$lib/components/Modal.svelte';
+	import StretchIllustration from '$lib/components/StretchIllustration.svelte';
+	import PhotoThumb from '$lib/components/PhotoThumb.svelte';
+	import { showToast } from '$lib/toast.svelte';
 
 	const starterOptions: Array<{ kind: StarterRoutineKind; title: string; description: string }> = [
 		{ kind: 'desk-reset', title: 'Desk reset', description: 'Neck, shoulders and wrists' },
@@ -61,8 +63,7 @@
 
 	let query = $state('');
 	let sort = $state<'recent' | 'name' | 'duration'>('recent');
-	let importStatus = $state('');
-	let importing = $state(false);
+	let menuFor = $state<string | null>(null);
 
 	const visibleRoutines = $derived(
 		routines
@@ -81,41 +82,19 @@
 		goto(`/routine/${routine.id}`);
 	}
 
-	async function downloadBackup(): Promise<void> {
-		const blob = new Blob([await exportBackup()], { type: 'application/json' });
-		const url = URL.createObjectURL(blob);
-		const link = document.createElement('a');
-		link.href = url;
-		link.download = `stretch-timer-backup-${new Date().toISOString().slice(0, 10)}.json`;
-		link.click();
-		URL.revokeObjectURL(url);
-		importStatus = 'Backup downloaded.';
-	}
-
-	async function restoreBackup(event: Event): Promise<void> {
-		const input = event.currentTarget as HTMLInputElement;
-		const file = input.files?.[0];
-		if (!file) return;
-		importing = true;
-		try {
-			const result = await importBackup(await file.text());
-			importStatus = `${result.added} routine${result.added === 1 ? '' : 's'} restored${result.skipped ? ` · ${result.skipped} skipped` : ''}.`;
-		} catch (error) {
-			importStatus = error instanceof Error ? error.message : 'Could not restore that backup.';
-		} finally {
-			importing = false;
-			input.value = '';
-		}
-	}
-
 	function remove(r: Routine): void {
-		if (confirm(`Delete "${r.name}"? This cannot be undone.`)) {
-			deleteRoutine(r.id);
-		}
+		menuFor = null;
+		deleteRoutineWithUndo(r.id);
 	}
 
 	async function duplicate(r: Routine): Promise<void> {
-		await duplicateRoutine(r.id);
+		menuFor = null;
+		const copy = await duplicateRoutine(r.id);
+		showToast(`Created “${copy.name}”`);
+	}
+
+	function routineMinutes(r: Routine): string {
+		return formatSeconds(timelineTotal(buildTimeline(r, settings)));
 	}
 
 	const streakNow = $derived(currentStreak(streak));
@@ -134,75 +113,59 @@
 </script>
 
 <svelte:head>
-	<title>Stretch Timer</title>
+	<title>Routines · Stretch Timer</title>
 </svelte:head>
 
-<section class="card streak-banner" style="margin-bottom: 0.9rem">
-	<div class="spread" style="align-items: center">
-		<div>
-			<h2 style="font-size: 1.15rem">🔥 {streakNow} day streak</h2>
-			<p class="muted small" style="margin: 0.25rem 0 0">
-				{fixers} streak fixer{fixers === 1 ? '' : 's'} · {fixerProgress(streak)}/7 days to next
-			</p>
-		</div>
-		<div class="row" style="gap: 0.4rem">
-			{#if canRepair}
-				<button
-					class="btn primary small"
-					onclick={handleRepairStreak}
-					title={`Repair broken streak (${gap.length} fixer${gap.length === 1 ? '' : 's'})`}
-				>
-					🩹 Fix streak ({gap.length})
-				</button>
-			{/if}
-			<a class="btn small" href="/stats">Details</a>
-		</div>
-	</div>
-</section>
+<svelte:window onclick={() => (menuFor = null)} />
 
-<div class="spread routine-heading" style="margin-bottom: 0.9rem">
-	<h1 style="font-size: 1.3rem">Routines</h1>
-	<div class="row routine-heading-actions">
-		<button class="btn small" onclick={downloadBackup} title="Export routines as backup">⇩ Back up</button>
-		<label class="btn small" class:disabled={importing} title="Import routines from backup">
-			⇧ Restore
-			<input class="sr-only" type="file" accept="application/json,.json" onchange={restoreBackup} disabled={importing} />
-		</label>
-		<button class="btn primary" onclick={() => (showNewModal = true)}>
-			＋ New routine
-		</button>
-	</div>
+<div class="card streak-banner">
+	<a class="streak-link" href="/stats">
+		<span class="streak-flame" class:lit={streakNow > 0} aria-hidden="true">🔥</span>
+		<span class="streak-copy">
+			<strong>{streakNow} day streak</strong>
+			<span class="muted small">
+				{#if streakNow === 0}
+					Finish any routine to start one
+				{:else}
+					{fixers} fixer{fixers === 1 ? '' : 's'} · {fixerProgress(streak)}/7 days to the next
+				{/if}
+			</span>
+		</span>
+		{#if !canRepair}<span class="chevron" aria-hidden="true">›</span>{/if}
+	</a>
+	{#if canRepair}
+		<button class="btn primary small" onclick={handleRepairStreak}>🩹 Fix streak</button>
+	{/if}
 </div>
 
-{#if routines.length > 0}
+<div class="spread routine-heading">
+	<h1>Routines</h1>
+	{#if routines.length > 0}
+		<button class="btn primary" onclick={() => (showNewModal = true)}>＋ New</button>
+	{/if}
+</div>
+
+{#if routines.length > 3}
 	<div class="routine-tools">
-		<input type="text" bind:value={query} placeholder="Search routines..." aria-label="Search routines" />
+		<input type="search" bind:value={query} placeholder="Search routines" aria-label="Search routines" />
 		<select bind:value={sort} aria-label="Sort routines">
-			<option value="recent">Recently created</option>
-			<option value="name">Name</option>
-			<option value="duration">Longest first</option>
+			<option value="recent">Newest</option>
+			<option value="name">A–Z</option>
+			<option value="duration">Longest</option>
 		</select>
 	</div>
-{/if}
-
-{#if importStatus}
-	<p class="muted small import-status" role="status">{importStatus}</p>
 {/if}
 
 {#if routines.length === 0}
 	<section class="card empty-routines-card">
 		<div class="empty-state-header">
 			<h2>Create your first routine</h2>
-			<p class="muted small" style="margin: 0.25rem 0 0.75rem">
-				Start with a blank routine or choose a ready-to-go stretching flow.
+			<p class="muted small" style="margin: 0.25rem 0 0">
+				Pick a ready-made flow below, or start from scratch.
 			</p>
 		</div>
-		<button class="btn primary new-blank-button" onclick={createRoutine} style="margin-bottom: 1rem">
-			＋ Create blank routine
-		</button>
-		<div class="muted small" style="font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem">
-			Or choose a starter routine
-		</div>
+		<button class="btn primary new-blank-button" onclick={createRoutine}>＋ Blank routine</button>
+		<div class="section-label">Starter routines</div>
 		<div class="starter-grid">
 			{#each starterOptions as option (option.kind)}
 				<button class="starter-option" onclick={() => addTemplate(option.kind)}>
@@ -221,61 +184,85 @@
 		<p class="muted" style="margin: 0">No routines match “{query}”.</p>
 	</div>
 {:else}
-	{#each visibleRoutines as r (r.id)}
-		<div class="card routine-card">
-			<div class="spread">
-				<span class="routine-title">{r.name}</span>
-				<span class="stat-row">
-					<span class="badge">{r.stretches.length} stretch{r.stretches.length === 1 ? '' : 'es'}</span>
-					<span class="badge">⏱ {formatSeconds(timelineTotal(buildTimeline(r, settings)))}</span>
-				</span>
-			</div>
-			{#if r.stretches.length > 0}
-				<p class="routine-stretch-summary muted small">
-					{r.stretches.map((s) => (s.sides === 'two' ? `${s.name || 'Stretch'} (L/R)` : (s.name || 'Stretch'))).join(' · ')}
-				</p>
-			{/if}
-			<div class="row routine-card-actions">
-				<button class="btn primary small play-btn" onclick={() => play(r)} disabled={r.stretches.length === 0}>
-					▶ Play
-				</button>
-				<button class="btn small" onclick={() => edit(r)}>Edit</button>
-				<button class="btn small" onclick={() => duplicate(r)}>Duplicate</button>
-				<button class="btn small danger" onclick={() => remove(r)}>Delete</button>
-			</div>
-		</div>
-	{/each}
+	<div class="routine-list">
+		{#each visibleRoutines as r (r.id)}
+			<article class="card routine-card">
+				<a class="routine-card-main" href={`/routine/${r.id}`} aria-label={`Edit ${r.name || 'Untitled routine'}`}>
+					<span class="routine-title">{r.name || 'Untitled routine'}</span>
+					<span class="routine-meta muted small">
+						{r.stretches.length} stretch{r.stretches.length === 1 ? '' : 'es'} · {routineMinutes(r)}{(r.sets ?? 1) > 1 ? ` · ${r.sets} sets` : ''}
+					</span>
+					{#if r.stretches.length > 0}
+						<span class="routine-thumbs" aria-hidden="true">
+							{#each r.stretches.slice(0, 5) as s (s.id)}
+								<span class="routine-thumb">
+									{#if s.photoId}
+										<PhotoThumb photoId={s.photoId} size={44} />
+									{:else}
+										<StretchIllustration iconKey={s.iconKey} name={s.name} size={44} rounded={8} animated={false} />
+									{/if}
+								</span>
+							{/each}
+							{#if r.stretches.length > 5}
+								<span class="routine-thumb more">+{r.stretches.length - 5}</span>
+							{/if}
+						</span>
+					{:else}
+						<span class="muted small">No stretches yet — tap to add some</span>
+					{/if}
+				</a>
+				<div class="routine-card-side">
+					<button
+						class="play-fab"
+						onclick={() => play(r)}
+						disabled={r.stretches.length === 0}
+						aria-label={`Play ${r.name || 'routine'}`}
+						title="Play"
+					>
+						<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" /></svg>
+					</button>
+					<div class="menu-wrap">
+						<button
+							class="icon-btn more-btn"
+							aria-label="More actions"
+							aria-haspopup="menu"
+							aria-expanded={menuFor === r.id}
+							onclick={(e) => {
+								e.stopPropagation();
+								menuFor = menuFor === r.id ? null : r.id;
+							}}
+						>
+							⋯
+						</button>
+						{#if menuFor === r.id}
+							<div class="popover-menu" role="menu">
+								<button role="menuitem" onclick={() => edit(r)}>Edit</button>
+								<button role="menuitem" onclick={() => duplicate(r)}>Duplicate</button>
+								<button role="menuitem" class="danger" onclick={() => remove(r)}>Delete</button>
+							</div>
+						{/if}
+					</div>
+				</div>
+			</article>
+		{/each}
+	</div>
 {/if}
 
 {#if showNewModal}
-	<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-	<div class="modal-backdrop" onclick={() => (showNewModal = false)}>
-		<div class="modal-sheet" onclick={(e) => e.stopPropagation()}>
-			<div class="modal-header">
-				<div>
-					<h2 style="font-size: 1.15rem">Add Routine</h2>
-					<p class="muted small" style="margin: 0.15rem 0 0">Choose a quick start or create from scratch</p>
-				</div>
-				<button class="icon-btn close-modal-btn" onclick={() => (showNewModal = false)} aria-label="Close">✕</button>
-			</div>
-			<button class="btn primary new-blank-button" onclick={createRoutine} style="margin-bottom: 0.75rem">
-				＋ Create blank routine
-			</button>
-			<div class="muted small" style="font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem">
-				Or choose a quick start routine
-			</div>
-			<div class="starter-grid modal-starter-grid">
-				{#each starterOptions as option (option.kind)}
-					<button class="starter-option" onclick={() => addTemplate(option.kind)}>
-						<StarterArt kind={option.kind} />
-						<span class="starter-option-copy">
-							<strong>{option.title}</strong>
-							<span class="muted small">{option.description}</span>
-							<span class="starter-duration">{starterDuration(option.kind)}</span>
-						</span>
-					</button>
-				{/each}
-			</div>
+	<Modal title="New routine" subtitle="Start blank or from a ready-made flow" onclose={() => (showNewModal = false)}>
+		<button class="btn primary new-blank-button" onclick={createRoutine} style="margin-top: 0">＋ Blank routine</button>
+		<div class="section-label">Starter routines</div>
+		<div class="starter-grid modal-starter-grid">
+			{#each starterOptions as option (option.kind)}
+				<button class="starter-option" onclick={() => addTemplate(option.kind)}>
+					<StarterArt kind={option.kind} />
+					<span class="starter-option-copy">
+						<strong>{option.title}</strong>
+						<span class="muted small">{option.description}</span>
+						<span class="starter-duration">{starterDuration(option.kind)}</span>
+					</span>
+				</button>
+			{/each}
 		</div>
-	</div>
+	</Modal>
 {/if}

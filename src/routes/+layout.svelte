@@ -1,8 +1,8 @@
 <script lang="ts">
-		import { page } from '$app/state';
+	import { page } from '$app/state';
 	import { settings } from '$lib/stores.svelte';
+	import ToastHost from '$lib/components/ToastHost.svelte';
 	import '../app.css';
-	import favicon from '$lib/assets/favicon.svg';
 
 	let { children } = $props();
 
@@ -12,8 +12,8 @@
 		const apply = (dark: boolean) => {
 			document.documentElement.classList.toggle('dark', dark);
 			document
-				.querySelector('meta[name="theme-color"]')
-				?.setAttribute('content', dark ? '#131316' : '#f4f4ef');
+				.querySelectorAll('meta[name="theme-color"]')
+				.forEach((meta) => meta.setAttribute('content', dark ? '#131316' : '#f4f4ef'));
 		};
 		if (theme === 'system') {
 			apply(mq.matches);
@@ -28,11 +28,6 @@
 
 	const inPlayer = $derived(page.url.pathname.startsWith('/player'));
 </script>
-
-<svelte:head>
-	<link rel="icon" href={favicon} />
-	<meta name="theme-color" content="#f4f4ef" />
-</svelte:head>
 
 {#if !inPlayer}
 	<header class="app-header">
@@ -74,3 +69,5 @@
 		</a>
 	</nav>
 {/if}
+
+<ToastHost raised={!inPlayer} />
