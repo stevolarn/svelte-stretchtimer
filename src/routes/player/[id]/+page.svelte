@@ -215,6 +215,9 @@
 						{:else}
 							<span class="side-badge side-badge-neutral">STRETCH</span>
 						{/if}
+						{#if segment.totalSets && segment.totalSets > 1}
+							<span class="side-badge side-badge-neutral">SET {segment.set}/{segment.totalSets}</span>
+						{/if}
 					</div>
 					<h2 class="player-hero-title">{segment.label}</h2>
 				</div>

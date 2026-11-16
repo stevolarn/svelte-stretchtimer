@@ -51,6 +51,8 @@ export interface Routine {
 	stretches: Stretch[];
 	createdAt: number;
 	breakSeconds?: number;
+	/** how many times to play the full set; 1 (default) = once, no repeats */
+	sets?: number;
 }
 
 export type Theme = 'light' | 'dark' | 'system';
@@ -92,4 +94,7 @@ export interface Segment {
 	side: Side | null;
 	seconds: number;
 	label: string;
+	/** 1-based set number when the routine repeats */
+	set?: number;
+	totalSets?: number;
 }

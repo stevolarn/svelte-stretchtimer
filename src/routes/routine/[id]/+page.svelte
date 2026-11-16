@@ -20,6 +20,9 @@
 		if (routine && routine.breakSeconds === undefined) {
 			routine.breakSeconds = settings.breakSeconds;
 		}
+		if (routine && routine.sets === undefined) {
+			routine.sets = 1;
+		}
 	});
 
 	let editingId = $state<string | null>(null);
@@ -219,6 +222,9 @@
 				<span class="badge">
 					{routine.breakSeconds === 0 ? 'No breaks' : `${routine.breakSeconds ?? settings.breakSeconds}s breaks`}
 				</span>
+				{#if (routine.sets ?? 1) > 1}
+					<span class="badge">{routine.sets} sets</span>
+				{/if}
 			</div>
 		</div>
 
@@ -233,6 +239,23 @@
 				bind:value={routine.breakSeconds}
 				min={0}
 				step={5}
+				onchange={saveAll}
+			/>
+		</div>
+
+		<div class="spread" style="align-items: center; padding-top: 0.65rem">
+			<div>
+				<div style="font-weight: 600; font-size: 0.92rem">Sets</div>
+				<div class="muted small">
+					{(routine.sets ?? 1) <= 1 ? 'Play once, no repeats' : `Repeat the full set ${routine.sets} times`}
+				</div>
+			</div>
+			<Stepper
+				bind:value={routine.sets}
+				min={1}
+				max={20}
+				step={1}
+				suffix="×"
 				onchange={saveAll}
 			/>
 		</div>

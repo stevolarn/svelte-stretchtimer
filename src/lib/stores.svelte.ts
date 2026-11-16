@@ -257,6 +257,7 @@ export async function importBackup(raw: string): Promise<{ added: number; skippe
 			name: candidate.name.trim() || 'Imported routine',
 			createdAt: typeof candidate.createdAt === 'number' ? candidate.createdAt : Date.now(),
 			breakSeconds: typeof candidate.breakSeconds === 'number' ? candidate.breakSeconds : undefined,
+			sets: typeof candidate.sets === 'number' ? candidate.sets : undefined,
 			stretches: []
 		};
 

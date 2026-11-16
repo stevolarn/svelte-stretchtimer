@@ -10,15 +10,39 @@ export function clampSeconds(value: number, min = 1, max = 3600): number {
  * Build the playable timeline from a routine + settings:
  * one-sided stretches become a single segment, two-sided stretches become
  * Left then Right segments using the same shared duration, and (when enabled) a fixed break is inserted
- * between consecutive stretches.
+ * between consecutive stretches. The whole set is repeated `routine.sets` times, with a break
+ * between sets.
  */
 export function buildTimeline(routine: Routine, settings: Settings): Segment[] {
-	const segments: Segment[] = [];
-	const last = routine.stretches.length - 1;
+	const totalSets = clampSeconds(routine.sets ?? 1, 1, 99);
 	const breakSecs =
 		routine.breakSeconds !== undefined
 			? Math.max(0, Math.round(routine.breakSeconds))
 			: Math.max(0, Math.round(settings.breakSeconds));
+	const set = buildSet(routine, settings, breakSecs);
+	if (totalSets === 1) return set;
+
+	const segments: Segment[] = [];
+	for (let n = 1; n <= totalSets; n++) {
+		if (n > 1 && settings.breaksEnabled && breakSecs > 0 && set.length > 0) {
+			segments.push({
+				kind: 'break',
+				stretch: null,
+				side: null,
+				seconds: breakSecs,
+				label: 'Break',
+				set: n,
+				totalSets
+			});
+		}
+		for (const seg of set) segments.push({ ...seg, set: n, totalSets });
+	}
+	return segments;
+}
+
+function buildSet(routine: Routine, settings: Settings, breakSecs: number): Segment[] {
+	const segments: Segment[] = [];
+	const last = routine.stretches.length - 1;
 
 	routine.stretches.forEach((stretch, i) => {
 		if (stretch.sides === 'one') {
