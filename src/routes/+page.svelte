@@ -13,7 +13,7 @@
 		type StarterRoutineKind
 	} from '$lib/stores.svelte';
 	import { buildTimeline, timelineTotal } from '$lib/timeline';
-	import { currentStreak, fixersAvailable, fixerProgress, repairGap, canRepairStreak } from '$lib/streak';
+	import { currentStreak, fixersAvailable, fixerProgress, repairGap } from '$lib/streak';
 	import { formatSeconds } from '$lib/time';
 	import { type Routine } from '$lib/types';
 	import StarterArt from '$lib/components/StarterArt.svelte';
@@ -104,9 +104,11 @@
 
 	function handleRepairStreak(): void {
 		if (gap.length === 0 || fixers < gap.length) return;
-		const dateDesc = gap.length === 1 ? gap[0] : `${gap.length} missed days (${gap[0]} to ${gap[gap.length - 1]})`;
+		const [y, m, d] = gap[0].split('-').map(Number);
+		const first = new Date(y, m - 1, d).toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });
+		const dateDesc = gap.length === 1 ? first : `${gap.length} missed days`;
 		const fixerDesc = gap.length === 1 ? '1 streak fixer' : `${gap.length} streak fixers`;
-		if (confirm(`Use ${fixerDesc} to fill in ${dateDesc} and completely restore your streak?`)) {
+		if (confirm(`Use ${fixerDesc} to fill in ${dateDesc} and restore your streak?`)) {
 			applyFixer();
 		}
 	}
