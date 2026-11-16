@@ -1,3 +1,8 @@
+<script lang="ts" module>
+	/** Open modals; the body scroll lock is released only when the last one closes. */
+	let openCount = 0;
+</script>
+
 <script lang="ts">
 	import { onMount, type Snippet } from 'svelte';
 
@@ -23,12 +28,12 @@
 
 	onMount(() => {
 		const previous = document.activeElement as HTMLElement | null;
-		const overflow = document.body.style.overflow;
+		openCount++;
 		document.body.style.overflow = 'hidden';
 		sheet.focus({ preventScroll: true });
 		return () => {
-			document.body.style.overflow = overflow;
-			previous?.focus?.({ preventScroll: true });
+			if (--openCount === 0) document.body.style.overflow = '';
+			if (previous?.isConnected) previous.focus({ preventScroll: true });
 		};
 	});
 

@@ -37,7 +37,7 @@ async function networkFirst(request: Request): Promise<Response> {
 	const cache = await caches.open(CACHE_NAME);
 	try {
 		const response = await fetch(request);
-		if (response.ok) {
+		if (response.ok && response.type === 'basic' && !response.redirected) {
 			cache.put(request.mode === 'navigate' ? SHELL : request, response.clone()).catch(() => {});
 		}
 		return response;

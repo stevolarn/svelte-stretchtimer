@@ -33,12 +33,20 @@
 	const streakNow = $derived(currentStreak(streak));
 	/** A stretch "starts" on its first side; the right side continues the same stretch. */
 	const isStart = (s: (typeof player.segments)[number]) => s.kind === 'stretch' && s.side !== 'right';
-	const stretchCount = $derived(player.segments.filter(isStart).length);
-	/** 1-based stretch position (a rest counts toward the stretch after it). */
+	/** Stretches per set, so the count matches the routine rather than growing with each repeat. */
+	const stretchCount = $derived(player.segments.filter((s) => isStart(s) && (s.set ?? 1) === 1).length);
+	const totalSets = $derived(player.segments[0]?.totalSets ?? 1);
+	/** Set the current position belongs to (a rest belongs to what follows it). */
+	const currentSet = $derived((segment?.kind === 'break' ? nextSegment?.set : segment?.set) ?? segment?.set ?? 1);
+	/** 1-based stretch position within the current set. */
 	const stretchNumber = $derived(
 		Math.min(
 			stretchCount,
-			Math.max(1, player.segments.slice(0, player.index + 1).filter(isStart).length + (segment?.kind === 'break' && nextSegment && isStart(nextSegment) ? 1 : 0))
+			Math.max(
+				1,
+				player.segments.slice(0, player.index + 1).filter((s) => isStart(s) && (s.set ?? 1) === currentSet).length +
+					(segment?.kind === 'break' && nextSegment && isStart(nextSegment) ? 1 : 0)
+			)
 		)
 	);
 	const routineElapsed = $derived(
@@ -125,9 +133,10 @@
 		} else if (e.key === 'ArrowRight') {
 			e.preventDefault();
 			skip();
-		} else if (e.key === 'Escape') {
+		} else if (e.key === 'Escape' && player.status === 'running') {
+			// Pause rather than quit, so a stray Escape never throws away a workout.
 			e.preventDefault();
-			done();
+			togglePause();
 		}
 	}
 
@@ -350,7 +359,7 @@
 			<div class="finish-burst" aria-hidden="true">🎉</div>
 			<h2 id="finish-title">Routine complete</h2>
 			<p class="finish-stats muted">
-				{formatSeconds(total)} · {stretchCount} stretch{stretchCount === 1 ? '' : 'es'}
+				{formatSeconds(total)} · {stretchCount} stretch{stretchCount === 1 ? '' : 'es'}{totalSets > 1 ? ` × ${totalSets} sets` : ''}
 			</p>
 			<div class="finish-streak">
 				<span class="finish-flame" aria-hidden="true">🔥</span>
