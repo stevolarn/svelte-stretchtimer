@@ -19,11 +19,7 @@
 	$effect(() => {
 		if (routine && routine.breakSeconds === undefined) {
 			routine.breakSeconds = settings.breakSeconds;
-		}
-		if (routine && routine.sets === undefined) {
-			routine.sets = 1;
-		}
-	});
+		}	});
 
 	let editingId = $state<string | null>(null);
 	let showPicker = $state(false);
@@ -251,7 +247,7 @@
 				</div>
 			</div>
 			<Stepper
-				bind:value={routine.sets}
+				bind:value={() => routine.sets ?? 1, (v) => (routine.sets = v)}
 				min={1}
 				max={20}
 				step={1}
