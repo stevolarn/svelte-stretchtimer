@@ -20,6 +20,27 @@
 			{:else if kind === 'runner-recovery'}
 				<stop offset="0%" stop-color="#f43f5e" stop-opacity="0.25" />
 				<stop offset="100%" stop-color="#e11d48" stop-opacity="0.8" />
+			{:else if kind === 'posture-fix'}
+				<stop offset="0%" stop-color="#60a5fa" stop-opacity="0.3" />
+				<stop offset="100%" stop-color="#1d4ed8" stop-opacity="0.85" />
+			{:else if kind === 'lower-back-relief'}
+				<stop offset="0%" stop-color="#c4b5fd" stop-opacity="0.3" />
+				<stop offset="100%" stop-color="#7c3aed" stop-opacity="0.85" />
+			{:else if kind === 'hip-opener'}
+				<stop offset="0%" stop-color="#fda4af" stop-opacity="0.3" />
+				<stop offset="100%" stop-color="#db2777" stop-opacity="0.85" />
+			{:else if kind === 'pre-workout-warmup'}
+				<stop offset="0%" stop-color="#fdba74" stop-opacity="0.3" />
+				<stop offset="100%" stop-color="#ea580c" stop-opacity="0.85" />
+			{:else if kind === 'core-isometrics'}
+				<stop offset="0%" stop-color="#94a3b8" stop-opacity="0.3" />
+				<stop offset="100%" stop-color="#334155" stop-opacity="0.85" />
+			{:else if kind === 'band-isometrics'}
+				<stop offset="0%" stop-color="#bef264" stop-opacity="0.3" />
+				<stop offset="100%" stop-color="#4d7c0f" stop-opacity="0.85" />
+			{:else if kind === 'isometric-flexibility'}
+				<stop offset="0%" stop-color="#67e8f9" stop-opacity="0.3" />
+				<stop offset="100%" stop-color="#0e7490" stop-opacity="0.85" />
 			{:else}
 				<stop offset="0%" stop-color="#2dd4bf" stop-opacity="0.25" />
 				<stop offset="100%" stop-color="#0d9488" stop-opacity="0.85" />
@@ -64,6 +85,54 @@
 		<path d="M48 24v20M48 44v20" stroke="#ffffff" stroke-linecap="round" stroke-width="5.5" />
 		<path d="M48 44l-14 10 4-18" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="5" />
 		<path d="M48 30l-10 6" stroke="#fde047" stroke-linecap="round" stroke-width="4.5" />
+		<path d="M14 64h72" stroke="#ffffff" stroke-linecap="round" stroke-width="2.5" opacity=".7" />
+	{:else if kind === 'posture-fix'}
+		<!-- Tall stance with shoulders drawn back in a goalpost -->
+		<circle cx="50" cy="16" r="7" fill="#fde047" />
+		<path d="M50 24v22M50 46l-8 18M50 46l8 18" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="5" />
+		<path d="M50 30H36V16M50 30h14V16" fill="none" stroke="#fde047" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" />
+		<path d="M24 24v34M76 24v34" stroke="#ffffff" stroke-dasharray="2 5" stroke-linecap="round" stroke-width="2.5" opacity=".7" />
+		<path d="M14 64h72" stroke="#ffffff" stroke-linecap="round" stroke-width="2.5" opacity=".7" />
+	{:else if kind === 'lower-back-relief'}
+		<!-- Lying on back hugging knees -->
+		<circle cx="24" cy="54" r="6.5" fill="#fde047" />
+		<path d="M31 56h22" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="5.5" />
+		<path d="M53 56l6-18 10 10" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="5" />
+		<path d="M36 54l14-10" stroke="#fde047" stroke-linecap="round" stroke-width="4" />
+		<path d="M14 64h72" stroke="#ffffff" stroke-linecap="round" stroke-width="2.5" opacity=".7" />
+	{:else if kind === 'hip-opener'}
+		<!-- Seated butterfly with knees open -->
+		<circle cx="50" cy="18" r="7" fill="#fde047" />
+		<path d="M50 26v24" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="5.5" />
+		<path d="M50 50L26 44l20 14M50 50l24-6-20 14" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="4.5" />
+		<path d="M50 32l-8 16M50 32l8 16" stroke="#fde047" stroke-linecap="round" stroke-width="3.5" />
+		<path d="M14 64h72" stroke="#ffffff" stroke-linecap="round" stroke-width="2.5" opacity=".7" />
+	{:else if kind === 'pre-workout-warmup'}
+		<!-- Jumping star with motion lines -->
+		<circle cx="50" cy="16" r="7" fill="#fde047" />
+		<path d="M50 24v20M50 44l-14 16M50 44l14 16M50 28L34 14M50 28l16-14" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="5" />
+		<path d="M18 30h8M16 40h10M74 30h8M74 40h10" stroke="#fde047" stroke-linecap="round" stroke-width="3" />
+		<path d="M14 64h72" stroke="#ffffff" stroke-linecap="round" stroke-width="2.5" opacity=".7" />
+	{:else if kind === 'core-isometrics'}
+		<!-- Forearm plank with brace lines -->
+		<circle cx="22" cy="40" r="6.5" fill="#fde047" />
+		<path d="M28 44l52 10" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="5.5" />
+		<path d="M30 46l-2 14h10" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="4.5" />
+		<path d="M44 34v-6M56 36v-6M68 38v-6" stroke="#fde047" stroke-linecap="round" stroke-width="3" />
+		<path d="M14 64h72" stroke="#ffffff" stroke-linecap="round" stroke-width="2.5" opacity=".7" />
+	{:else if kind === 'band-isometrics'}
+		<!-- Arms forward pulling a loop band apart -->
+		<circle cx="38" cy="18" r="7" fill="#fde047" />
+		<path d="M38 26v22M38 48l-8 16M38 48l8 16" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="5" />
+		<path d="M38 32l30-6M38 34l30 10" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="4.5" />
+		<ellipse cx="68" cy="35" rx="5" ry="11" fill="none" stroke="#fde047" stroke-width="3.5" />
+		<path d="M14 64h72" stroke="#ffffff" stroke-linecap="round" stroke-width="2.5" opacity=".7" />
+	{:else if kind === 'isometric-flexibility'}
+		<!-- Seated hamstring reach with press/relax arrows -->
+		<circle cx="30" cy="26" r="7" fill="#fde047" />
+		<path d="M32 33l10 23h34" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="5.5" />
+		<path d="M36 38l30 10" stroke="#ffffff" stroke-linecap="round" stroke-width="4.5" />
+		<path d="M66 64v-6M62 62l4-4 4 4" fill="none" stroke="#fde047" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" />
 		<path d="M14 64h72" stroke="#ffffff" stroke-linecap="round" stroke-width="2.5" opacity=".7" />
 	{:else}
 		<!-- Full body reach star -->

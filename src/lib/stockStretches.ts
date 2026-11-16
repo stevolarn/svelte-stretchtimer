@@ -169,6 +169,116 @@ export const stockStretches: StockStretch[] = [
 		defaultSeconds: 45,
 		iconKey: 'hamstring-fold'
 	},
+	{
+		id: 'static-upper-trap',
+		name: 'Upper Trap & Levator Stretch',
+		type: 'static',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Sit on one hand, then turn your nose toward the opposite armpit and let the other hand gently draw your head down.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'upper-trap'
+	},
+	{
+		id: 'static-puppy-pose',
+		name: 'Puppy Pose Lat Stretch',
+		type: 'static',
+		position: 'floor',
+		area: 'upper-body',
+		description: 'From all fours, walk your hands forward and melt your chest toward the floor, keeping hips stacked over knees.',
+		sides: 'one',
+		defaultSeconds: 45,
+		iconKey: 'puppy-pose'
+	},
+	{
+		id: 'static-sphinx',
+		name: 'Sphinx Pose',
+		type: 'static',
+		position: 'floor',
+		area: 'spine',
+		description: 'Lie face down propped on your forearms, elbows under shoulders, and let your lower back gently extend.',
+		sides: 'one',
+		defaultSeconds: 45,
+		iconKey: 'sphinx'
+	},
+	{
+		id: 'static-knees-to-chest',
+		name: 'Knees-to-Chest Hug',
+		type: 'static',
+		position: 'floor',
+		area: 'spine',
+		description: 'Lie on your back, hug both knees toward your chest, and let your lower back relax into the floor.',
+		sides: 'one',
+		defaultSeconds: 45,
+		iconKey: 'knees-to-chest'
+	},
+	{
+		id: 'static-reclined-twist',
+		name: 'Reclined Spinal Twist',
+		type: 'static',
+		position: 'floor',
+		area: 'spine',
+		description: 'Lie on your back, drop both bent knees to one side, and keep both shoulders heavy on the floor.',
+		sides: 'two',
+		defaultSeconds: 45,
+		iconKey: 'reclined-twist'
+	},
+	{
+		id: 'static-reclined-figure-four',
+		name: 'Reclined Figure-Four Stretch',
+		type: 'static',
+		position: 'floor',
+		area: 'hips',
+		description: 'Lie on your back, cross one ankle over the opposite knee, and draw both legs toward your chest.',
+		sides: 'two',
+		defaultSeconds: 45,
+		iconKey: 'reclined-figure-four'
+	},
+	{
+		id: 'static-couch-stretch',
+		name: 'Couch Stretch',
+		type: 'static',
+		position: 'floor',
+		area: 'hips',
+		description: 'Kneel with your back shin up a wall or couch, step the other foot forward, and squeeze the glute of the back leg.',
+		sides: 'two',
+		defaultSeconds: 45,
+		iconKey: 'couch-stretch'
+	},
+	{
+		id: 'static-side-lunge',
+		name: 'Side Lunge Adductor Stretch',
+		type: 'static',
+		position: 'standing',
+		area: 'hips',
+		description: 'Take a wide stance, shift your weight into one bent knee, and keep the other leg straight with toes up.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'side-lunge'
+	},
+	{
+		id: 'static-wide-leg-fold',
+		name: 'Wide-Leg Forward Fold',
+		type: 'static',
+		position: 'standing',
+		area: 'legs',
+		description: 'Step feet wide, hinge forward from the hips with a long spine, and let your hands rest on the floor or shins.',
+		sides: 'one',
+		defaultSeconds: 45,
+		iconKey: 'wide-leg-fold'
+	},
+	{
+		id: 'static-seated-forward-fold',
+		name: 'Seated Forward Fold',
+		type: 'static',
+		position: 'floor',
+		area: 'legs',
+		description: 'Sit with both legs straight, hinge forward from the hips, and reach toward your feet without rounding hard.',
+		sides: 'one',
+		defaultSeconds: 60,
+		iconKey: 'seated-forward-fold'
+	},
 
 	/* ==========================================================================
 	   2. DYNAMIC MOVEMENTS
@@ -215,7 +325,7 @@ export const stockStretches: StockStretch[] = [
 		description: 'Stand with soft knees, rotate torso gently from side to side, letting arms swing naturally around hips.',
 		sides: 'one',
 		defaultSeconds: 45,
-		iconKey: 'seated-twist'
+		iconKey: 'torso-rotations'
 	},
 	{
 		id: 'dynamic-worlds-greatest',
@@ -248,7 +358,7 @@ export const stockStretches: StockStretch[] = [
 		description: 'Facing a wall, swing one leg laterally across the body and out to the side in a rhythmic motion.',
 		sides: 'two',
 		defaultSeconds: 30,
-		iconKey: 'leg-swings'
+		iconKey: 'lateral-swings'
 	},
 	{
 		id: 'dynamic-glute-bridge-pulses',
@@ -259,7 +369,7 @@ export const stockStretches: StockStretch[] = [
 		description: 'Lie on your back with knees bent, drive through heels to lift hips, squeeze glutes at the top, and pulse smoothly.',
 		sides: 'one',
 		defaultSeconds: 45,
-		iconKey: 'bridge-hold'
+		iconKey: 'bridge-pulses'
 	},
 	{
 		id: 'dynamic-thoracic-openers',
@@ -271,6 +381,61 @@ export const stockStretches: StockStretch[] = [
 		sides: 'two',
 		defaultSeconds: 45,
 		iconKey: 'thoracic-rotation'
+	},
+	{
+		id: 'dynamic-neck-half-circles',
+		name: 'Neck Half Circles',
+		type: 'dynamic',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Drop your chin to your chest and slowly roll your head from shoulder to shoulder, avoiding a full backward roll.',
+		sides: 'one',
+		defaultSeconds: 30,
+		iconKey: 'neck-circles'
+	},
+	{
+		id: 'dynamic-wall-angels',
+		name: 'Wall Angels',
+		type: 'dynamic',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Stand with your back to a wall, arms in a goalpost shape, and slide them up and down while keeping contact.',
+		sides: 'one',
+		defaultSeconds: 45,
+		iconKey: 'wall-angels'
+	},
+	{
+		id: 'dynamic-hip-circles',
+		name: 'Standing Hip Circles',
+		type: 'dynamic',
+		position: 'standing',
+		area: 'hips',
+		description: 'Balance on one leg, lift the other knee, and draw big slow circles with it, opening out to the side.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'hip-circles'
+	},
+	{
+		id: 'dynamic-ankle-circles',
+		name: 'Ankle Circles',
+		type: 'dynamic',
+		position: 'seated',
+		area: 'legs',
+		description: 'Lift one foot and trace slow, full circles in both directions, moving only at the ankle.',
+		sides: 'two',
+		defaultSeconds: 20,
+		iconKey: 'ankle-circles'
+	},
+	{
+		id: 'dynamic-inchworm',
+		name: 'Inchworm Walkouts',
+		type: 'dynamic',
+		position: 'standing',
+		area: 'full-body',
+		description: 'Fold forward, walk your hands out to a plank, then walk them back to your feet and roll up.',
+		sides: 'one',
+		defaultSeconds: 45,
+		iconKey: 'inchworm'
 	},
 
 	/* ==========================================================================
@@ -307,7 +472,7 @@ export const stockStretches: StockStretch[] = [
 		description: 'Stack feet, elevate hips off floor on one forearm, keeping spine neutral and hips lifted.',
 		sides: 'two',
 		defaultSeconds: 30,
-		iconKey: 'plank-hold'
+		iconKey: 'side-plank'
 	},
 	{
 		id: 'iso-glute-bridge-hold',
@@ -329,7 +494,7 @@ export const stockStretches: StockStretch[] = [
 		description: 'Lie face down, lift arms, chest, and legs simultaneously off floor, engaging glutes and spinal erectors.',
 		sides: 'one',
 		defaultSeconds: 30,
-		iconKey: 'cobra-stretch'
+		iconKey: 'superman'
 	},
 	{
 		id: 'iso-calf-raise-hold',
@@ -340,7 +505,194 @@ export const stockStretches: StockStretch[] = [
 		description: 'Press onto the balls of your feet at maximum height and hold steady for calf and ankle stability.',
 		sides: 'one',
 		defaultSeconds: 45,
-		iconKey: 'standing-calf'
+		iconKey: 'calf-raise'
+	},
+	{
+		id: 'iso-high-plank',
+		name: 'High Plank Hold',
+		type: 'isometrics',
+		position: 'floor',
+		area: 'full-body',
+		description: 'Hold the top of a push-up with hands under shoulders, ribs pulled down, and glutes squeezed.',
+		sides: 'one',
+		defaultSeconds: 40,
+		iconKey: 'high-plank'
+	},
+	{
+		id: 'iso-squat-hold',
+		name: 'Bodyweight Squat Hold',
+		type: 'isometrics',
+		position: 'standing',
+		area: 'legs',
+		description: 'Sit hips back and down to parallel with arms reaching forward; hold with chest tall and knees tracking toes.',
+		sides: 'one',
+		defaultSeconds: 40,
+		iconKey: 'squat-hold'
+	},
+	{
+		id: 'iso-split-squat-hold',
+		name: 'Split Squat Hold',
+		type: 'isometrics',
+		position: 'standing',
+		area: 'legs',
+		description: 'Step into a long stance, lower until both knees reach about 90 degrees, and hold with torso upright.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'split-squat'
+	},
+	{
+		id: 'iso-push-up-hold',
+		name: 'Low Push-Up Hold',
+		type: 'isometrics',
+		position: 'floor',
+		area: 'upper-body',
+		description: 'Lower halfway into a push-up with elbows hugging your ribs and hold, keeping body in one straight line.',
+		sides: 'one',
+		defaultSeconds: 20,
+		iconKey: 'push-up-hold'
+	},
+	{
+		id: 'iso-single-leg-bridge',
+		name: 'Single-Leg Bridge Hold',
+		type: 'isometrics',
+		position: 'floor',
+		area: 'hips',
+		description: 'From a glute bridge, extend one leg straight and hold hips level, driving through the planted heel.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'single-leg-bridge'
+	},
+	{
+		id: 'iso-neck-press',
+		name: 'Isometric Neck Press',
+		type: 'isometrics',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Place a palm on the side of your head and press into it at half effort without letting your head move.',
+		sides: 'two',
+		defaultSeconds: 20,
+		iconKey: 'neck-press'
+	},
+	{
+		id: 'iso-hamstring-contract-relax',
+		name: 'Hamstring Contract-Relax',
+		type: 'isometrics',
+		position: 'seated',
+		area: 'legs',
+		description: 'In a seated hamstring stretch, press your heel into the floor for 6–8 seconds, relax, then ease deeper. Repeat.',
+		sides: 'two',
+		defaultSeconds: 45,
+		iconKey: 'hamstring-press'
+	},
+	{
+		id: 'iso-hip-flexor-contract-relax',
+		name: 'Hip Flexor Contract-Relax',
+		type: 'isometrics',
+		position: 'floor',
+		area: 'hips',
+		description: 'In a kneeling lunge, drive the back knee into the floor for 6–8 seconds without moving, relax, then sink deeper.',
+		sides: 'two',
+		defaultSeconds: 45,
+		iconKey: 'hip-flexor-press'
+	},
+	{
+		id: 'iso-butterfly-knee-press',
+		name: 'Butterfly Knee Press',
+		type: 'isometrics',
+		position: 'seated',
+		area: 'hips',
+		description: 'In a butterfly stretch, press knees up into your hands for 6–8 seconds, relax, and let them lower further.',
+		sides: 'one',
+		defaultSeconds: 45,
+		iconKey: 'butterfly-press'
+	},
+	{
+		id: 'iso-scapular-squeeze',
+		name: 'Scapular Squeeze Hold',
+		type: 'isometrics',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Pull your shoulder blades back and down as if pinching a pencil between them, and hold without shrugging.',
+		sides: 'one',
+		defaultSeconds: 30,
+		iconKey: 'scapular-squeeze'
+	},
+	{
+		id: 'iso-bird-dog-hold',
+		name: 'Bird Dog Hold',
+		type: 'isometrics',
+		position: 'floor',
+		area: 'spine',
+		description: 'From all fours, extend one arm and the opposite leg in a straight line and hold with hips level.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'bird-dog'
+	},
+	{
+		id: 'iso-band-pull-apart',
+		name: 'Band Pull-Apart Hold',
+		type: 'isometrics',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Loop a light or medium mini band around your wrists, arms straight at shoulder height. Pull apart, squeeze your shoulder blades, and hold.',
+		sides: 'one',
+		defaultSeconds: 30,
+		iconKey: 'band-pull-apart'
+	},
+	{
+		id: 'iso-band-external-rotation',
+		name: 'Band External Rotation Hold',
+		type: 'isometrics',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Band around wrists, elbows pinned to your ribs at 90 degrees. Rotate forearms outward as far as you can without elbows flaring, and hold.',
+		sides: 'one',
+		defaultSeconds: 30,
+		iconKey: 'band-external-rotation'
+	},
+	{
+		id: 'iso-band-serratus-wall-press',
+		name: 'Band Serratus Wall Press',
+		type: 'isometrics',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Band around wrists, forearms vertical on a wall at shoulder width. Push wrists outward while pressing forearms into the wall, and hold.',
+		sides: 'one',
+		defaultSeconds: 30,
+		iconKey: 'band-wall-press'
+	},
+	{
+		id: 'iso-band-bicep-hold',
+		name: 'Band Bicep Hold',
+		type: 'isometrics',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Pin one end of a heavy band to your thigh. Hook the other hand into the loop, curl to 90 degrees, and hold against the pull.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'band-bicep'
+	},
+	{
+		id: 'iso-band-tricep-lockout',
+		name: 'Band Tricep Lockout',
+		type: 'isometrics',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Hold a medium or heavy band to your opposite collarbone. Hook the working hand in, press down to full extension, and hold.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'band-tricep'
+	},
+	{
+		id: 'iso-band-tension-plank',
+		name: 'Band Tension Plank',
+		type: 'isometrics',
+		position: 'floor',
+		area: 'full-body',
+		description: 'Band around wrists in a forearm or high plank. Push hands outward to keep the band stretched while holding a rigid torso.',
+		sides: 'one',
+		defaultSeconds: 30,
+		iconKey: 'band-plank'
 	},
 
 	/* ==========================================================================
@@ -377,7 +729,7 @@ export const stockStretches: StockStretch[] = [
 		description: 'Step backward into a lunge with front knee over ankle, tap back knee lightly, and push back up.',
 		sides: 'one',
 		defaultSeconds: 45,
-		iconKey: 'low-lunge'
+		iconKey: 'reverse-lunge'
 	},
 	{
 		id: 'cali-chair-dips',
@@ -388,7 +740,7 @@ export const stockStretches: StockStretch[] = [
 		description: 'Hands on bench or floor behind you, lower hips by bending elbows to 90 degrees, press through palms.',
 		sides: 'one',
 		defaultSeconds: 40,
-		iconKey: 'overhead-triceps'
+		iconKey: 'chair-dips'
 	},
 	{
 		id: 'cali-bear-crawl-hold',
@@ -399,7 +751,7 @@ export const stockStretches: StockStretch[] = [
 		description: 'On hands and toes with knees hovering 2 inches off the ground directly below hips, back flat.',
 		sides: 'one',
 		defaultSeconds: 35,
-		iconKey: 'cat-cow'
+		iconKey: 'bear-crawl'
 	},
 
 	/* ==========================================================================
@@ -425,7 +777,7 @@ export const stockStretches: StockStretch[] = [
 		description: 'Sit with front and back legs bent at 90 degrees, rotate knees through center to opposite side without hands.',
 		sides: 'one',
 		defaultSeconds: 60,
-		iconKey: 'pigeon-pose'
+		iconKey: 'ninety-ninety'
 	},
 	{
 		id: 'mob-thread-needle',
@@ -436,7 +788,7 @@ export const stockStretches: StockStretch[] = [
 		description: 'From all fours, slide one arm underneath your chest along the floor, resting shoulder and temple down.',
 		sides: 'two',
 		defaultSeconds: 45,
-		iconKey: 'thoracic-rotation'
+		iconKey: 'thread-needle'
 	},
 	{
 		id: 'mob-frog-pose',
@@ -447,7 +799,7 @@ export const stockStretches: StockStretch[] = [
 		description: 'On hands and knees, walk knees wide apart with feet turned outward, gently sink hips back toward heels.',
 		sides: 'one',
 		defaultSeconds: 60,
-		iconKey: 'butterfly-stretch'
+		iconKey: 'frog'
 	},
 	{
 		id: 'mob-ankle-dorsiflexion',
@@ -458,7 +810,29 @@ export const stockStretches: StockStretch[] = [
 		description: 'In a half-kneel, drive front knee forward over toes without letting the heel leave the floor.',
 		sides: 'two',
 		defaultSeconds: 40,
-		iconKey: 'standing-calf'
+		iconKey: 'ankle-dorsiflexion'
+	},
+	{
+		id: 'mob-cossack-shifts',
+		name: 'Cossack Squat Shifts',
+		type: 'mobility',
+		position: 'standing',
+		area: 'hips',
+		description: 'From a wide stance, sink slowly into one hip with the other leg straight, then shift across to the other side.',
+		sides: 'one',
+		defaultSeconds: 45,
+		iconKey: 'cossack'
+	},
+	{
+		id: 'mob-wrist-circles',
+		name: 'Wrist Circles & Rocks',
+		type: 'mobility',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Interlace your fingers and roll the wrists in circles, then rock gently forward and back through full range.',
+		sides: 'one',
+		defaultSeconds: 30,
+		iconKey: 'wrist-circles'
 	},
 
 	/* ==========================================================================
@@ -530,6 +904,39 @@ export const stockStretches: StockStretch[] = [
 		defaultSeconds: 45,
 		iconKey: 'happy-baby'
 	},
+	{
+		id: 'yoga-lizard',
+		name: 'Lizard Pose (Utthan Pristhasana)',
+		type: 'yoga',
+		position: 'floor',
+		area: 'hips',
+		description: 'From a low lunge, place both hands inside the front foot and sink your hips low; drop to forearms for more depth.',
+		sides: 'two',
+		defaultSeconds: 45,
+		iconKey: 'lizard'
+	},
+	{
+		id: 'yoga-chair-pose',
+		name: 'Chair Pose (Utkatasana)',
+		type: 'yoga',
+		position: 'standing',
+		area: 'legs',
+		description: 'Sit your hips back as if into a chair, reach your arms overhead, and keep your weight in your heels.',
+		sides: 'one',
+		defaultSeconds: 30,
+		iconKey: 'chair-pose'
+	},
+	{
+		id: 'yoga-legs-up-wall',
+		name: 'Legs Up the Wall (Viparita Karani)',
+		type: 'yoga',
+		position: 'floor',
+		area: 'legs',
+		description: 'Lie on your back with your hips near a wall and rest your legs straight up it; breathe slowly and relax.',
+		sides: 'one',
+		defaultSeconds: 90,
+		iconKey: 'legs-up-wall'
+	},
 
 	/* ==========================================================================
 	   7. CARDIO & DYNAMIC FLOWS
@@ -554,7 +961,7 @@ export const stockStretches: StockStretch[] = [
 		description: 'Drive knees up toward waist height in a quick running tempo, pumping arms in rhythm.',
 		sides: 'one',
 		defaultSeconds: 30,
-		iconKey: 'jumping-jacks'
+		iconKey: 'high-knees'
 	},
 	{
 		id: 'cardio-butt-kicks',
@@ -565,7 +972,7 @@ export const stockStretches: StockStretch[] = [
 		description: 'Jog in place, kicking heels up toward glutes with quick light foot contacts.',
 		sides: 'one',
 		defaultSeconds: 30,
-		iconKey: 'quad-stretch'
+		iconKey: 'butt-kicks'
 	},
 	{
 		id: 'cardio-mountain-climbers',
@@ -587,7 +994,7 @@ export const stockStretches: StockStretch[] = [
 		description: 'Hop laterally from one foot to the other, sweeping opposite leg behind with control.',
 		sides: 'one',
 		defaultSeconds: 45,
-		iconKey: 'leg-swings'
+		iconKey: 'skater'
 	},
 	{
 		id: 'cardio-shadow-boxing',
@@ -598,19 +1005,38 @@ export const stockStretches: StockStretch[] = [
 		description: 'In an athletic stance, throw crisp jab-cross combinations while lightly bouncing on feet.',
 		sides: 'one',
 		defaultSeconds: 45,
-		iconKey: 'arm-circles'
+		iconKey: 'shadow-boxing'
 	}
 ];
 
 const keywordMap: Record<string, string> = {
+	// specific phrases first: the first matching keyword wins
+	'side lunge': 'side-lunge',
+	'hip circle': 'hip-circles',
+	'ankle circle': 'ankle-circles',
+	'wrist circle': 'wrist-circles',
+	'wall angel': 'wall-angels',
+	wrist: 'wrist-forearm',
+	forearm: 'wrist-forearm',
+	sphinx: 'sphinx',
+	puppy: 'puppy-pose',
+	superman: 'superman',
+	'bird dog': 'bird-dog',
+	lizard: 'lizard',
+	frog: 'frog',
+	cossack: 'cossack',
+	inchworm: 'inchworm',
+	dip: 'chair-dips',
+	skater: 'skater',
+	box: 'shadow-boxing',
+	'knees to chest': 'knees-to-chest',
 	neck: 'neck-release',
 	shoulder: 'shoulder-rolls',
-	arm: 'arm-circles',
+	'arm circle': 'arm-circles',
+	arms: 'arm-circles',
 	circle: 'arm-circles',
 	chest: 'chest-opener',
 	door: 'chest-opener',
-	wrist: 'wrist-forearm',
-	forearm: 'wrist-forearm',
 	tricep: 'overhead-triceps',
 	cat: 'cat-cow',
 	cow: 'cat-cow',
@@ -631,7 +1057,7 @@ const keywordMap: Record<string, string> = {
 	hamstring: 'hamstring-fold',
 	calf: 'standing-calf',
 	world: 'worlds-greatest',
-	reach: 'overhead-reach',
+	reach: 'arm-circles',
 	plank: 'plank-hold',
 	wall: 'wall-sit',
 	squat: 'squat',

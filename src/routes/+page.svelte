@@ -20,14 +20,27 @@
 	import { type Routine } from '$lib/types';
 	import StarterArt from '$lib/components/StarterArt.svelte';
 
-	const starterOptions: Array<{ kind: StarterRoutineKind; title: string; duration: string; description: string }> = [
-		{ kind: 'desk-reset', title: 'Desk reset', duration: '3 min', description: 'Neck, shoulders and wrists' },
-		{ kind: 'morning-mobility', title: 'Morning mobility', duration: '5 min', description: 'Wake up your whole body' },
-		{ kind: 'bedtime-wind-down', title: 'Bedtime wind-down', duration: '5 min', description: 'Slow, gentle evening movement' },
-		{ kind: 'lower-body-reset', title: 'Lower-body reset', duration: '5 min', description: 'Hips, legs and calves' },
-		{ kind: 'runner-recovery', title: 'Runner’s recovery', duration: '5 min', description: 'Easy post-run release' },
-		{ kind: 'full-body-mobility', title: 'Full-body mobility', duration: '6 min', description: 'A balanced daily flow' }
+	const starterOptions: Array<{ kind: StarterRoutineKind; title: string; description: string }> = [
+		{ kind: 'desk-reset', title: 'Desk reset', description: 'Neck, shoulders and wrists' },
+		{ kind: 'morning-mobility', title: 'Morning mobility', description: 'Wake up your whole body' },
+		{ kind: 'bedtime-wind-down', title: 'Bedtime wind-down', description: 'Slow, gentle evening movement' },
+		{ kind: 'lower-body-reset', title: 'Lower-body reset', description: 'Hips, legs and calves' },
+		{ kind: 'runner-recovery', title: 'Runner’s recovery', description: 'Easy post-run release' },
+		{ kind: 'full-body-mobility', title: 'Full-body mobility', description: 'A balanced daily flow' },
+		{ kind: 'posture-fix', title: 'Posture fix', description: 'Upper back, chest and neck' },
+		{ kind: 'lower-back-relief', title: 'Lower-back relief', description: 'Gentle floor release for the spine' },
+		{ kind: 'hip-opener', title: 'Hip opener', description: 'Deep work for tight hips' },
+		{ kind: 'pre-workout-warmup', title: 'Pre-workout warm-up', description: 'Raise heart rate and loosen up' },
+		{ kind: 'core-isometrics', title: 'Core isometrics', description: 'Two rounds of core holds' },
+		{ kind: 'band-isometrics', title: 'Mini-band isometrics', description: 'Arms and shoulders with a loop band' },
+		{ kind: 'isometric-flexibility', title: 'Isometric flexibility', description: 'Contract-relax to gain range' }
 	];
+
+	/** Rounded minutes for a starter, computed from its actual timeline. */
+	function starterDuration(kind: StarterRoutineKind): string {
+		const seconds = timelineTotal(buildTimeline(starterRoutine(kind), settings));
+		return `${Math.max(1, Math.round(seconds / 60))} min`;
+	}
 
 	let showNewModal = $state(false);
 
@@ -197,7 +210,7 @@
 					<span class="starter-option-copy">
 						<strong>{option.title}</strong>
 						<span class="muted small">{option.description}</span>
-						<span class="starter-duration">{option.duration}</span>
+						<span class="starter-duration">{starterDuration(option.kind)}</span>
 					</span>
 				</button>
 			{/each}
@@ -258,7 +271,7 @@
 						<span class="starter-option-copy">
 							<strong>{option.title}</strong>
 							<span class="muted small">{option.description}</span>
-							<span class="starter-duration">{option.duration}</span>
+							<span class="starter-duration">{starterDuration(option.kind)}</span>
 						</span>
 					</button>
 				{/each}

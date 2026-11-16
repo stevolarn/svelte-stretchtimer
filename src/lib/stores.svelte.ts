@@ -15,6 +15,7 @@ import {
 import { addDays, todayKey } from './time.ts';
 import { fixersAvailable, repairGap, canRepairStreak } from './streak.ts';
 import { uid } from './util.ts';
+import { stockStretches } from './stockStretches.ts';
 import { autoSaveToFileHandle, isFileAutoBackupConnected } from './backup.ts';
 
 export const routines = $state<Routine[]>(loadRoutines());
@@ -59,11 +60,34 @@ export type StarterRoutineKind =
 	| 'bedtime-wind-down'
 	| 'lower-body-reset'
 	| 'runner-recovery'
-	| 'full-body-mobility';
+	| 'full-body-mobility'
+	| 'posture-fix'
+	| 'lower-back-relief'
+	| 'hip-opener'
+	| 'pre-workout-warmup'
+	| 'core-isometrics'
+	| 'band-isometrics'
+	| 'isometric-flexibility';
 
 type StarterStretch = Partial<Stretch> & Pick<Stretch, 'name' | 'description' | 'sides'>;
 
-const starterDefinitions: Record<StarterRoutineKind, { name: string; stretches: StarterStretch[] }> = {
+/** Starter stretch copied from the stock library, optionally overriding its duration. */
+function stock(id: string, durationSeconds?: number): StarterStretch {
+	const s = stockStretches.find((item) => item.id === id);
+	if (!s) throw new Error(`Unknown stock stretch: ${id}`);
+	return {
+		name: s.name,
+		description: s.description,
+		sides: s.sides,
+		durationSeconds: durationSeconds ?? s.defaultSeconds,
+		iconKey: s.iconKey
+	};
+}
+
+const starterDefinitions: Record<
+	StarterRoutineKind,
+	{ name: string; stretches: StarterStretch[]; breakSeconds?: number; sets?: number }
+> = {
 	'desk-reset': {
 		name: 'Desk reset',
 		stretches: [
@@ -97,7 +121,7 @@ const starterDefinitions: Record<StarterRoutineKind, { name: string; stretches: 
 			{ name: 'Calf stretch', description: 'Press through the heel and keep the toes pointing ahead.', sides: 'two', durationSeconds: 45, iconKey: 'standing-calf' },
 			{ name: 'Quad stretch', description: 'Keep your knees close and hold onto a wall if needed.', sides: 'two', durationSeconds: 45, iconKey: 'quad-stretch' },
 			{ name: 'Hamstring fold', description: 'Hinge from the hips and avoid forcing the range of motion.', sides: 'two', durationSeconds: 45, iconKey: 'hamstring-fold' },
-			{ name: 'Hip flexor lunge', description: 'Tuck the pelvis gently and breathe into the front of the hip.', sides: 'two', durationSeconds: 45, iconKey: 'hip-flexor-release' }
+			{ name: 'Hip flexor lunge', description: 'Tuck the pelvis gently and breathe into the front of the hip.', sides: 'two', durationSeconds: 45, iconKey: 'low-lunge' }
 		]
 	},
 	'runner-recovery': {
@@ -105,17 +129,96 @@ const starterDefinitions: Record<StarterRoutineKind, { name: string; stretches: 
 		stretches: [
 			{ name: 'Standing calf stretch', description: 'Use a wall for balance and ease the heel toward the floor.', sides: 'two', durationSeconds: 45, iconKey: 'standing-calf' },
 			{ name: 'Figure-four stretch', description: 'Sit back slowly while keeping your standing knee comfortable.', sides: 'two', durationSeconds: 45, iconKey: 'pigeon-pose' },
-			{ name: 'Hip flexor release', description: 'Keep your ribs stacked over your hips and breathe steadily.', sides: 'two', durationSeconds: 45, iconKey: 'hip-flexor-release' },
+			{ name: 'Hip flexor release', description: 'Keep your ribs stacked over your hips and breathe steadily.', sides: 'two', durationSeconds: 45, iconKey: 'low-lunge' },
 			{ name: 'Forward fold', description: 'Finish with a relaxed fold and a few easy breaths.', sides: 'one', durationSeconds: 60, iconKey: 'forward-fold' }
 		]
 	},
 	'full-body-mobility': {
 		name: 'Full-body mobility',
 		stretches: [
-			{ name: 'Overhead reach', description: 'Reach through both hands and lengthen from your feet to your fingertips.', sides: 'one', durationSeconds: 45, iconKey: 'overhead-reach' },
+			{ name: 'Overhead reach', description: 'Reach through both hands and lengthen from your feet to your fingertips.', sides: 'one', durationSeconds: 45, iconKey: 'arm-circles' },
 			{ name: 'Thoracic rotation', description: 'Rotate from your upper back while keeping your hips steady.', sides: 'two', durationSeconds: 45, iconKey: 'thoracic-rotation' },
 			{ name: 'World’s greatest stretch', description: 'Move between the lunge and rotation with control.', sides: 'two', durationSeconds: 60, iconKey: 'worlds-greatest' },
 			{ name: 'Full-body fold', description: 'Breathe out and release any remaining tension.', sides: 'one', durationSeconds: 60, iconKey: 'forward-fold' }
+		]
+	},
+	'posture-fix': {
+		name: 'Posture fix',
+		stretches: [
+			stock('iso-scapular-squeeze'),
+			stock('dynamic-wall-angels'),
+			stock('static-chest-opener'),
+			stock('static-upper-trap'),
+			stock('mob-thread-needle', 30),
+			stock('static-puppy-pose')
+		]
+	},
+	'lower-back-relief': {
+		name: 'Lower-back relief',
+		stretches: [
+			stock('static-knees-to-chest'),
+			stock('dynamic-cat-cow', 60),
+			stock('static-sphinx'),
+			stock('static-reclined-twist'),
+			stock('static-reclined-figure-four'),
+			stock('yoga-childs-pose', 60)
+		]
+	},
+	'hip-opener': {
+		name: 'Hip opener',
+		stretches: [
+			stock('mob-90-90-hip-switches'),
+			stock('yoga-lizard'),
+			stock('static-seated-butterfly'),
+			stock('static-pigeon-pose'),
+			stock('mob-frog-pose'),
+			stock('static-couch-stretch')
+		]
+	},
+	'pre-workout-warmup': {
+		name: 'Pre-workout warm-up',
+		breakSeconds: 3,
+		stretches: [
+			stock('cardio-jumping-jacks', 30),
+			stock('dynamic-arm-circles', 30),
+			stock('dynamic-leg-swings', 20),
+			stock('dynamic-hip-circles', 20),
+			stock('dynamic-inchworm'),
+			stock('dynamic-worlds-greatest', 30)
+		]
+	},
+	'core-isometrics': {
+		name: 'Core isometrics',
+		breakSeconds: 10,
+		sets: 2,
+		stretches: [
+			stock('iso-plank', 30),
+			stock('iso-side-plank', 20),
+			stock('iso-bird-dog-hold', 20),
+			stock('iso-glute-bridge-hold', 30),
+			stock('iso-superman-hold', 20)
+		]
+	},
+	'band-isometrics': {
+		name: 'Mini-band isometrics',
+		breakSeconds: 10,
+		sets: 2,
+		stretches: [
+			stock('iso-band-pull-apart'),
+			stock('iso-band-external-rotation'),
+			stock('iso-band-serratus-wall-press'),
+			stock('iso-band-bicep-hold'),
+			stock('iso-band-tricep-lockout'),
+			stock('iso-band-tension-plank')
+		]
+	},
+	'isometric-flexibility': {
+		name: 'Isometric flexibility',
+		stretches: [
+			stock('iso-neck-press'),
+			stock('iso-hamstring-contract-relax'),
+			stock('iso-hip-flexor-contract-relax'),
+			stock('iso-butterfly-knee-press')
 		]
 	}
 };
@@ -123,7 +226,8 @@ const starterDefinitions: Record<StarterRoutineKind, { name: string; stretches: 
 /** Build a ready-to-play routine for people who want to start immediately. */
 export function starterRoutine(kind: StarterRoutineKind): Routine {
 	const definition = starterDefinitions[kind];
-	const routine = newRoutine(definition.name);
+	const routine = newRoutine(definition.name, definition.breakSeconds);
+	if (definition.sets) routine.sets = definition.sets;
 	const stretches = definition.stretches;
 
 	routine.stretches = stretches.map((stretch) => ({
