@@ -806,77 +806,6 @@ textarea {
 	flex-shrink: 0;
 }
 
-/* ------------------------------ stats --------------------------------- */
-.stats-grid {
-	display: grid;
-	grid-template-columns: repeat(2, 1fr);
-	gap: 0.65rem;
-}
-
-.stat-card {
-	background: var(--surface);
-	border: 1px solid var(--border);
-	border-radius: 16px;
-	padding: 0.9rem;
-	box-shadow: var(--shadow);
-}
-
-.stat-num {
-	font-size: 1.8rem;
-	font-weight: 800;
-	font-variant-numeric: tabular-nums;
-	margin: 0.15rem 0;
-}
-
-.calendar {
-	display: grid;
-	grid-template-columns: repeat(7, 1fr);
-	gap: 0.35rem;
-	margin-top: 0.75rem;
-}
-
-.cal-day {
-	aspect-ratio: 1;
-	border-radius: 8px;
-	background: var(--surface-2);
-	border: 1px solid var(--border);
-	display: grid;
-	place-items: center;
-	font-size: 0.72rem;
-	color: var(--muted);
-}
-
-.cal-day.done {
-	background: var(--accent);
-	border-color: var(--accent);
-	color: #fff;
-	font-weight: 700;
-}
-
-.cal-day.today {
-	outline: 2px solid var(--accent);
-	outline-offset: 1px;
-}
-
-/* ----------------------------- settings ------------------------------- */
-.settings-group {
-	padding: 0.35rem 0;
-}
-
-.settings-group + .settings-group {
-	border-top: 1px solid var(--border);
-	margin-top: 0.65rem;
-	padding-top: 0.65rem;
-}
-
-.settings-group h3 {
-	font-size: 0.85rem;
-	text-transform: uppercase;
-	letter-spacing: 0.06em;
-	color: var(--muted);
-	margin: 0.4rem 0 0.4rem;
-}
-
 /* -------------------------- Testing Mode HUD -------------------------- */
 .player-test-hud {
 	width: min(100%, 30rem);
@@ -940,23 +869,7 @@ textarea {
 }
 
 /* -------------------------- Snapshots List ---------------------------- */
-.snapshots-list {
-	display: flex;
-	flex-direction: column;
-	gap: 0.4rem;
-	margin-top: 0.4rem;
-}
 
-.snapshot-item {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 0.5rem;
-	background: var(--surface-2);
-	border: 1px solid var(--border);
-	border-radius: 10px;
-	padding: 0.45rem 0.65rem;
-}
 
 @media (max-width: 480px) {
 	.time {
