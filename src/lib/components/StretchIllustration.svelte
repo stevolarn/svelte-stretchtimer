@@ -35,6 +35,8 @@
 	});
 
 	const key = $derived(resolveIconKey(iconKey, name));
+	/** Stretches with no matching drawing show the app's logo mark instead of a pose. */
+	const isLogo = $derived(!poses[key] || key === 'stretch');
 	const pose = $derived(renderPose(poses[key] ?? poses.stretch));
 	const moving = $derived(animated && !reducedMotion);
 
@@ -88,6 +90,19 @@
 
 	<rect width="100" height="80" {rx} fill="url(#{uid}-ill-bg)" />
 
+	{#if isLogo}
+		<!-- App logo mark (stopwatch with a reaching figure), drawn in the icon's 512-unit space. -->
+		<g transform="translate(50 40.5) scale(0.125) translate(-256 -250)" fill="none" stroke="var(--accent)" stroke-linecap="round" stroke-linejoin="round">
+			<rect x="226" y="56" width="60" height="34" rx="14" fill="var(--accent)" stroke="none" />
+			<circle cx="256" cy="276" r="164" stroke-width="28" stroke-opacity="0.25" />
+			<path d="M256 112 A164 164 0 1 1 92 276" stroke-width="28" />
+			<g stroke="var(--ill-body)" stroke-width="30">
+				<path d="M228 392 L 266 326 L 304 392" />
+				<path d="M266 326 C 268 276, 258 236, 236 204 C 226 188, 216 176, 206 166" />
+			</g>
+			<circle cx="276" cy="214" r="26" fill="var(--ill-skin)" stroke="none" />
+		</g>
+	{:else}
 	{#each pose.layers as layer, i (i)}
 		{#if layer.tag === 'rect'}
 			<rect x={layer.x} y={layer.y} width={layer.w} height={layer.h} rx={layer.rx} fill={layer.fill} opacity={layer.opacity} />
@@ -116,6 +131,7 @@
 			</path>
 		{/if}
 	{/each}
+	{/if}
 </svg>
 
 <style>

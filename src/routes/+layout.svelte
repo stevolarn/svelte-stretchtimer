@@ -32,7 +32,7 @@
 {#if !inPlayer}
 	<header class="app-header">
 		<div class="app-header-inner">
-			<a class="brand" href="/"><span class="dot"></span>Stretch Timer</a>
+			<a class="brand" href="/"><img class="brand-logo" src="/icon.svg" alt="" width="26" height="26" />Stretch Timer</a>
 			<div class="desktop-nav-links">
 				<a href="/" class:active={page.url.pathname === '/' || page.url.pathname.startsWith('/routine')}>Routines</a>
 				<a href="/stats" class:active={page.url.pathname === '/stats'}>Streak</a>

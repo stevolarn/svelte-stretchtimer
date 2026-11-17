@@ -109,12 +109,11 @@ button {
 	text-decoration: none;
 }
 
-.brand .dot {
-	width: 0.65rem;
-	height: 0.65rem;
-	border-radius: 50%;
-	background: var(--accent);
-	display: inline-block;
+.brand-logo {
+	width: 1.6rem;
+	height: 1.6rem;
+	border-radius: 0.4rem;
+	display: block;
 }
 
 .desktop-nav-links {
