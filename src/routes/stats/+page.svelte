@@ -61,8 +61,10 @@
 
 <section class="card hero" class:cold={now === 0}>
 	<div class="hero-flame" aria-hidden="true">🔥</div>
-	<div class="hero-num">{now}</div>
-	<div class="hero-label">day streak</div>
+	<div role="img" aria-label={`${now} day streak`}>
+		<div class="hero-num" aria-hidden="true">{now}</div>
+		<div class="hero-label" aria-hidden="true">day streak</div>
+	</div>
 	<p class="hero-sub">
 		{#if doneToday}
 			<span class="ok">✓ Done today</span> — see you tomorrow
@@ -75,8 +77,8 @@
 		{/if}
 	</p>
 	<div class="hero-stats">
-		<div><strong>{best}</strong><span>best streak</span></div>
-		<div><strong>{totalDays}</strong><span>days stretched</span></div>
+		<div role="img" aria-label={`Best streak: ${best}`}><strong aria-hidden="true">{best}</strong><span aria-hidden="true">best streak</span></div>
+		<div role="img" aria-label={`Days stretched: ${totalDays}`}><strong aria-hidden="true">{totalDays}</strong><span aria-hidden="true">days stretched</span></div>
 	</div>
 </section>
 
