@@ -57,8 +57,6 @@
 			description: stock.description,
 			sides: stock.sides,
 			durationSeconds: stock.defaultSeconds,
-			leftSeconds: stock.defaultSeconds,
-			rightSeconds: stock.defaultSeconds,
 			photoId: null,
 			iconKey: stock.iconKey
 		};

@@ -45,8 +45,6 @@ export function newStretch(): Stretch {
 		description: '',
 		sides: 'one',
 		durationSeconds: 30,
-		leftSeconds: 30,
-		rightSeconds: 30,
 		photoId: null
 	};
 }
@@ -404,8 +402,6 @@ export async function importBackup(raw: string): Promise<{ added: number; skippe
 				description: typeof item.description === 'string' ? item.description : '',
 				sides: item.sides === 'two' ? 'two' : 'one',
 				durationSeconds: typeof item.durationSeconds === 'number' ? item.durationSeconds : 30,
-				leftSeconds: typeof item.leftSeconds === 'number' ? item.leftSeconds : 30,
-				rightSeconds: typeof item.rightSeconds === 'number' ? item.rightSeconds : 30,
 				photoId: null,
 				iconKey: typeof item.iconKey === 'string' ? item.iconKey : undefined
 			};

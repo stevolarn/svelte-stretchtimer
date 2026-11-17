@@ -7,9 +7,6 @@ export interface Stretch {
 	/** one = single duration, two = left/right sides sharing this duration */
 	sides: 'one' | 'two';
 	durationSeconds: number;
-	/** Legacy fields retained so older local data and backups remain readable. */
-	leftSeconds: number;
-	rightSeconds: number;
 	/** key into the IndexedDB photo store, null when no photo */
 	photoId: string | null;
 	/** key for stock illustration (e.g. 'cat-cow', 'childs-pose') */
