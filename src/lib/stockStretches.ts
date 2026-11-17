@@ -1006,6 +1006,186 @@ export const stockStretches: StockStretch[] = [
 		sides: 'one',
 		defaultSeconds: 45,
 		iconKey: 'shadow-boxing'
+	},
+
+	/* ==========================================================================
+	   8. RSI AND THORACIC OUTLET
+	   ========================================================================== */
+	{
+		id: 'static-wrist-flexor',
+		name: 'Wrist Flexor Stretch',
+		type: 'static',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Hold one arm out straight, palm up, and use the other hand to ease the fingers down and back until you feel the inner forearm.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'wrist-flexor'
+	},
+	{
+		id: 'static-wrist-extensor',
+		name: 'Wrist Extensor Stretch',
+		type: 'static',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Hold one arm out straight, palm down, and gently curl the hand toward you to stretch the top of the forearm.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'wrist-extensor'
+	},
+	{
+		id: 'static-prayer-stretch',
+		name: 'Prayer Stretch',
+		type: 'static',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Press palms together in front of your chest and slowly lower your hands, keeping the heels of the palms touching.',
+		sides: 'one',
+		defaultSeconds: 30,
+		iconKey: 'prayer-stretch'
+	},
+	{
+		id: 'static-reverse-prayer',
+		name: 'Reverse Prayer Stretch',
+		type: 'static',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Press the backs of your hands together with fingers pointing down, elbows out, and hold without forcing.',
+		sides: 'one',
+		defaultSeconds: 20,
+		iconKey: 'prayer-stretch'
+	},
+	{
+		id: 'mob-tendon-glides',
+		name: 'Finger Tendon Glides',
+		type: 'mobility',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Move slowly through a straight hand, hook fist, full fist, tabletop and straight fist. Keep it smooth and pain-free.',
+		sides: 'one',
+		defaultSeconds: 45,
+		iconKey: 'tendon-glides'
+	},
+	{
+		id: 'dynamic-forearm-rotations',
+		name: 'Forearm Rotations',
+		type: 'dynamic',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Elbows bent at your sides, turn palms up then down in a slow, full arc to keep the forearm muscles moving.',
+		sides: 'one',
+		defaultSeconds: 30,
+		iconKey: 'tendon-glides'
+	},
+	{
+		id: 'mob-median-nerve-glide',
+		name: 'Median Nerve Glide',
+		type: 'mobility',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Arm out to the side, palm up, then gently extend the wrist and tilt your head away. Ease off before any tingling.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'nerve-glide'
+	},
+	{
+		id: 'mob-ulnar-nerve-glide',
+		name: 'Ulnar Nerve Glide',
+		type: 'mobility',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Lift the elbow out to the side and bring the palm toward your ear like a mask, then tilt your head away. Stay gentle.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'ulnar-glide'
+	},
+	{
+		id: 'mob-radial-nerve-glide',
+		name: 'Radial Nerve Glide',
+		type: 'mobility',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Arm by your side, turn the palm back, flex the wrist and draw the shoulder down while tilting your head away.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'radial-glide'
+	},
+	{
+		id: 'mob-chin-tucks',
+		name: 'Chin Tucks',
+		type: 'mobility',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Glide your chin straight back to make a gentle double chin, hold a breath, then release. Keep your eyes level.',
+		sides: 'one',
+		defaultSeconds: 30,
+		iconKey: 'chin-tuck'
+	},
+	{
+		id: 'static-scalene-stretch',
+		name: 'Scalene Stretch',
+		type: 'static',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Anchor one collarbone with the opposite hand, then tilt your head away and slightly up until you feel the side of the neck.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'scalene'
+	},
+	{
+		id: 'static-levator-scapulae',
+		name: 'Levator Scapulae Stretch',
+		type: 'static',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Turn your nose toward one armpit and let the hand on the back of your head add light weight. Keep the other shoulder down.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'levator'
+	},
+	{
+		id: 'static-doorway-pec-stretch',
+		name: 'Doorway Pec Minor Stretch',
+		type: 'static',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Forearms on a doorframe slightly above shoulder height, step through until the front of the chest opens. Keep ribs down.',
+		sides: 'one',
+		defaultSeconds: 45,
+		iconKey: 'doorway-stretch'
+	},
+	{
+		id: 'mob-thoracic-extension',
+		name: 'Thoracic Extension',
+		type: 'mobility',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Hands behind your head, sit tall and arch your upper back gently over the chair back, then return to neutral.',
+		sides: 'one',
+		defaultSeconds: 45,
+		iconKey: 'thoracic-extension'
+	},
+	{
+		id: 'static-diaphragmatic-breathing',
+		name: 'Diaphragmatic Breathing',
+		type: 'static',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'One hand on your belly, breathe in through the nose so the belly rises and the shoulders stay relaxed and still.',
+		sides: 'one',
+		defaultSeconds: 60,
+		iconKey: 'belly-breathing'
+	},
+	{
+		id: 'dynamic-shoulder-shrugs',
+		name: 'Shrug and Drop',
+		type: 'dynamic',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Lift your shoulders toward your ears, pause, then let them drop down and back. Repeat slowly.',
+		sides: 'one',
+		defaultSeconds: 30,
+		iconKey: 'shoulder-rolls'
 	}
 ];
 

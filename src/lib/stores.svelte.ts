@@ -66,7 +66,12 @@ export type StarterRoutineKind =
 	| 'pre-workout-warmup'
 	| 'core-isometrics'
 	| 'band-isometrics'
-	| 'isometric-flexibility';
+	| 'isometric-flexibility'
+	| 'wrist-relief'
+	| 'typing-break'
+	| 'nerve-glides'
+	| 'thoracic-outlet'
+	| 'neck-shoulder-release';
 
 type StarterStretch = Partial<Stretch> & Pick<Stretch, 'name' | 'description' | 'sides'>;
 
@@ -218,6 +223,63 @@ const starterDefinitions: Record<
 			stock('iso-hamstring-contract-relax'),
 			stock('iso-hip-flexor-contract-relax'),
 			stock('iso-butterfly-knee-press')
+		]
+	},
+	'wrist-relief': {
+		name: 'Wrist & forearm relief',
+		stretches: [
+			stock('dynamic-forearm-rotations'),
+			stock('static-wrist-flexor'),
+			stock('static-wrist-extensor'),
+			stock('static-prayer-stretch'),
+			stock('static-reverse-prayer'),
+			stock('mob-tendon-glides'),
+			stock('mob-wrist-circles', 30)
+		]
+	},
+	'typing-break': {
+		name: 'Typing break',
+		breakSeconds: 3,
+		stretches: [
+			stock('dynamic-shoulder-shrugs', 20),
+			stock('mob-chin-tucks', 20),
+			stock('static-wrist-flexor', 20),
+			stock('static-wrist-extensor', 20),
+			stock('mob-tendon-glides', 30),
+			stock('static-chest-opener', 30)
+		]
+	},
+	'nerve-glides': {
+		name: 'Nerve glides',
+		sets: 2,
+		stretches: [
+			stock('mob-chin-tucks'),
+			stock('mob-median-nerve-glide'),
+			stock('mob-ulnar-nerve-glide'),
+			stock('mob-radial-nerve-glide')
+		]
+	},
+	'thoracic-outlet': {
+		name: 'Thoracic outlet relief',
+		stretches: [
+			stock('static-diaphragmatic-breathing'),
+			stock('mob-chin-tucks'),
+			stock('static-scalene-stretch'),
+			stock('static-doorway-pec-stretch'),
+			stock('iso-scapular-squeeze'),
+			stock('mob-thoracic-extension'),
+			stock('dynamic-shoulder-shrugs')
+		]
+	},
+	'neck-shoulder-release': {
+		name: 'Neck & shoulder release',
+		stretches: [
+			stock('dynamic-shoulder-rolls', 30),
+			stock('static-upper-trap'),
+			stock('static-levator-scapulae'),
+			stock('static-scalene-stretch'),
+			stock('static-cross-body-shoulder'),
+			stock('mob-thread-needle', 30)
 		]
 	}
 };

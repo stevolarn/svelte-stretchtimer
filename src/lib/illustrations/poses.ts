@@ -920,5 +920,107 @@ export const poses: Record<string, PoseDef> = {
 		],
 		loop: true,
 		dur: 6
+	},
+
+	/* ------------------------------------------------- RSI and thoracic outlet */
+	'chin-tuck': {
+		frames: [{ ...STAND, head: 170 }, { head: 188 }],
+		dur: 2.4,
+		glow: ['neck'],
+		arrows: [{ at: 'head', d: 'M8 -2h-6', gold: true }]
+	},
+	scalene: {
+		view: 'front',
+		frames: [{ ...FRONT, head: 192, farArm: -8, farForearm: 128 }, { head: 208 }],
+		glow: [['neck', 'shoulder']],
+		arrows: [{ at: 'head', d: 'M-4 -10q-6 2 -8 8', gold: true }]
+	},
+	levator: {
+		frames: [{ ...STAND, head: 150, arm: 172, forearm: 112 }, { head: 132, arm: 166, forearm: 104 }],
+		glow: [['neck', 'shoulder']],
+		arrows: [{ at: 'head', d: 'M6 -4q3 5 0 9', gold: true }]
+	},
+	'wrist-flexor': {
+		frames: [
+			{ ...STAND, arm: 90, forearm: 90, farArm: 62, farForearm: 104 },
+			{ arm: 88, forearm: 88, farArm: 58, farForearm: 108 }
+		],
+		glow: [['elbow', 'hand']],
+		arrows: [{ at: 'hand', d: 'M5 3q2 -6 -2 -9', gold: true }]
+	},
+	'wrist-extensor': {
+		frames: [
+			{ ...STAND, arm: 90, forearm: 90, farArm: 70, farForearm: 96 },
+			{ arm: 88, forearm: 88, farArm: 66, farForearm: 100 }
+		],
+		glow: [['elbow', 'hand']],
+		arrows: [{ at: 'hand', d: 'M5 -3q2 6 -2 9', gold: true }]
+	},
+	'prayer-stretch': {
+		view: 'front',
+		frames: [
+			{ ...FRONT, arm: 34, forearm: -92, farArm: -34, farForearm: 92 },
+			{ arm: 50, forearm: -100, farArm: -50, farForearm: 100 }
+		],
+		dur: 3,
+		glow: ['hand'],
+		arrows: [{ at: 'hand', d: 'M0 8v6', gold: true }]
+	},
+	'tendon-glides': {
+		view: 'front',
+		frames: [
+			{ ...FRONT, arm: 18, forearm: 160, farArm: -18, farForearm: -160 },
+			{ arm: 22, forearm: 150, farArm: -22, farForearm: -150 }
+		],
+		dur: 2,
+		glow: ['hand', 'farHand']
+	},
+	'nerve-glide': {
+		view: 'front',
+		frames: [{ ...FRONT, arm: 92, forearm: 96 }, { arm: 94, forearm: 108, head: 200 }],
+		dur: 2.6,
+		glow: [['shoulder', 'elbow']],
+		arrows: [{ at: 'head', d: 'M-6 -10q-6 2 -8 8' }]
+	},
+	'ulnar-glide': {
+		view: 'front',
+		frames: [{ ...FRONT, arm: 100, forearm: -160 }, { arm: 94, forearm: -140, head: 196 }],
+		dur: 2.6,
+		glow: ['elbow']
+	},
+	'radial-glide': {
+		view: 'front',
+		frames: [{ ...FRONT, arm: 14, forearm: 6 }, { arm: 30, forearm: 22, head: 200 }],
+		dur: 2.6,
+		glow: [['shoulder', 'hand']],
+		arrows: [{ at: 'head', d: 'M-6 -10q-6 2 -8 8' }]
+	},
+	'doorway-stretch': {
+		frames: [
+			{ ...STAND, arm: -88, forearm: 180, farArm: -92, farForearm: 176, thigh: 18, shin: 4, farThigh: -10, farShin: -6 },
+			{ torso: 172, head: 176, arm: -100, forearm: 178, farArm: -104, farForearm: 174, thigh: 24, shin: 2 }
+		],
+		anchor: 'hand',
+		props: [{ type: 'wall', at: 'hand', dx: -1.5 }],
+		glow: [['shoulder', 'neck']],
+		arrows: [{ at: 'neck', d: 'M4 -4h6', gold: true }]
+	},
+	'thoracic-extension': {
+		frames: [
+			{ ...STAND, head: 184, arm: 152, forearm: -132, farArm: 148, farForearm: -136 },
+			{ head: 210, bend: -5, arm: 164, forearm: -120, farArm: 160, farForearm: -124 }
+		],
+		dur: 3.4,
+		glow: [['neck', 'pelvis']],
+		arrows: [{ at: 'head', d: 'M-2 -10q-6 0 -9 5' }]
+	},
+	'belly-breathing': {
+		view: 'front',
+		frames: [
+			{ ...FRONT, arm: 12, forearm: -64, farArm: -12, farForearm: 64 },
+			{ arm: 16, forearm: -60, farArm: -16, farForearm: 60 }
+		],
+		dur: 4.5,
+		glow: [['neck', 'pelvis']]
 	}
 };

@@ -24,6 +24,11 @@
 
 	const starterOptions: Array<{ kind: StarterRoutineKind; title: string; description: string }> = [
 		{ kind: 'desk-reset', title: 'Desk reset', description: 'Neck, shoulders and wrists' },
+		{ kind: 'typing-break', title: 'Typing break', description: 'A quick reset between keyboard sessions' },
+		{ kind: 'wrist-relief', title: 'Wrist & forearm', description: 'For RSI-prone hands and forearms' },
+		{ kind: 'thoracic-outlet', title: 'Thoracic outlet', description: 'Open the neck, chest and collarbone' },
+		{ kind: 'nerve-glides', title: 'Nerve glides', description: 'Gentle arm nerve flossing, two rounds' },
+		{ kind: 'neck-shoulder-release', title: 'Neck & shoulders', description: 'Ease tension from desk work' },
 		{ kind: 'morning-mobility', title: 'Morning mobility', description: 'Wake up your whole body' },
 		{ kind: 'bedtime-wind-down', title: 'Bedtime wind-down', description: 'Slow, gentle evening movement' },
 		{ kind: 'lower-body-reset', title: 'Lower-body reset', description: 'Hips, legs and calves' },
