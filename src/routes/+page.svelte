@@ -124,7 +124,7 @@
 	<a class="streak-link" href="/stats">
 		<span class="streak-flame" class:lit={streakNow > 0} aria-hidden="true">🔥</span>
 		<span class="streak-copy">
-			<strong>{streakNow} day streak</strong>
+			<strong>{streakNow > 0 ? `${streakNow} day streak` : 'No streak yet'}</strong>
 			<span class="muted small">
 				{#if streakNow === 0}
 					Finish any routine to start one

@@ -261,6 +261,8 @@
 		margin-bottom: 0.7rem;
 	}
 	.calendar {
+		max-width: 22rem;
+		margin: 0 auto;
 		display: grid;
 		grid-template-columns: repeat(7, 1fr);
 		gap: 0.3rem;
@@ -303,6 +305,7 @@
 		opacity: 0.35;
 	}
 	.legend {
+		justify-content: center;
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.9rem;
