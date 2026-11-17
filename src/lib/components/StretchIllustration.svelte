@@ -21,6 +21,8 @@
 	// SVG ids are document-global, so prefix them per instance; otherwise every
 	// illustration on the page resolves to the first one's (possibly hidden) defs.
 	const uid = $props.id();
+	/** Corner radius in viewBox units (100 wide); string sizes rely on the CSS clip instead. */
+	const rx = $derived(typeof rounded === 'number' && typeof size === 'number' ? (rounded * 100) / size : 0);
 	const ref = (v: string | undefined) => v?.replace('url(#', `url(#${uid}-`);
 
 	let reducedMotion = $state(false);
@@ -63,7 +65,7 @@
 	class="stretch-illustration"
 	class:animated={moving}
 	viewBox="0 0 100 80"
-	style="width: {typeof size === 'number' ? `${size}px` : size}; height: auto; aspect-ratio: 5/4; border-radius: {typeof rounded === 'number' ? `${rounded}px` : rounded};"
+	style="width: {typeof size === 'number' ? `${size}px` : size}; height: auto; aspect-ratio: 5/4; border-radius: {typeof rounded === 'number' ? `${rounded}px` : rounded}; overflow: hidden;"
 	aria-hidden="true"
 >
 	<defs>
@@ -84,7 +86,7 @@
 		</marker>
 	</defs>
 
-	<rect width="100" height="80" rx={typeof rounded === 'number' ? rounded : 12} fill="url(#{uid}-ill-bg)" />
+	<rect width="100" height="80" {rx} fill="url(#{uid}-ill-bg)" />
 
 	{#each pose.layers as layer, i (i)}
 		{#if layer.tag === 'rect'}

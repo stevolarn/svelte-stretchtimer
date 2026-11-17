@@ -169,6 +169,10 @@
 		} else if (e.key === 'ArrowDown') {
 			e.preventDefault();
 			moveItem(index, index + 1);
+		} else if (e.key === 'Enter' || e.key === ' ') {
+			// The edit sheet has explicit move controls.
+			e.preventDefault();
+			editingId = routine?.stretches[index]?.id ?? null;
 		}
 	}
 
