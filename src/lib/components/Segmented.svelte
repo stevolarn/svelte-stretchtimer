@@ -7,20 +7,22 @@
 	let {
 		value = $bindable(''),
 		options,
+		label,
 		onchange
 	}: {
 		value?: string;
 		options: SegmentedOption[];
+		label?: string;
 		onchange?: (value: string) => void;
 	} = $props();
 </script>
 
-<div class="segmented" role="tablist">
+<div class="segmented" role="radiogroup" aria-label={label}>
 	{#each options as opt (opt.value)}
 		<button
 			type="button"
-			role="tab"
-			aria-selected={value === opt.value}
+			role="radio"
+			aria-checked={value === opt.value}
 			class:active={value === opt.value}
 			onclick={() => {
 				value = opt.value;

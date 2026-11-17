@@ -117,14 +117,14 @@
 			<div class="filter-section">
 				<div class="filter-row-wrap">
 					<span class="filter-group-label">Type:</span>
-					<div class="category-pills" role="tablist">
+					<div class="category-pills" role="group">
 						{#each typeFilters as tf}
 							<button
 								class="cat-pill"
 								class:active={selectedType === tf.id}
 								onclick={() => (selectedType = tf.id)}
-								role="tab"
-								aria-selected={selectedType === tf.id}
+								
+								aria-pressed={selectedType === tf.id}
 							>
 								{tf.label}
 							</button>
@@ -134,14 +134,14 @@
 
 				<div class="filter-row-wrap">
 					<span class="filter-group-label">Position:</span>
-					<div class="category-pills" role="tablist">
+					<div class="category-pills" role="group">
 						{#each positionFilters as pf}
 							<button
 								class="cat-pill"
 								class:active={selectedPosition === pf.id}
 								onclick={() => (selectedPosition = pf.id)}
-								role="tab"
-								aria-selected={selectedPosition === pf.id}
+								
+								aria-pressed={selectedPosition === pf.id}
 							>
 								{pf.label}
 							</button>
@@ -151,14 +151,14 @@
 
 				<div class="filter-row-wrap">
 					<span class="filter-group-label">Area:</span>
-					<div class="category-pills" role="tablist">
+					<div class="category-pills" role="group">
 						{#each areaFilters as af}
 							<button
 								class="cat-pill"
 								class:active={selectedArea === af.id}
 								onclick={() => (selectedArea = af.id)}
-								role="tab"
-								aria-selected={selectedArea === af.id}
+								
+								aria-pressed={selectedArea === af.id}
 							>
 								{af.label}
 							</button>

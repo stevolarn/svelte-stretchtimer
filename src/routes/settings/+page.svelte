@@ -187,6 +187,7 @@
 		<div class="set-row">
 			<span class="set-label">Theme</span>
 			<Segmented
+				label="Theme"
 				value={settings.theme}
 				onchange={setTheme}
 				options={[
@@ -386,6 +387,7 @@
 			<div class="set-row">
 				<span class="set-label">Playback speed</span>
 				<Segmented
+					label="Playback speed"
 					value={String(settings.playbackSpeed || 1)}
 					onchange={(v) => {
 						settings.playbackSpeed = Number(v);
