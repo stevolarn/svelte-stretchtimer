@@ -82,15 +82,20 @@
 		const [removed] = routine.stretches.splice(index, 1);
 		saveAll();
 		if (editingId === removed.id) editingId = null;
+		const routineId = routine.id;
 		const list = routine.stretches;
 		showToast(`Removed “${removed.name || 'Untitled stretch'}”`, {
 			action: 'Undo',
 			onAction: () => {
-				list.splice(Math.min(index, list.length), 0, removed);
+				// The routine itself may have been deleted while the toast was showing.
+				const target = getRoutine(routineId)?.stretches;
+				if (!target) return;
+				target.splice(Math.min(index, target.length), 0, removed);
 				saveAll();
 			},
 			onExpire: () => {
-				if (removed.photoId && !list.some((s) => s.id === removed.id)) {
+				const current = getRoutine(routineId)?.stretches ?? list;
+				if (removed.photoId && !current.some((s) => s.id === removed.id)) {
 					void deletePhotoData(removed.photoId).catch(() => {});
 				}
 			}
