@@ -152,7 +152,7 @@
 
 {#if player.status === 'idle'}
 	{#if !routine || routine.stretches.length === 0}
-		<div class="card" style="margin: 1.5rem auto; max-width: 480px">
+		<div class="card" style="margin: 1.5rem 1rem; max-width: 480px">
 			<p class="muted" style="margin: 0">{routine ? 'This routine has no stretches yet.' : 'This routine doesn’t exist any more.'}</p>
 			<a class="btn small" href={routine ? `/routine/${routine.id}` : '/'} style="margin-top: 0.6rem">
 				{routine ? 'Add stretches' : '← Back to routines'}
