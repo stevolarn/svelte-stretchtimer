@@ -1,14 +1,16 @@
-import type { PainEntry, Routine, Settings, Stretch, StreakState, StorageSnapshot } from './types.ts';
+import type { MorningCheck, PainEntry, Routine, Settings, Stretch, StreakState, StorageSnapshot } from './types.ts';
 import { showToast } from './toast.svelte.ts';
 import {
 	deletePhotoData,
 	getPhotoData,
+	loadMorningChecks,
 	loadPain,
 	loadRoutines,
 	loadSettings,
 	loadStreak,
 	recordSnapshot,
 	requestPersistentStorage,
+	saveMorningChecks,
 	savePain,
 	savePhotoData,
 	saveRoutines,
@@ -27,6 +29,7 @@ export const routines = $state<Routine[]>(loadRoutines());
 export const settings = $state<Settings>(loadSettings());
 export const streak = $state<StreakState>(loadStreak());
 export const painLog = $state<PainEntry[]>(loadPain());
+export const morningChecks = $state<MorningCheck[]>(loadMorningChecks());
 
 /**
  * Older data kept 'N× a day' goals and a one-routine-per-weekday plan; both
@@ -493,8 +496,8 @@ export function gentleVersion(r: Routine): Routine {
 }
 
 /** Record how the pain is right now (0-10). */
-export function logPain(score: number, routineId: string | null): void {
-	painLog.push({ date: todayKey(), score, routineId, at: Date.now() });
+export function logPain(score: number, routineId: string | null, gentle = false): void {
+	painLog.push({ date: todayKey(), score, routineId, at: Date.now(), ...(gentle && { gentle }) });
 	savePain(painLog);
 }
 
@@ -502,6 +505,15 @@ export function logPain(score: number, routineId: string | null): void {
 export function undoLastPain(): void {
 	painLog.pop();
 	savePain(painLog);
+}
+
+/** Answer today's next-morning check, replacing an earlier answer today; keeps about two months. */
+export function logMorningCheck(verdict: MorningCheck['verdict']): void {
+	const today = todayKey();
+	const cutoff = addDays(today, -60);
+	const kept = morningChecks.filter((c) => c.date !== today && c.date >= cutoff);
+	morningChecks.splice(0, morningChecks.length, ...kept, { date: today, verdict, at: Date.now() });
+	saveMorningChecks(morningChecks);
 }
 
 export function addRoutine(routine: Routine): void {
@@ -676,6 +688,7 @@ export async function importBackup(raw: string): Promise<{ added: number; skippe
 			createdAt: typeof candidate.createdAt === 'number' ? candidate.createdAt : Date.now(),
 			breakSeconds: typeof candidate.breakSeconds === 'number' ? candidate.breakSeconds : undefined,
 			sets: typeof candidate.sets === 'number' ? candidate.sets : undefined,
+			cue: typeof candidate.cue === 'string' && candidate.cue.trim() ? candidate.cue.trim() : undefined,
 			...importGoal(candidate),
 			stretches: []
 		};

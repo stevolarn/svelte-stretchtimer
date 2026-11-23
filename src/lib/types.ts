@@ -57,6 +57,10 @@ export interface Routine {
 	frequency?: RoutineFrequency;
 	/** 'YYYY-MM-DD' for each finished play, one entry per play, last four weeks only */
 	completions?: string[];
+	/** if-then habit cue: the existing habit this routine follows, e.g. 'pour my morning coffee' */
+	cue?: string;
+	/** 'YYYY-MM-DD' the last "ready to progress?" prompt was answered, so it waits a fortnight */
+	progressAnswered?: string;
 }
 
 export interface RoutineSchedule {
@@ -82,6 +86,16 @@ export interface PainEntry {
 	score: number;
 	routineId: string | null;
 	at: number;
+	/** logged after the gentle version, so it doesn't count toward progressing */
+	gentle?: boolean;
+}
+
+/** Next-morning check after a session (pain-monitoring model): how it compares with before. */
+export interface MorningCheck {
+	/** 'YYYY-MM-DD' of the morning */
+	date: string;
+	verdict: 'better' | 'same' | 'worse';
+	at: number;
 }
 
 export type Theme = 'light' | 'dark' | 'system';
@@ -105,6 +119,8 @@ export interface Settings {
 	weekPlan?: (string | null)[];
 	/** Monday of the week whose review card was dismissed */
 	reviewDismissed?: string;
+	/** Monday of the week whose rising-pain card was dismissed */
+	trendDismissed?: string;
 }
 
 export interface StorageSnapshot {

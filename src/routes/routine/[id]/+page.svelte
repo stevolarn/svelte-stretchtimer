@@ -2,7 +2,8 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { deletePhotoData, getPhotoData, savePhotoData } from '$lib/storage';
-	import { deleteRoutineWithUndo, getRoutine, newStretch, saveAll, settings } from '$lib/stores.svelte';
+	import { deleteRoutineWithUndo, getRoutine, morningChecks, newStretch, painLog, saveAll, settings } from '$lib/stores.svelte';
+	import { readyToProgress } from '$lib/recovery';
 	import { buildTimeline, durationText, stretchDurationLabel, timelineTotal } from '$lib/timeline';
 	import { formatSeconds, todayKey } from '$lib/time';
 	import { uid } from '$lib/util';
@@ -236,6 +237,27 @@
 		saveAll();
 	}
 
+	function setCue(value: string): void {
+		if (!routine) return;
+		routine.cue = value.trim() ? value : undefined;
+		saveAll();
+	}
+
+	/* ---------------------- ready to progress? ---------------------- */
+
+	const progress = $derived(routine ? readyToProgress(routine, painLog, morningChecks) : null);
+	const canLengthen = $derived(routine?.stretches.some((s) => s.durationSeconds < 600) ?? false);
+
+	/** Graded loading, one variable at a time: longer holds, an extra set, or neither for now. */
+	function answerProgress(step: 'hold' | 'set' | 'later'): void {
+		if (!routine) return;
+		if (step === 'hold') for (const s of routine.stretches) s.durationSeconds = Math.min(600, s.durationSeconds + 5);
+		if (step === 'set') routine.sets = Math.min(20, (routine.sets ?? 1) + 1);
+		routine.progressAnswered = todayKey();
+		saveAll();
+		if (step !== 'later') showToast(step === 'hold' ? 'Every stretch is 5s longer' : `Now ${routine.sets} sets`);
+	}
+
 	function removeTime(index: number): void {
 		const s = routine?.schedule;
 		if (!s) return;
@@ -273,6 +295,21 @@
 	<p class="summary muted">
 		<strong>{formatSeconds(total)}</strong> total · {routine.stretches.length} stretch{routine.stretches.length === 1 ? '' : 'es'}
 	</p>
+
+	{#if progress}
+		<section class="card progress-card" aria-labelledby="progress-title">
+			<h2 id="progress-title">Ready to progress?</h2>
+			<p class="muted small">
+				Played on {progress.plays} days in the last two weeks, pain no higher than {progress.worst}/10 and no worse mornings.
+				Change one thing at a time, then see how the next morning feels.
+			</p>
+			<div class="progress-choices">
+				<button class="btn small" onclick={() => answerProgress('hold')} disabled={!canLengthen}>＋5s each</button>
+				<button class="btn small" onclick={() => answerProgress('set')} disabled={(routine.sets ?? 1) >= 20}>＋1 set</button>
+				<button class="btn small ghost" onclick={() => answerProgress('later')}>Not yet</button>
+			</div>
+		</section>
+	{/if}
 
 	<section class="card options-card">
 		<div class="option-row">
@@ -366,6 +403,20 @@
 				<Stepper bind:value={freq.times} min={1} max={7} step={1} label="Times a week" suffix="×" onchange={saveAll} />
 			</div>
 		{/if}
+		<label class="cue-field">
+			<span class="option-title">Habit cue</span>
+			<span class="cue-input">
+				<span class="muted">After I</span>
+				<input
+					type="text"
+					value={routine.cue ?? ''}
+					oninput={(e) => setCue(e.currentTarget.value)}
+					placeholder="pour my morning coffee"
+					maxlength="60"
+				/>
+			</span>
+			<span class="muted small">Tie it to something you already do every day — it’s the cue to start.</span>
+		</label>
 	</section>
 
 	<div class="spread list-heading">
@@ -586,6 +637,38 @@
 		flex-direction: column;
 		gap: 0.7rem;
 		padding-bottom: 0.9rem;
+	}
+	.progress-card {
+		margin-bottom: 1.2rem;
+		border-left: 4px solid #2fa86b;
+	}
+	.progress-card h2 {
+		margin: 0;
+		font-size: 1.05rem;
+	}
+	.progress-card p {
+		margin: 0.3rem 0 0.6rem;
+	}
+	.progress-choices {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+	.cue-field {
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+		padding-top: 0.7rem;
+		border-top: 1px solid var(--border);
+	}
+	.cue-input {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+	.cue-input input {
+		flex: 1;
+		min-width: 0;
 	}
 	.schedule-card .option-row + .option-row,
 	.schedule-card .option-row:not(:first-child) {

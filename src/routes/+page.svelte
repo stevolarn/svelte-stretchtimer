@@ -5,6 +5,8 @@
 		applyFixer,
 		deleteRoutineWithUndo,
 		duplicateRoutine,
+		logMorningCheck,
+		morningChecks,
 		newRoutine,
 		painLog,
 		routines,
@@ -29,6 +31,8 @@
 	} from '$lib/frequency';
 	import { scheduleIcs } from '$lib/calendar';
 	import { currentStreak, fixersAvailable, fixerProgress, repairGap } from '$lib/streak';
+	import { daysPractised, morningVerdict, needsMorningCheck, painTrend } from '$lib/recovery';
+	import WarningSigns from '$lib/components/WarningSigns.svelte';
 	import { addDays, formatSeconds, todayKey } from '$lib/time';
 	import { type Routine } from '$lib/types';
 	import StarterArt from '$lib/components/StarterArt.svelte';
@@ -79,8 +83,8 @@
 		goto(`/routine/${r.id}`);
 	}
 
-	function play(r: Routine): void {
-		goto(`/player/${r.id}`);
+	function play(r: Routine, gentle = false): void {
+		goto(`/player/${r.id}${gentle ? '?gentle=1' : ''}`);
 	}
 
 	function edit(r: Routine): void {
@@ -133,7 +137,6 @@
 	const fixers = $derived(fixersAvailable(streak));
 	const gap = $derived(repairGap(streak));
 	const canRepair = $derived(gap.length > 0 && fixers >= gap.length);
-
 	/* ------------------------- weekly plan ------------------------- */
 
 	/** Plan rows run Monday to Sunday; values index Date.getDay(). */
@@ -228,6 +231,23 @@
 		updateSettings({ reviewDismissed: thisMonday });
 	}
 
+	const practised = $derived(daysPractised(streak.completedDates, 30, todayKey(now)));
+
+	/* ----------------------- recovery check-ins ----------------------- */
+
+	const askMorning = $derived(needsMorningCheck(routines, streak.completedDates, morningChecks, todayKey(now)));
+	/** A worse morning after yesterday's session: today's routine is suggested in its gentle version. */
+	const easeOff = $derived(morningVerdict(morningChecks, todayKey(now)) === 'worse');
+	const trend = $derived(painTrend(painLog, morningChecks, todayKey(now)));
+	const showTrend = $derived(trend.rising && settings.trendDismissed !== thisMonday);
+	let showSigns = $state(false);
+
+	function answerMorning(verdict: 'better' | 'same' | 'worse'): void {
+		logMorningCheck(verdict);
+		if (verdict === 'better') showToast('Good sign — carry on as planned');
+		else if (verdict === 'same') showToast('Steady — keep the plan as it is');
+	}
+
 	function dayName(key: string): string {
 		const [y, m, d] = key.split('-').map(Number);
 		return new Date(y, m - 1, d).toLocaleDateString([], { weekday: 'long' });
@@ -267,7 +287,9 @@
 		<span class="streak-copy">
 			<strong>{streakNow > 0 ? `${streakNow} day streak` : 'No streak yet'}</strong>
 			<span class="muted small">
-				{#if streakNow === 0}
+				{#if streakNow === 0 && streak.completedDates.length > 0}
+					One missed day doesn’t undo a habit — even 2 minutes gets you back on · {practised}/30 days
+				{:else if streakNow === 0}
 					Finish any routine to start one
 				{:else if !doneToday && !canRepair}
 					Finish a routine today to keep it going
@@ -283,6 +305,33 @@
 		<button class="btn primary small" onclick={handleRepairStreak}>🩹 Fix streak</button>
 	{/if}
 </div>
+
+{#if askMorning}
+	<section class="card morning-card" aria-labelledby="morning-title">
+		<h2 id="morning-title">Morning check</h2>
+		<p class="muted small">Compared with before yesterday’s session, how does it feel now?</p>
+		<div class="morning-choices">
+			<button class="btn" onclick={() => answerMorning('better')}>🙂 Better</button>
+			<button class="btn" onclick={() => answerMorning('same')}>😐 Same</button>
+			<button class="btn" onclick={() => answerMorning('worse')}>😣 Worse</button>
+		</div>
+	</section>
+{/if}
+
+{#if showTrend}
+	<section class="card trend-card" aria-labelledby="trend-title">
+		<div class="spread">
+			<h2 id="trend-title">Pain is trending up</h2>
+			<button class="icon-btn" aria-label="Dismiss for this week" onclick={() => updateSettings({ trendDismissed: thisMonday })}>✕</button>
+		</div>
+		<p class="small">{trend.reason}</p>
+		<p class="muted small">
+			Use gentle versions and micro-breaks for a few days, and cut back anything that flares it. If it keeps
+			climbing, get it looked at.
+		</p>
+		<button class="btn small" onclick={() => (showSigns = true)}>When to get it checked</button>
+	</section>
+{/if}
 
 {#if showReview}
 	<section class="card review-card" aria-labelledby="review-title">
@@ -328,6 +377,12 @@
 			<span class="today-label">{upNext?.state === 'due' ? 'Due now' : upNext ? 'Up next' : 'Today'} · {dayNames[todayIndex]}</span>
 			{#if upNext}
 				<strong>{upNext.routine.name || 'Untitled routine'}</strong>
+				{#if upNext.routine.cue}
+					<span class="today-cue small">↪ After I {upNext.routine.cue}</span>
+				{/if}
+				{#if easeOff}
+					<span class="today-cue small">🌧 Worse this morning — gentle version today</span>
+				{/if}
 				<span class="muted small">
 					{upNext.why}{upNext.time && upNext.target > 1 ? ` · ${upNext.done + 1} of ${upNext.target} today` : ''} · {routineLength(upNext.routine)}{due.length > 1 ? ` · ${due.length - 1} more after this` : ''}
 				</span>
@@ -348,7 +403,7 @@
 		{#if upNext}
 			<button
 				class="play-fab"
-				onclick={() => play(upNext.routine)}
+				onclick={() => play(upNext.routine, easeOff)}
 				disabled={upNext.routine.stretches.length === 0}
 				aria-label={`Play ${upNext.routine.name || 'routine'}`}
 				title="Play"
@@ -499,6 +554,10 @@
 			</article>
 		{/each}
 	</div>
+{/if}
+
+{#if showSigns}
+	<WarningSigns onclose={() => (showSigns = false)} />
 {/if}
 
 {#if showWeekModal}

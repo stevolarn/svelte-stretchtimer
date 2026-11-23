@@ -56,6 +56,14 @@ A fast, phone-first, 100% offline web app for building, timing, and tracking str
 - **42-Day Visual Calendar**: Interactive history grid of recent workout activity.
 - **Reset Capability**: Option to clear streak history whenever you want a clean slate.
 
+### 🩹 Recovery & Habit Tools
+- **Habit Cues**: Anchor each routine to something you already do ("After I pour my morning coffee"), shown on the Up next card. In a meta-analysis, if-then plans like this gave a medium-to-large boost to follow-through (d ≈ 0.65; Gollwitzer & Sheeran, 2006).
+- **Pain Zones**: After a routine, your 0-10 pain score gets a green / amber / red read based on the tendon pain-monitoring model: up to 5/10 is fine if it has settled by the next morning.
+- **Morning Check**: The day after a session, answer Better / Same / Worse. If it's worse, today's routine is suggested in its gentle version.
+- **Rising-Pain Alert**: A card appears if pain rises week on week or two mornings feel worse, with a "When to get it checked" guide to warning signs.
+- **Ready to Progress?**: After a calm fortnight on a routine (6+ plays, pain ≤3, no bad mornings), you're offered one step up: +5s per stretch or +1 set. It never changes anything without asking.
+- **Forgiving Streaks**: Shows days practised in the last 30 alongside the streak, because missing a single day doesn't undo a habit (Lally et al., 2010).
+
 ### 🚀 Starter Routine Presets
 Includes 6 ready-to-use stretching routines with illustrated previews:
 1. **Desk Reset** (3 min) – Neck, shoulders, wrists, and chest.

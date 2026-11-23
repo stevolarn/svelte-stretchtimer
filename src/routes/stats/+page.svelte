@@ -2,6 +2,8 @@
 	import { applyFixer, logPain, painLog, streak, undoLastPain } from '$lib/stores.svelte';
 	import { currentStreak, fixerProgress, fixersAvailable, longestStreak, repairGap } from '$lib/streak';
 	import { addDays, todayKey } from '$lib/time';
+	import { daysPractised } from '$lib/recovery';
+	import WarningSigns from '$lib/components/WarningSigns.svelte';
 
 	const WEEKS = 6;
 	const weekdays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
@@ -10,6 +12,9 @@
 	const now = $derived(currentStreak(streak));
 	const best = $derived(longestStreak(streak));
 	const totalDays = $derived(streak.completedDates.length);
+	/** Unlike the streak, this doesn't reset after one miss — closer to how habits actually form. */
+	const practised = $derived(daysPractised(streak.completedDates, 30, today));
+	let showSigns = $state(false);
 	const doneToday = $derived(streak.completedDates.includes(today));
 	const fixers = $derived(fixersAvailable(streak));
 	const toNext = $derived(fixerProgress(streak));
@@ -96,13 +101,14 @@
 		{:else if now > 0}
 			Stretch today to keep it going
 		{:else if gap.length > 0}
-			Your streak broke — repair it below or start fresh today
+			One missed day doesn’t undo a habit — repair it below, or just pick it up today
 		{:else}
 			Finish any routine to start a streak
 		{/if}
 	</p>
 	<div class="hero-stats">
 		<div role="img" aria-label={`Best streak: ${best}`}><strong aria-hidden="true">{best}</strong><span aria-hidden="true">best streak</span></div>
+		<div role="img" aria-label={`Days stretched in the last 30: ${practised}`}><strong aria-hidden="true">{practised}/30</strong><span aria-hidden="true">last 30 days</span></div>
 		<div role="img" aria-label={`Days stretched: ${totalDays}`}><strong aria-hidden="true">{totalDays}</strong><span aria-hidden="true">days stretched</span></div>
 	</div>
 </section>
@@ -190,9 +196,29 @@
 			{/each}
 		</div>
 	</div>
+	<p class="muted small pain-guide">
+		Up to 5/10 during or after a session is usually fine if it’s settled by the next morning.
+		<button class="link-btn" onclick={() => (showSigns = true)}>When to get it checked</button>
+	</p>
 </section>
 
+{#if showSigns}
+	<WarningSigns onclose={() => (showSigns = false)} />
+{/if}
+
 <style>
+	.pain-guide {
+		margin: 0.75rem 0 0;
+	}
+	.link-btn {
+		border: 0;
+		background: none;
+		padding: 0;
+		font: inherit;
+		color: var(--accent);
+		text-decoration: underline;
+		cursor: pointer;
+	}
 	.pain-chart {
 		width: 100%;
 		max-width: 26rem;
@@ -294,7 +320,7 @@
 	}
 	.hero-stats {
 		display: grid;
-		grid-template-columns: 1fr 1fr;
+		grid-template-columns: repeat(3, 1fr);
 		margin-top: 1rem;
 		padding-top: 0.85rem;
 		border-top: 1px solid var(--border);

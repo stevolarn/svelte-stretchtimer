@@ -28,6 +28,7 @@
 	import { buildTimeline, durationText, stretchDurationLabel, timelineTotal } from '$lib/timeline';
 	import { formatSeconds } from '$lib/time';
 	import { currentStreak } from '$lib/streak';
+	import { painZone, zoneAdvice } from '$lib/recovery';
 	import { getPhotoData } from '$lib/storage';
 	import ProgressRing from '$lib/components/ProgressRing.svelte';
 	import StretchIllustration from '$lib/components/StretchIllustration.svelte';
@@ -41,8 +42,8 @@
 	/** Bad-day mode: the same routine (same id, so it still counts) minus loading and extra sets. */
 	let gentle = $state(false);
 	$effect(() => {
-		void page.params.id; // a different routine starts in its normal version
-		gentle = false;
+		void page.params.id; // a different routine starts in its normal version, unless Up next asked for gentle
+		gentle = page.url.searchParams.get('gentle') === '1';
 	});
 	const routine = $derived(saved && gentle ? gentleVersion(saved) : saved);
 	const total = $derived(routine ? timelineTotal(buildTimeline(routine, settings)) : 0);
@@ -52,7 +53,7 @@
 	let painScore = $state<number | null>(null);
 	function checkIn(score: number): void {
 		if (painScore !== null) undoLastPain();
-		logPain(score, player.routineId);
+		logPain(score, player.routineId, gentle);
 		painScore = score;
 	}
 	function undoCheckIn(): void {
@@ -432,7 +433,10 @@
 					</div>
 					<span class="pain-scale muted small"><span>0 none</span><span>10 worst</span></span>
 				{:else}
-					<span id="pain-q" class="small">Logged pain {painScore}/10 — see the trend on Stats.</span>
+					<span id="pain-q" class="small pain-logged">
+						<span class="zone-dot zone-{painZone(painScore)}" aria-hidden="true"></span>
+						<span><strong>{painScore}/10.</strong> {zoneAdvice[painZone(painScore)]}</span>
+					</span>
 					<button class="btn small ghost" onclick={undoCheckIn}>Undo</button>
 				{/if}
 			</div>
@@ -539,6 +543,27 @@
 		font-weight: 700;
 		cursor: pointer;
 		padding: 0;
+	}
+	.pain-logged {
+		display: flex;
+		align-items: baseline;
+		gap: 0.45rem;
+		text-align: left;
+	}
+	.zone-dot {
+		flex: none;
+		width: 0.7rem;
+		height: 0.7rem;
+		border-radius: 50%;
+	}
+	.zone-green {
+		background: #2fa86b;
+	}
+	.zone-amber {
+		background: #e3a21a;
+	}
+	.zone-red {
+		background: #e0533d;
 	}
 	.pain-scale {
 		display: flex;
