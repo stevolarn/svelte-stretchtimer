@@ -56,6 +56,13 @@
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     },
     {
+      "name": "2-minute micro-break",
+      "short_name": "Micro-break",
+      "description": "Start a quick random set of desk-friendly RSI moves",
+      "url": "/player/micro-break",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
       "name": "Streak",
       "short_name": "Streak",
       "description": "See your streak and stretch calendar",

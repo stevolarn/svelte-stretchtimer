@@ -394,7 +394,60 @@ export function starterRoutine(kind: StarterRoutineKind): Routine {
 }
 
 export function getRoutine(id: string): Routine | undefined {
+	if (id === MICRO_BREAK_ID) return microBreak.routine ?? undefined;
 	return routines.find((r) => r.id === id);
+}
+
+/* --------------------------- micro-break --------------------------- */
+
+export const MICRO_BREAK_ID = 'micro-break';
+
+/** Desk-friendly RSI moves: one for the neck, one for the shoulders, two for the arms. */
+const microPools = [
+	['mob-chin-tucks', 'static-neck-rotation', 'static-upper-trap', 'static-levator-scapulae'],
+	['dynamic-shoulder-rolls', 'static-reach-round', 'dynamic-shoulder-shrugs'],
+	[
+		'static-wrist-flexor',
+		'static-wrist-extensor',
+		'static-prayer-stretch',
+		'mob-tendon-glides',
+		'dynamic-forearm-rotations',
+		'mob-median-nerve-glide',
+		'mob-elbow-bend-turn',
+		'static-thumb-tuck',
+		'mob-wrist-circles'
+	]
+];
+
+/** The current micro-break; never saved with the routines. */
+export const microBreak = $state<{ routine: Routine | null }>({ routine: null });
+
+function pick<T>(items: T[], count: number): T[] {
+	const pool = [...items];
+	for (let i = pool.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[pool[i], pool[j]] = [pool[j], pool[i]];
+	}
+	return pool.slice(0, count);
+}
+
+/** Shuffle up a fresh ~2-minute break: 30 seconds per move, split across sides where needed. */
+export function shuffleMicroBreak(): Routine {
+	const ids = [...pick(microPools[0], 1), ...pick(microPools[1], 1), ...pick(microPools[2], 2)];
+	const routine = newRoutine('2-minute micro-break', 3);
+	routine.id = MICRO_BREAK_ID;
+	routine.stretches = ids.map((id) => {
+		const s = stock(id);
+		return { ...newStretch(), ...s, durationSeconds: s.sides === 'two' ? 15 : 30, photoId: null };
+	});
+	microBreak.routine = routine;
+	return routine;
+}
+
+/** Today's planned routine, if the plan names one that still exists. */
+export function plannedRoutine(day = new Date().getDay()): Routine | undefined {
+	const id = settings.weekPlan?.[day];
+	return id ? routines.find((r) => r.id === id) : undefined;
 }
 
 export function addRoutine(routine: Routine): void {

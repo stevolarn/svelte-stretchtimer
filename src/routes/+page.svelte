@@ -6,7 +6,10 @@
 		deleteRoutineWithUndo,
 		duplicateRoutine,
 		newRoutine,
+		plannedRoutine,
 		routines,
+		shuffleMicroBreak,
+		updateSettings,
 		settings,
 		streak,
 		starterRoutine,
@@ -14,7 +17,7 @@
 	} from '$lib/stores.svelte';
 	import { buildTimeline, timelineTotal } from '$lib/timeline';
 	import { currentStreak, fixersAvailable, fixerProgress, repairGap } from '$lib/streak';
-	import { formatSeconds, todayKey } from '$lib/time';
+	import { addDays, formatSeconds, todayKey } from '$lib/time';
 	import { type Routine } from '$lib/types';
 	import StarterArt from '$lib/components/StarterArt.svelte';
 	import Modal from '$lib/components/Modal.svelte';
@@ -114,6 +117,46 @@
 	const gap = $derived(repairGap(streak));
 	const canRepair = $derived(gap.length > 0 && fixers >= gap.length);
 
+	/* ------------------------- weekly plan ------------------------- */
+
+	/** Plan rows run Monday to Sunday; values index Date.getDay(). */
+	const planDays = [1, 2, 3, 4, 5, 6, 0];
+	const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+	const todayIndex = new Date().getDay();
+	const todayRoutine = $derived(plannedRoutine(todayIndex));
+	const hasPlan = $derived(planDays.some((d) => plannedRoutine(d)));
+	let showPlanModal = $state(false);
+
+	/** This week, Monday first, with whether each day was done, planned, or is still to come. */
+	const weekDays = $derived.by(() => {
+		const today = todayKey();
+		const monday = addDays(today, -((todayIndex + 6) % 7));
+		return planDays.map((day, i) => {
+			const key = addDays(monday, i);
+			return {
+				key,
+				letter: dayNames[day][0],
+				name: dayNames[day],
+				planned: plannedRoutine(day)?.name ?? null,
+				done: streak.completedDates.includes(key),
+				isToday: key === today,
+				past: key < today
+			};
+		});
+	});
+
+	function setPlan(day: number, id: string): void {
+		const weekPlan = [...(settings.weekPlan ?? [])];
+		while (weekPlan.length < 7) weekPlan.push(null);
+		weekPlan[day] = id || null;
+		updateSettings({ weekPlan });
+	}
+
+	function startMicroBreak(): void {
+		const r = shuffleMicroBreak();
+		goto(`/player/${r.id}`);
+	}
+
 	function handleRepairStreak(): void {
 		if (gap.length === 0 || fixers < gap.length) return;
 		const [y, m, d] = gap[0].split('-').map(Number);
@@ -154,6 +197,60 @@
 		<button class="btn primary small" onclick={handleRepairStreak}>🩹 Fix streak</button>
 	{/if}
 </div>
+
+<section class="card today-card">
+	<div class="today-row">
+		<div class="today-copy">
+			<span class="today-label">Today · {dayNames[todayIndex]}</span>
+			{#if todayRoutine}
+				<strong>{todayRoutine.name || 'Untitled routine'}</strong>
+				<span class="muted small">{routineMinutes(todayRoutine)}{doneToday ? ' · done ✓' : ''}</span>
+			{:else if hasPlan}
+				<strong>Rest day</strong>
+				<span class="muted small">Nothing planned. A micro-break still counts.</span>
+			{:else if routines.length === 0}
+				<strong>Short on time?</strong>
+				<span class="muted small">A 2-minute micro-break counts toward your streak.</span>
+			{:else}
+				<strong>Plan your week</strong>
+				<span class="muted small">Pick a routine for each day and it’ll be waiting here.</span>
+			{/if}
+		</div>
+		{#if todayRoutine}
+			<button
+				class="play-fab"
+				onclick={() => play(todayRoutine)}
+				disabled={todayRoutine.stretches.length === 0}
+				aria-label={`Play ${todayRoutine.name || 'routine'}`}
+				title="Play"
+			>
+				<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" /></svg>
+			</button>
+		{/if}
+	</div>
+	{#if hasPlan}
+		<ol class="week-strip" aria-label="This week">
+			{#each weekDays as d (d.key)}
+				<li
+					class:done={d.done}
+					class:today={d.isToday}
+					class:missed={d.past && d.planned && !d.done}
+					class:rest={!d.planned}
+					title={`${d.name}: ${d.planned ?? 'rest day'}${d.done ? ' · done' : ''}`}
+				>
+					<span aria-hidden="true">{d.letter}</span>
+					<span class="sr-only">{d.name}, {d.planned ?? 'rest day'}{d.done ? ', done' : ''}</span>
+				</li>
+			{/each}
+		</ol>
+	{/if}
+	<div class="today-actions">
+		<button class="btn small" onclick={startMicroBreak}>⚡ 2-min micro-break</button>
+		{#if routines.length > 0}
+			<button class="btn small ghost" onclick={() => (showPlanModal = true)}>📅 {hasPlan ? 'Edit plan' : 'Plan week'}</button>
+		{/if}
+	</div>
+</section>
 
 <div class="spread routine-heading">
 	<h1>Routines</h1>
@@ -263,6 +360,26 @@
 			</article>
 		{/each}
 	</div>
+{/if}
+
+{#if showPlanModal}
+	<Modal title="Weekly plan" subtitle="Pick a routine for each day" onclose={() => (showPlanModal = false)}>
+		<div class="plan-list">
+			{#each planDays as day (day)}
+				{@const current = plannedRoutine(day)?.id ?? ''}
+				<label class="plan-row" class:today={day === todayIndex}>
+					<span>{dayNames[day]}</span>
+					<select value={current} onchange={(e) => setPlan(day, e.currentTarget.value)}>
+						<option value="">Rest day</option>
+						{#each routines as r (r.id)}
+							<option value={r.id}>{r.name || 'Untitled routine'}</option>
+						{/each}
+					</select>
+				</label>
+			{/each}
+		</div>
+		<button class="btn primary" style="width: 100%; margin-top: 1rem" onclick={() => (showPlanModal = false)}>Done</button>
+	</Modal>
 {/if}
 
 {#if showNewModal}

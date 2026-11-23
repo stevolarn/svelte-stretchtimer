@@ -14,7 +14,7 @@
 		stopPlayer,
 		togglePause
 	} from '$lib/player.svelte';
-	import { getRoutine, settings, streak } from '$lib/stores.svelte';
+	import { getRoutine, MICRO_BREAK_ID, microBreak, settings, shuffleMicroBreak, streak } from '$lib/stores.svelte';
 	import { buildTimeline, durationText, stretchDurationLabel, timelineTotal } from '$lib/timeline';
 	import { formatSeconds } from '$lib/time';
 	import { currentStreak } from '$lib/streak';
@@ -24,6 +24,9 @@
 	import PhotoThumb from '$lib/components/PhotoThumb.svelte';
 	import Modal from '$lib/components/Modal.svelte';
 
+	const isMicro = $derived(page.params.id === MICRO_BREAK_ID);
+	// Opened directly (reload or shortcut): shuffle one up rather than showing a missing routine.
+	if (page.params.id === MICRO_BREAK_ID && !microBreak.routine) shuffleMicroBreak();
 	const routine = $derived(getRoutine(page.params.id ?? ''));
 	const total = $derived(routine ? timelineTotal(buildTimeline(routine, settings)) : 0);
 
@@ -161,7 +164,11 @@
 	{:else}
 		<div class="pl pl-idle">
 			<div class="pl-top">
-				<a class="pl-back" href={`/routine/${routine.id}`}>‹ Edit</a>
+				{#if isMicro}
+					<button class="pl-back" onclick={shuffleMicroBreak}>↻ Shuffle</button>
+				{:else}
+					<a class="pl-back" href={`/routine/${routine.id}`}>‹ Edit</a>
+				{/if}
 				<a class="icon-btn pl-icon" href="/" aria-label="Close">✕</a>
 			</div>
 
@@ -411,6 +418,13 @@
 		font-weight: 600;
 		text-decoration: none;
 		padding: 0.4rem 0;
+	}
+	button.pl-back {
+		background: none;
+		border: 0;
+		font: inherit;
+		font-weight: 600;
+		cursor: pointer;
 	}
 
 	/* ---------- idle ---------- */

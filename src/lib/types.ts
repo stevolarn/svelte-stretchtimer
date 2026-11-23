@@ -70,6 +70,8 @@ export interface Settings {
 	reminderEnabled: boolean;
 	/** earliest hour of the day (0-23) to remind */
 	reminderHour: number;
+	/** routine id planned for each weekday, Sunday first; null = rest day */
+	weekPlan: (string | null)[];
 }
 
 export interface StorageSnapshot {
