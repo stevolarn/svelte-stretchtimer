@@ -56,9 +56,9 @@
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Streak & Stats",
+      "name": "Streak",
       "short_name": "Streak",
-      "description": "View workout streak and calendar",
+      "description": "See your streak and stretch calendar",
       "url": "/stats",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }
