@@ -18,6 +18,7 @@ import { fixersAvailable, repairGap, canRepairStreak } from './streak.ts';
 import { uid } from './util.ts';
 import { stockStretches } from './stockStretches.ts';
 import { autoSaveToFileHandle, isFileAutoBackupConnected } from './backup.ts';
+import { syncReminderState } from './reminders.ts';
 
 export const routines = $state<Routine[]>(loadRoutines());
 export const settings = $state<Settings>(loadSettings());
@@ -26,6 +27,7 @@ export const streak = $state<StreakState>(loadStreak());
 // Auto-request persistent storage on startup in supported browsers
 if (typeof window !== 'undefined') {
 	void requestPersistentStorage().catch(() => {});
+	void syncReminderState(settings, streak);
 }
 
 export function saveAll(): void {
@@ -33,6 +35,7 @@ export function saveAll(): void {
 	saveSettings(settings);
 	saveStreak(streak);
 	recordSnapshot(routines, streak);
+	void syncReminderState(settings, streak);
 	if (isFileAutoBackupConnected()) {
 		void autoSaveToFileHandle().catch(() => {});
 	}

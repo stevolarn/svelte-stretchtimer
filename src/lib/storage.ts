@@ -17,7 +17,9 @@ export const defaultSettings: Settings = {
 	breakSeconds: 5,
 	testingMode: false,
 	playbackSpeed: 1,
-	autoBackupOnFinish: false
+	autoBackupOnFinish: false,
+	reminderEnabled: false,
+	reminderHour: 18
 };
 
 export const defaultStreak: StreakState = { completedDates: [], fixersUsed: 0 };

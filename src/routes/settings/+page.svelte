@@ -40,6 +40,7 @@
 	import Stepper from '$lib/components/Stepper.svelte';
 	import Toggle from '$lib/components/Toggle.svelte';
 	import { showToast } from '$lib/toast.svelte';
+	import { disableReminder, enableReminder, reminderSupport } from '$lib/reminders';
 
 	let isPersistent = $state(false);
 	let fileBackupActive = $state(false);
@@ -55,6 +56,27 @@
 		fileBackupActive = isFileAutoBackupConnected();
 		refreshSnapshots();
 	});
+
+	const reminderAvailability = reminderSupport();
+
+	function hourLabel(h: number): string {
+		if (h === 0) return '12 am';
+		if (h === 12) return '12 pm';
+		return h < 12 ? `${h} am` : `${h - 12} pm`;
+	}
+
+	async function toggleReminder(): Promise<void> {
+		if (settings.reminderEnabled) {
+			const problem = await enableReminder();
+			if (problem) {
+				settings.reminderEnabled = false;
+				notify(problem);
+			}
+		} else {
+			await disableReminder();
+		}
+		saveAll();
+	}
 
 	function notify(message: string): void {
 		showToast(message);
@@ -243,6 +265,48 @@
 					onchange={saveAll}
 				/>
 			</div>
+		{/if}
+	</div>
+</section>
+
+<section class="set-section">
+	<h2 class="section-label">Reminders</h2>
+	<div class="card set-card">
+		{#if reminderAvailability === 'unsupported'}
+			<div class="set-row">
+				<div class="set-text">
+					<span class="set-label">Daily reminder</span>
+					<span class="muted small">Needs Chrome on Android with the app installed to your home screen.</span>
+				</div>
+			</div>
+		{:else}
+			<div class="set-row">
+				<Toggle
+					bind:checked={settings.reminderEnabled}
+					onchange={toggleReminder}
+					label="Daily reminder"
+					hint={reminderAvailability === 'needs-install'
+						? 'Install the app to your home screen to turn this on'
+						: 'A nudge if you haven’t stretched yet that day'}
+				/>
+			</div>
+			{#if settings.reminderEnabled}
+				<div class="set-row">
+					<div class="set-text">
+						<span class="set-label">Remind me after</span>
+						<span class="muted small">Android picks the exact moment, so it may come a little later</span>
+					</div>
+					<Stepper
+						bind:value={settings.reminderHour}
+						min={5}
+						max={22}
+						step={1}
+						label="Remind me after"
+						format={hourLabel}
+						onchange={saveAll}
+					/>
+				</div>
+			{/if}
 		{/if}
 	</div>
 </section>

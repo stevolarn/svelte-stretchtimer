@@ -66,6 +66,10 @@ export interface Settings {
 	testingMode: boolean;
 	playbackSpeed: number;
 	autoBackupOnFinish: boolean;
+	/** daily Android reminder via Periodic Background Sync */
+	reminderEnabled: boolean;
+	/** earliest hour of the day (0-23) to remind */
+	reminderHour: number;
 }
 
 export interface StorageSnapshot {
