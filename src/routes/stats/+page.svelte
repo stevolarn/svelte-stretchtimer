@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { applyFixer, streak } from '$lib/stores.svelte';
+	import { applyFixer, logPain, painLog, streak, undoLastPain } from '$lib/stores.svelte';
 	import { currentStreak, fixerProgress, fixersAvailable, longestStreak, repairGap } from '$lib/streak';
 	import { addDays, todayKey } from '$lib/time';
 
@@ -15,6 +15,31 @@
 	const toNext = $derived(fixerProgress(streak));
 	const gap = $derived(repairGap(streak));
 	const canRepair = $derived(gap.length > 0 && fixers >= gap.length);
+
+	/* ------------------------------ pain trend ------------------------------ */
+	const PAIN_DAYS = 30;
+	const CHART_W = 320;
+	const CHART_H = 120;
+	/** Daily average pain for the last 30 days, oldest first; null where nothing was logged. */
+	const painDays = $derived(
+		Array.from({ length: PAIN_DAYS }, (_, i) => {
+			const key = addDays(today, i - PAIN_DAYS + 1);
+			const scores = painLog.filter((p) => p.date === key).map((p) => p.score);
+			return { key, avg: scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : null };
+		})
+	);
+	const painPoints = $derived(
+		painDays.flatMap((d, i) =>
+			d.avg === null ? [] : [{ key: d.key, avg: d.avg, x: (i / (PAIN_DAYS - 1)) * CHART_W, y: CHART_H - (d.avg / 10) * CHART_H }]
+		)
+	);
+	const painPath = $derived(painPoints.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '));
+	const loggedToday = $derived(painLog.filter((p) => p.date === today && p.routineId === null).at(-1)?.score ?? null);
+
+	function logPainNow(score: number): void {
+		if (loggedToday !== null && painLog.at(-1)?.date === today && painLog.at(-1)?.routineId === null) undoLastPain();
+		logPain(score, null);
+	}
 
 	function dayOfWeek(key: string): number {
 		const [y, m, d] = key.split('-').map(Number);
@@ -136,7 +161,90 @@
 	</div>
 </section>
 
+<section class="card">
+	<h2 class="cal-title">Pain, last {PAIN_DAYS} days</h2>
+	{#if painPoints.length === 0}
+		<p class="muted small" style="margin: 0 0 0.6rem">
+			Rate your pain after a routine (or below) and the trend shows up here.
+		</p>
+	{:else}
+		<svg class="pain-chart" viewBox="-24 -8 {CHART_W + 32} {CHART_H + 28}" role="img" aria-label="Daily average pain, 0 to 10">
+			{#each [0, 5, 10] as v (v)}
+				{@const y = CHART_H - (v / 10) * CHART_H}
+				<line class="grid" x1="0" x2={CHART_W} y1={y} y2={y} />
+				<text class="axis" x="-8" y={y + 4} text-anchor="end">{v}</text>
+			{/each}
+			<text class="axis" x="0" y={CHART_H + 18}>{formatDay(painDays[0].key)}</text>
+			<text class="axis" x={CHART_W} y={CHART_H + 18} text-anchor="end">Today</text>
+			{#if painPoints.length > 1}<path class="line" d={painPath} />{/if}
+			{#each painPoints as p (p.key)}
+				<circle class="dot" cx={p.x} cy={p.y} r="3.5"><title>{formatDay(p.key)}: {p.avg.toFixed(1)}</title></circle>
+			{/each}
+		</svg>
+	{/if}
+	<div class="pain-now">
+		<span class="small">{loggedToday === null ? 'Log pain now' : `Logged ${loggedToday}/10 today — tap to change`}</span>
+		<div class="pain-row">
+			{#each Array.from({ length: 11 }, (_, i) => i) as n (n)}
+				<button class="pain-btn" class:on={loggedToday === n} aria-label="Pain {n} out of 10" onclick={() => logPainNow(n)}>{n}</button>
+			{/each}
+		</div>
+	</div>
+</section>
+
 <style>
+	.pain-chart {
+		width: 100%;
+		max-width: 26rem;
+		display: block;
+		margin: 0 auto;
+	}
+	.pain-chart .grid {
+		stroke: var(--border);
+		stroke-width: 1;
+	}
+	.pain-chart .axis {
+		fill: var(--muted);
+		font-size: 10px;
+	}
+	.pain-chart .line {
+		fill: none;
+		stroke: var(--accent);
+		stroke-width: 2;
+		stroke-linejoin: round;
+	}
+	.pain-chart .dot {
+		fill: var(--accent);
+	}
+	.pain-now {
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+		margin-top: 0.8rem;
+	}
+	.pain-row {
+		display: grid;
+		grid-template-columns: repeat(11, 1fr);
+		gap: 0.2rem;
+	}
+	.pain-btn {
+		aspect-ratio: 1;
+		min-width: 0;
+		padding: 0;
+		border-radius: 8px;
+		border: 1px solid var(--border);
+		background: var(--surface);
+		color: var(--text);
+		font: inherit;
+		font-size: 0.85rem;
+		font-weight: 700;
+		cursor: pointer;
+	}
+	.pain-btn.on {
+		background: var(--accent);
+		border-color: var(--accent);
+		color: #fff;
+	}
 	.page-title {
 		font-size: 1.45rem;
 		font-weight: 800;

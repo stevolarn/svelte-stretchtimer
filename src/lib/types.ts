@@ -51,15 +51,37 @@ export interface Routine {
 	breakSeconds?: number;
 	/** how many times to play the full set; 1 (default) = once, no repeats */
 	sets?: number;
-	/** goal for how often to do this routine; absent = no goal */
+	/** fixed weekdays (and optional times) to do this routine */
+	schedule?: RoutineSchedule;
+	/** flexible goal: N plays a week on any days ('day' is migrated into schedule on load) */
 	frequency?: RoutineFrequency;
-	/** 'YYYY-MM-DD' for each finished play, one entry per play, last two weeks only */
+	/** 'YYYY-MM-DD' for each finished play, one entry per play, last four weeks only */
 	completions?: string[];
+}
+
+export interface RoutineSchedule {
+	/** Date.getDay() values: 0 = Sunday */
+	days: number[];
+	/** 'HH:MM' local times, sorted; empty = once, any time of day */
+	times: string[];
+	/** 'YYYY-MM-DD' the schedule was set up, so reviews skip days before it */
+	since?: string;
 }
 
 export interface RoutineFrequency {
 	per: 'day' | 'week';
 	times: number;
+	/** 'YYYY-MM-DD' the goal was set, so reviews skip weeks before it */
+	since?: string;
+}
+
+export interface PainEntry {
+	/** 'YYYY-MM-DD' */
+	date: string;
+	/** 0 = no pain, 10 = worst */
+	score: number;
+	routineId: string | null;
+	at: number;
 }
 
 export type Theme = 'light' | 'dark' | 'system';
@@ -79,8 +101,10 @@ export interface Settings {
 	reminderEnabled: boolean;
 	/** earliest hour of the day (0-23) to remind */
 	reminderHour: number;
-	/** routine id planned for each weekday, Sunday first; null = rest day */
-	weekPlan: (string | null)[];
+	/** legacy one-routine-per-weekday plan (Sunday first); moved into routine schedules on load */
+	weekPlan?: (string | null)[];
+	/** Monday of the week whose review card was dismissed */
+	reviewDismissed?: string;
 }
 
 export interface StorageSnapshot {

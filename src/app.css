@@ -751,9 +751,13 @@ textarea {
 .week-item-name {
 	flex: 1;
 	min-width: 0;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+	display: flex;
+	flex-direction: column;
+	overflow-wrap: anywhere;
+}
+
+.week-item-name small {
+	font-size: 0.78rem;
 }
 
 .week-check {
@@ -784,31 +788,79 @@ textarea {
 	gap: 0.5rem;
 }
 
-.plan-row {
-	display: flex;
+.plan-grid {
+	display: grid;
+	gap: 0.3rem;
+}
+
+.plan-grid-row {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) repeat(7, 2.1rem);
 	align-items: center;
-	justify-content: space-between;
-	gap: 0.75rem;
-	padding: 0.35rem 0.5rem;
-	border-radius: 10px;
-	font-weight: 600;
+	gap: 0.25rem;
 }
 
-.plan-row.today {
-	background: color-mix(in srgb, var(--accent) 10%, transparent);
+.plan-grid-head span {
+	text-align: center;
+	font-size: 0.8rem;
+	font-weight: 700;
+	color: var(--muted);
 }
 
-.plan-row select {
-	flex: 0 1 60%;
+.plan-grid-head span.today {
+	color: var(--accent);
+}
+
+.plan-grid-name {
+	display: flex;
+	flex-direction: column;
 	min-width: 0;
-	background: var(--surface);
-	color: var(--text);
-	border: 1px solid var(--border);
-	border-radius: 10px;
-	padding: 0.5rem 0.6rem;
-	font: inherit;
+	font-weight: 600;
 	font-size: 0.9rem;
-	font-weight: 400;
+	overflow-wrap: anywhere;
+}
+
+.plan-cell {
+	height: 2.1rem;
+	border-radius: 8px;
+	border: 1px solid var(--border);
+	background: var(--surface);
+	color: var(--accent-contrast, #fff);
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.plan-cell.on {
+	background: var(--accent);
+	border-color: var(--accent);
+}
+
+.week-actions {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 0.5rem;
+	margin-top: 1rem;
+}
+
+.review-card h2 {
+	margin: 0;
+	font-size: 1.05rem;
+}
+
+.review-stats {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
+	gap: 0.75rem;
+	margin-top: 0.6rem;
+}
+
+.review-stats div {
+	display: flex;
+	flex-direction: column;
+}
+
+.review-stats strong {
+	font-size: 1.4rem;
 }
 
 .routine-list {

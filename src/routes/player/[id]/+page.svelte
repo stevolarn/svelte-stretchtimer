@@ -14,7 +14,17 @@
 		stopPlayer,
 		togglePause
 	} from '$lib/player.svelte';
-	import { getRoutine, MICRO_BREAK_ID, microBreak, settings, shuffleMicroBreak, streak } from '$lib/stores.svelte';
+	import {
+		gentleVersion,
+		getRoutine,
+		logPain,
+		MICRO_BREAK_ID,
+		microBreak,
+		settings,
+		shuffleMicroBreak,
+		streak,
+		undoLastPain
+	} from '$lib/stores.svelte';
 	import { buildTimeline, durationText, stretchDurationLabel, timelineTotal } from '$lib/timeline';
 	import { formatSeconds } from '$lib/time';
 	import { currentStreak } from '$lib/streak';
@@ -27,8 +37,28 @@
 	const isMicro = $derived(page.params.id === MICRO_BREAK_ID);
 	// Opened directly (reload or shortcut): shuffle one up rather than showing a missing routine.
 	if (page.params.id === MICRO_BREAK_ID && !microBreak.routine) shuffleMicroBreak();
-	const routine = $derived(getRoutine(page.params.id ?? ''));
+	const saved = $derived(getRoutine(page.params.id ?? ''));
+	/** Bad-day mode: the same routine (same id, so it still counts) minus loading and extra sets. */
+	let gentle = $state(false);
+	$effect(() => {
+		void page.params.id; // a different routine starts in its normal version
+		gentle = false;
+	});
+	const routine = $derived(saved && gentle ? gentleVersion(saved) : saved);
 	const total = $derived(routine ? timelineTotal(buildTimeline(routine, settings)) : 0);
+	const fullTotal = $derived(saved ? timelineTotal(buildTimeline(saved, settings)) : 0);
+
+	/** Pain check-in on the finish screen: the score logged this time, if any. */
+	let painScore = $state<number | null>(null);
+	function checkIn(score: number): void {
+		if (painScore !== null) undoLastPain();
+		logPain(score, player.routineId);
+		painScore = score;
+	}
+	function undoCheckIn(): void {
+		undoLastPain();
+		painScore = null;
+	}
 
 	const segment = $derived(player.segments[player.index] ?? null);
 	const nextSegment = $derived(player.segments[player.index + 1] ?? null);
@@ -116,6 +146,7 @@
 
 	/* --------------------------- controls -------------------------- */
 	function begin(): void {
+		painScore = null;
 		if (routine) startPlayer(routine, settings);
 	}
 
@@ -195,6 +226,19 @@
 			</ol>
 
 			<div class="idle-foot">
+				{#if !isMicro}
+					<label class="gentle-toggle" class:on={gentle}>
+						<input type="checkbox" bind:checked={gentle} />
+						<span>
+							<strong>🌧 Bad day? Gentle version</strong>
+							<small class="muted"
+								>{gentle
+									? `No weights, bands or reps, one set · ${formatSeconds(total)} instead of ${formatSeconds(fullTotal)}. Still counts.`
+									: 'Drops loading and extra sets, and still counts.'}</small
+							>
+						</span>
+					</label>
+				{/if}
 				<button class="btn primary pl-start" onclick={begin}>
 					<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" /></svg>
 					Start
@@ -378,6 +422,20 @@
 					{/if}
 				</span>
 			</div>
+			<div class="pain-check" role="group" aria-labelledby="pain-q">
+				{#if painScore === null}
+					<span id="pain-q" class="small">How’s the pain right now? <span class="muted">(optional)</span></span>
+					<div class="pain-chips">
+						{#each Array.from({ length: 11 }, (_, i) => i) as n (n)}
+							<button class="pain-chip" style="--pain: {n}" aria-label="Pain {n} out of 10" onclick={() => checkIn(n)}>{n}</button>
+						{/each}
+					</div>
+					<span class="pain-scale muted small"><span>0 none</span><span>10 worst</span></span>
+				{:else}
+					<span id="pain-q" class="small">Logged pain {painScore}/10 — see the trend on Stats.</span>
+					<button class="btn small ghost" onclick={undoCheckIn}>Undo</button>
+				{/if}
+			</div>
 			<div class="finish-actions">
 				<button class="btn primary" onclick={done}>Done</button>
 				<button class="btn" onclick={restart}>Play again</button>
@@ -428,6 +486,65 @@
 	}
 
 	/* ---------- idle ---------- */
+	.gentle-toggle {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.6rem;
+		width: 100%;
+		padding: 0.6rem 0.75rem;
+		margin-bottom: 0.6rem;
+		border: 1px solid var(--border);
+		border-radius: 12px;
+		cursor: pointer;
+		text-align: left;
+	}
+	.gentle-toggle.on {
+		border-color: var(--accent);
+		background: color-mix(in srgb, var(--accent) 10%, transparent);
+	}
+	.gentle-toggle input {
+		margin-top: 0.2rem;
+		accent-color: var(--accent);
+	}
+	.gentle-toggle span {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+	}
+
+	/* ---------- pain check-in ---------- */
+	.pain-check {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.45rem;
+		width: min(100%, 360px);
+		margin: 0.25rem 0 0.75rem;
+	}
+	.pain-chips {
+		display: grid;
+		grid-template-columns: repeat(11, 1fr);
+		gap: 0.2rem;
+		width: 100%;
+	}
+	.pain-chip {
+		aspect-ratio: 1;
+		min-width: 0;
+		border-radius: 8px;
+		border: 1px solid var(--border);
+		background: color-mix(in srgb, #e0533d calc(var(--pain) * 8%), var(--surface));
+		color: var(--text);
+		font: inherit;
+		font-size: 0.85rem;
+		font-weight: 700;
+		cursor: pointer;
+		padding: 0;
+	}
+	.pain-scale {
+		display: flex;
+		justify-content: space-between;
+		width: 100%;
+	}
 	.idle-head {
 		text-align: center;
 		margin: 0.6rem 0 1rem;

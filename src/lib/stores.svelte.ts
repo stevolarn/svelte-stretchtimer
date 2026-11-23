@@ -1,13 +1,15 @@
-import type { Routine, Settings, Stretch, StreakState, StorageSnapshot } from './types.ts';
+import type { PainEntry, Routine, Settings, Stretch, StreakState, StorageSnapshot } from './types.ts';
 import { showToast } from './toast.svelte.ts';
 import {
 	deletePhotoData,
 	getPhotoData,
+	loadPain,
 	loadRoutines,
 	loadSettings,
 	loadStreak,
 	recordSnapshot,
 	requestPersistentStorage,
+	savePain,
 	savePhotoData,
 	saveRoutines,
 	saveSettings,
@@ -16,6 +18,7 @@ import {
 import { addDays, todayKey } from './time.ts';
 import { fixersAvailable, repairGap, canRepairStreak } from './streak.ts';
 import { uid } from './util.ts';
+import { spreadTimes } from './frequency.ts';
 import { stockStretches } from './stockStretches.ts';
 import { autoSaveToFileHandle, isFileAutoBackupConnected } from './backup.ts';
 import { syncReminderState } from './reminders.ts';
@@ -23,6 +26,35 @@ import { syncReminderState } from './reminders.ts';
 export const routines = $state<Routine[]>(loadRoutines());
 export const settings = $state<Settings>(loadSettings());
 export const streak = $state<StreakState>(loadStreak());
+export const painLog = $state<PainEntry[]>(loadPain());
+
+/**
+ * Older data kept 'N× a day' goals and a one-routine-per-weekday plan; both
+ * are now routine schedules. Returns whether anything changed.
+ */
+function migrateSchedules(): boolean {
+	let changed = false;
+	for (const r of routines) {
+		if (r.frequency?.per === 'day') {
+			r.schedule = { days: [0, 1, 2, 3, 4, 5, 6], times: spreadTimes(r.frequency.times), since: todayKey() };
+			r.frequency = undefined;
+			changed = true;
+		}
+	}
+	settings.weekPlan?.forEach((id, day) => {
+		const r = routines.find((item) => item.id === id);
+		if (!r) return;
+		r.schedule ??= { days: [], times: [], since: todayKey() };
+		r.frequency = undefined;
+		if (!r.schedule.days.includes(day)) r.schedule.days.push(day);
+		changed = true;
+	});
+	if (settings.weekPlan) {
+		settings.weekPlan = undefined;
+		changed = true;
+	}
+	return changed;
+}
 
 // Auto-request persistent storage on startup in supported browsers
 if (typeof window !== 'undefined') {
@@ -433,21 +465,43 @@ function pick<T>(items: T[], count: number): T[] {
 
 /** Shuffle up a fresh ~2-minute break: 30 seconds per move, split across sides where needed. */
 export function shuffleMicroBreak(): Routine {
-	const ids = [...pick(microPools[0], 1), ...pick(microPools[1], 1), ...pick(microPools[2], 2)];
 	const routine = newRoutine('2-minute micro-break', 3);
 	routine.id = MICRO_BREAK_ID;
-	routine.stretches = ids.map((id) => {
-		const s = stock(id);
-		return { ...newStretch(), ...s, durationSeconds: s.sides === 'two' ? 15 : 30, photoId: null };
-	});
+	routine.stretches = microStretches();
 	microBreak.routine = routine;
 	return routine;
 }
 
-/** Today's planned routine, if the plan names one that still exists. */
-export function plannedRoutine(day = new Date().getDay()): Routine | undefined {
-	const id = settings.weekPlan?.[day];
-	return id ? routines.find((r) => r.id === id) : undefined;
+function microStretches(): Stretch[] {
+	const ids = [...pick(microPools[0], 1), ...pick(microPools[1], 1), ...pick(microPools[2], 2)];
+	return ids.map((id) => {
+		const s = stock(id);
+		return { ...newStretch(), ...s, durationSeconds: s.sides === 'two' ? 15 : 30, photoId: null };
+	});
+}
+
+/** Turn a routine into its bad-day version: no loading, resistance or reps, one set. */
+export function gentleVersion(r: Routine): Routine {
+	const hard = new Set(['eccentrics', 'isometrics', 'calisthenics', 'cardio']);
+	const kept = r.stretches.filter((s) => {
+		const known = stockStretches.find((item) => item.name === s.name);
+		if (known && hard.has(known.type)) return false;
+		return !/dumbbell|\bband\b|weight|push-?up|plank/i.test(s.name);
+	});
+	const stretches = kept.length > 0 ? kept : microStretches();
+	return { ...r, name: `${r.name || 'Routine'} · gentle`, stretches, sets: 1 };
+}
+
+/** Record how the pain is right now (0-10). */
+export function logPain(score: number, routineId: string | null): void {
+	painLog.push({ date: todayKey(), score, routineId, at: Date.now() });
+	savePain(painLog);
+}
+
+/** Remove the latest pain entry (undo for an accidental tap). */
+export function undoLastPain(): void {
+	painLog.pop();
+	savePain(painLog);
 }
 
 export function addRoutine(routine: Routine): void {
@@ -581,6 +635,28 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 /** Add routines from a backup, generating fresh ids so restore is always additive. */
+/** A backed-up schedule, if it looks valid. */
+function importSchedule(value: unknown): Routine['schedule'] {
+	if (!isRecord(value) || !Array.isArray(value.days) || !Array.isArray(value.times)) return undefined;
+	const days = [...new Set(value.days.filter((d): d is number => Number.isInteger(d) && d >= 0 && d <= 6))].sort();
+	const times = [
+		...new Set(value.times.filter((t): t is string => typeof t === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(t)))
+	].sort();
+	return days.length ? { days, times, since: todayKey() } : undefined;
+}
+
+/** A backed-up schedule or weekly goal; old 'N× a day' goals become an every-day schedule. */
+function importGoal(candidate: Record<string, unknown>): Pick<Routine, 'schedule' | 'frequency'> {
+	const schedule = importSchedule(candidate.schedule);
+	if (schedule) return { schedule };
+	const f = candidate.frequency;
+	if (!isRecord(f) || typeof f.times !== 'number') return {};
+	const times = Math.max(1, Math.round(f.times));
+	if (f.per === 'day') return { schedule: { days: [0, 1, 2, 3, 4, 5, 6], times: spreadTimes(times), since: todayKey() } };
+	if (f.per === 'week') return { frequency: { per: 'week', times: Math.min(7, times), since: todayKey() } };
+	return {};
+}
+
 export async function importBackup(raw: string): Promise<{ added: number; skipped: number }> {
 	const parsed: unknown = JSON.parse(raw);
 	const source = Array.isArray(parsed) ? { routines: parsed, photos: {} } : parsed;
@@ -600,6 +676,7 @@ export async function importBackup(raw: string): Promise<{ added: number; skippe
 			createdAt: typeof candidate.createdAt === 'number' ? candidate.createdAt : Date.now(),
 			breakSeconds: typeof candidate.breakSeconds === 'number' ? candidate.breakSeconds : undefined,
 			sets: typeof candidate.sets === 'number' ? candidate.sets : undefined,
+			...importGoal(candidate),
 			stretches: []
 		};
 
@@ -636,17 +713,17 @@ export async function importBackup(raw: string): Promise<{ added: number; skippe
 
 /* ----------------------------- Streak actions ----------------------------- */
 
-/** Credit today as a completed day (idempotent per day). */
 /** Log a finished play against the routine's frequency goal. */
 export function recordCompletion(id: string, now: Date = new Date()): void {
 	const r = routines.find((item) => item.id === id);
 	if (!r) return;
 	const today = todayKey(now);
-	const cutoff = addDays(today, -13);
+	const cutoff = addDays(today, -27);
 	r.completions = [...(r.completions ?? []).filter((d) => d >= cutoff), today];
 	saveAll();
 }
 
+/** Credit today as a completed day (idempotent per day). */
 export function creditToday(now: Date = new Date()): void {
 	const key = todayKey(now);
 	if (!streak.completedDates.includes(key)) {
@@ -744,3 +821,5 @@ export function seedTestRoutines(): void {
 	saveAll();
 }
 
+
+if (typeof window !== 'undefined' && migrateSchedules()) saveAll();

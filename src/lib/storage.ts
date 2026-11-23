@@ -1,9 +1,10 @@
-import type { Routine, Settings, StreakState, StorageSnapshot } from './types.ts';
+import type { PainEntry, Routine, Settings, StreakState, StorageSnapshot } from './types.ts';
 
 const ROUTINES_KEY = 'stretchTimer.routines';
 const SETTINGS_KEY = 'stretchTimer.settings';
 const STREAK_KEY = 'stretchTimer.streak';
 const SNAPSHOTS_KEY = 'stretchTimer.snapshots';
+const PAIN_KEY = 'stretchTimer.pain';
 const PHOTO_DB = 'stretch-timer';
 const PHOTO_STORE = 'photos';
 
@@ -19,8 +20,7 @@ export const defaultSettings: Settings = {
 	playbackSpeed: 1,
 	autoBackupOnFinish: false,
 	reminderEnabled: false,
-	reminderHour: 18,
-	weekPlan: [null, null, null, null, null, null, null]
+	reminderHour: 18
 };
 
 export const defaultStreak: StreakState = { completedDates: [], fixersUsed: 0 };
@@ -54,6 +54,13 @@ export function loadSettings(): Settings {
 }
 export function saveSettings(settings: Settings): void {
 	saveJSON(SETTINGS_KEY, settings);
+}
+
+export function loadPain(): PainEntry[] {
+	return loadJSON<PainEntry[]>(PAIN_KEY, []);
+}
+export function savePain(entries: PainEntry[]): void {
+	saveJSON(PAIN_KEY, entries);
 }
 
 export function loadStreak(): StreakState {

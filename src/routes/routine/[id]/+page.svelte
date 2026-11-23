@@ -4,13 +4,14 @@
 	import { deletePhotoData, getPhotoData, savePhotoData } from '$lib/storage';
 	import { deleteRoutineWithUndo, getRoutine, newStretch, saveAll, settings } from '$lib/stores.svelte';
 	import { buildTimeline, durationText, stretchDurationLabel, timelineTotal } from '$lib/timeline';
-	import { formatSeconds } from '$lib/time';
+	import { formatSeconds, todayKey } from '$lib/time';
 	import { uid } from '$lib/util';
 	import { showToast } from '$lib/toast.svelte';
 	import { type Stretch, type StockStretch } from '$lib/types';
 	import Stepper from '$lib/components/Stepper.svelte';
 	import Segmented from '$lib/components/Segmented.svelte';
-	import { frequencyLabel } from '$lib/frequency';
+	import { formatTime, frequencyLabel, scheduleLabel } from '$lib/frequency';
+	import { googleCalendarUrl } from '$lib/calendar';
 	import PhotoPicker from '$lib/components/PhotoPicker.svelte';
 	import PhotoThumb from '$lib/components/PhotoThumb.svelte';
 	import StretchIllustration from '$lib/components/StretchIllustration.svelte';
@@ -181,20 +182,64 @@
 		}
 	}
 
-	const goalOptions = [
+	const scheduleOptions = [
 		{ value: 'off', label: 'Off' },
-		{ value: 'day', label: 'Daily' },
-		{ value: 'week', label: 'Weekly' }
+		{ value: 'days', label: 'Set days' },
+		{ value: 'week', label: 'Weekly goal' }
 	];
+	/** Chip order Monday first; values are Date.getDay(). */
+	const weekdayChips: Array<[number, string]> = [
+		[1, 'M'],
+		[2, 'T'],
+		[3, 'W'],
+		[4, 'T'],
+		[5, 'F'],
+		[6, 'S'],
+		[0, 'S']
+	];
+	const scheduleMode = $derived(routine?.schedule ? 'days' : routine?.frequency?.per === 'week' ? 'week' : 'off');
 
-	function setGoal(value: string): void {
+	function setScheduleMode(value: string): void {
 		if (!routine) return;
-		if (value === 'off') routine.frequency = undefined;
+		routine.schedule = value === 'days' ? { days: [1, 2, 3, 4, 5], times: [], since: todayKey() } : undefined;
+		routine.frequency = value === 'week' ? { per: 'week', times: 3, since: todayKey() } : undefined;
+		saveAll();
+	}
+
+	function toggleDay(day: number): void {
+		const s = routine?.schedule;
+		if (!s) return;
+		if (s.days.includes(day)) s.days = s.days.filter((d) => d !== day);
 		else {
-			const per = value as 'day' | 'week';
-			const times = Math.min(routine.frequency?.times ?? 1, per === 'day' ? 12 : 7);
-			routine.frequency = { per, times };
+			s.days = [...s.days, day].sort();
+			s.since = todayKey(); // new days only count from today in reviews
 		}
+		saveAll();
+	}
+
+	function setTime(index: number, value: string): void {
+		const s = routine?.schedule;
+		if (!s || !value) return;
+		s.times[index] = value;
+		s.times = [...new Set(s.times)].sort();
+		s.since = todayKey();
+		saveAll();
+	}
+
+	function addTime(): void {
+		const s = routine?.schedule;
+		if (!s) return;
+		const last = s.times.at(-1);
+		const next = last ? `${String(Math.min(23, Number(last.slice(0, 2)) + 3)).padStart(2, '0')}:${last.slice(3)}` : '09:00';
+		s.times = [...new Set([...s.times, next])].sort();
+		s.since = todayKey();
+		saveAll();
+	}
+
+	function removeTime(index: number): void {
+		const s = routine?.schedule;
+		if (!s) return;
+		s.times = s.times.filter((_, i) => i !== index);
 		saveAll();
 	}
 
@@ -260,29 +305,65 @@
 				onchange={saveAll}
 			/>
 		</div>
+	</section>
+
+	<section class="card options-card schedule-card">
 		<div class="option-row">
 			<div class="option-copy">
-				<span class="option-title">Goal</span>
-				<span class="muted small">{routine.frequency ? frequencyLabel(routine.frequency) : 'No target'}</span>
+				<span class="option-title">Schedule</span>
+				<span class="muted small">
+					{#if routine.schedule}
+						{scheduleLabel(routine.schedule)}
+					{:else if routine.frequency?.per === 'week'}
+						{frequencyLabel(routine.frequency)}, any days
+					{:else}
+						Not scheduled
+					{/if}
+				</span>
 			</div>
-			<Segmented value={routine.frequency?.per ?? 'off'} options={goalOptions} label="How often" onchange={setGoal} />
 		</div>
-		{#if routine.frequency}
+		<Segmented value={scheduleMode} options={scheduleOptions} label="Schedule" onchange={setScheduleMode} />
+		{#if routine.schedule}
+			{@const sched = routine.schedule}
+			<div class="day-chips" role="group" aria-label="Days">
+				{#each weekdayChips as [day, letter] (day)}
+					<button
+						type="button"
+						class="day-chip"
+						class:on={sched.days.includes(day)}
+						aria-pressed={sched.days.includes(day)}
+						aria-label={['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][day]}
+						onclick={() => toggleDay(day)}>{letter}</button
+					>
+				{/each}
+			</div>
+			<div class="time-list">
+				{#each sched.times as time, i (time)}
+					<div class="time-row">
+						<input type="time" value={time} onchange={(e) => setTime(i, e.currentTarget.value)} aria-label={`Time ${i + 1}`} />
+						{#if sched.days.length > 0}
+							<a class="btn small ghost" href={googleCalendarUrl(routine, time, settings, location.origin)} target="_blank" rel="noopener">
+								📅 Google Calendar
+							</a>
+						{/if}
+						<button type="button" class="icon-btn" aria-label={`Remove ${formatTime(time)}`} onclick={() => removeTime(i)}>✕</button>
+					</div>
+				{/each}
+				<button type="button" class="btn small" onclick={addTime}>＋ Add a time</button>
+				<p class="muted small" style="margin: 0">
+					{sched.times.length === 0
+						? 'No times: once a day, whenever suits you.'
+						: `${sched.times.length} play${sched.times.length === 1 ? '' : 's'} on each of these days. Add each time to your calendar for an alarm.`}
+				</p>
+			</div>
+		{:else if routine.frequency?.per === 'week'}
 			{@const freq = routine.frequency}
 			<div class="option-row">
 				<div class="option-copy">
-					<span class="option-title">Times a {freq.per}</span>
-					<span class="muted small">Progress shows on the routines list</span>
+					<span class="option-title">Times a week</span>
+					<span class="muted small">Shows in Up next until you’ve hit it</span>
 				</div>
-				<Stepper
-					bind:value={freq.times}
-					min={1}
-					max={freq.per === 'day' ? 12 : 7}
-					step={1}
-					label={`Times a ${freq.per}`}
-					suffix="×"
-					onchange={saveAll}
-				/>
+				<Stepper bind:value={freq.times} min={1} max={7} step={1} label="Times a week" suffix="×" onchange={saveAll} />
 			</div>
 		{/if}
 	</section>
@@ -498,6 +579,60 @@
 	}
 	.options-card .option-row + .option-row {
 		border-top: 1px solid var(--border);
+	}
+
+	.schedule-card {
+		display: flex;
+		flex-direction: column;
+		gap: 0.7rem;
+		padding-bottom: 0.9rem;
+	}
+	.schedule-card .option-row + .option-row,
+	.schedule-card .option-row:not(:first-child) {
+		border-top: 1px solid var(--border);
+	}
+	.day-chips {
+		display: grid;
+		grid-template-columns: repeat(7, 1fr);
+		gap: 0.35rem;
+	}
+	.day-chip {
+		height: 2.4rem;
+		border-radius: 999px;
+		border: 1px solid var(--border);
+		background: var(--surface);
+		color: var(--text);
+		font: inherit;
+		font-weight: 700;
+		cursor: pointer;
+	}
+	.day-chip.on {
+		background: var(--accent);
+		border-color: var(--accent);
+		color: #fff;
+	}
+	.time-list {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.5rem;
+	}
+	.time-row {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		width: 100%;
+	}
+	.time-row input[type='time'] {
+		background: var(--surface);
+		color: var(--text);
+		border: 1px solid var(--border);
+		border-radius: 10px;
+		padding: 0.45rem 0.6rem;
+		font: inherit;
+	}
+	.time-row .icon-btn {
+		margin-left: auto;
 	}
 
 	.option-copy {

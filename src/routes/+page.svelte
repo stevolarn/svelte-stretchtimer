@@ -6,8 +6,9 @@
 		deleteRoutineWithUndo,
 		duplicateRoutine,
 		newRoutine,
-		plannedRoutine,
+		painLog,
 		routines,
+		saveAll,
 		shuffleMicroBreak,
 		updateSettings,
 		settings,
@@ -16,7 +17,17 @@
 		type StarterRoutineKind
 	} from '$lib/stores.svelte';
 	import { buildTimeline, timelineTotal } from '$lib/timeline';
-	import { dueToday, frequencyLabel, frequencyProgress, scheduledOn } from '$lib/frequency';
+	import { onMount } from 'svelte';
+	import {
+		dueToday,
+		formatTime,
+		frequencyLabel,
+		goalProgress,
+		reviewLastWeek,
+		scheduleLabel,
+		scheduledOn
+	} from '$lib/frequency';
+	import { scheduleIcs } from '$lib/calendar';
 	import { currentStreak, fixersAvailable, fixerProgress, repairGap } from '$lib/streak';
 	import { addDays, formatSeconds, todayKey } from '$lib/time';
 	import { type Routine } from '$lib/types';
@@ -112,6 +123,11 @@
 		return formatSeconds(timelineTotal(buildTimeline(r, settings)));
 	}
 
+	/** '18 min', for lines that also show clock times. */
+	function routineLength(r: Routine): string {
+		return `${Math.max(1, Math.round(timelineTotal(buildTimeline(r, settings)) / 60))} min`;
+	}
+
 	const streakNow = $derived(currentStreak(streak));
 	const doneToday = $derived(streak.completedDates.includes(todayKey()));
 	const fixers = $derived(fixersAvailable(streak));
@@ -123,23 +139,28 @@
 	/** Plan rows run Monday to Sunday; values index Date.getDay(). */
 	const planDays = [1, 2, 3, 4, 5, 6, 0];
 	const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-	const todayIndex = new Date().getDay();
-	const hasPlan = $derived(planDays.some((d) => plannedRoutine(d)));
 	const weeklyGoals = $derived(routines.filter((r) => r.frequency?.per === 'week'));
-	const hasSchedule = $derived(hasPlan || routines.some((r) => r.frequency));
-	const due = $derived(dueToday(routines, settings.weekPlan));
+	const hasSchedule = $derived(routines.some((r) => (r.schedule?.days.length ?? 0) > 0 || r.frequency?.per === 'week'));
+	/** Ticks each minute so timed slots move from "At 2:00 pm" to "Due 2:00 pm". */
+	let now = $state(new Date());
+	const todayIndex = $derived(now.getDay());
+	onMount(() => {
+		const timer = setInterval(() => (now = new Date()), 60_000);
+		return () => clearInterval(timer);
+	});
+	const due = $derived(dueToday(routines, now));
 	const upNext = $derived(due[0] ?? null);
-	const scheduledToday = $derived(scheduledOn(routines, settings.weekPlan, todayKey()).length > 0);
+	const scheduledToday = $derived(scheduledOn(routines, todayKey(now)).length > 0);
 	let showPlanModal = $state(false);
 	let showWeekModal = $state(false);
 
 	/** This week, Monday first: what's scheduled each day and how much of it got done. */
 	const weekDays = $derived.by(() => {
-		const today = todayKey();
+		const today = todayKey(now);
 		const monday = addDays(today, -((todayIndex + 6) % 7));
 		return planDays.map((day, i) => {
 			const key = addDays(monday, i);
-			const items = scheduledOn(routines, settings.weekPlan, key);
+			const items = scheduledOn(routines, key);
 			const [y, m, d] = key.split('-').map(Number);
 			return {
 				key,
@@ -155,11 +176,61 @@
 		});
 	});
 
-	function setPlan(day: number, id: string): void {
-		const weekPlan = [...(settings.weekPlan ?? [])];
-		while (weekPlan.length < 7) weekPlan.push(null);
-		weekPlan[day] = id || null;
-		updateSettings({ weekPlan });
+	/** Tick a routine on or off for a weekday from the schedule grid. */
+	function toggleScheduled(r: Routine, day: number): void {
+		const days = r.schedule?.days ?? [];
+		const next = days.includes(day) ? days.filter((d) => d !== day) : [...days, day].sort();
+		if (next.length === 0 && (r.schedule?.times.length ?? 0) === 0) r.schedule = undefined;
+		else r.schedule = { days: next, times: r.schedule?.times ?? [], since: next.length > days.length ? todayKey() : r.schedule?.since };
+		if (r.schedule) r.frequency = undefined;
+		saveAll();
+	}
+
+	/** Hand every scheduled time to the calendar app: share sheet where supported, else a download. */
+	async function exportCalendar(): Promise<void> {
+		const { ics, events } = scheduleIcs(routines, settings, location.origin);
+		if (events === 0) {
+			showToast('Give a routine a time of day first');
+			return;
+		}
+		const file = new File([ics], 'stretch-schedule.ics', { type: 'text/calendar' });
+		if (navigator.canShare?.({ files: [file] })) {
+			try {
+				await navigator.share({ files: [file], title: 'Stretch schedule' });
+				return;
+			} catch (err) {
+				if ((err as DOMException).name === 'AbortError') return;
+			}
+		}
+		const url = URL.createObjectURL(file);
+		const a = Object.assign(document.createElement('a'), { href: url, download: file.name });
+		a.click();
+		setTimeout(() => URL.revokeObjectURL(url), 1000);
+	}
+
+	/* ------------------------- weekly review ------------------------- */
+
+	const thisMonday = $derived(addDays(todayKey(now), -((now.getDay() + 6) % 7)));
+	const review = $derived(reviewLastWeek(routines, streak.completedDates, now));
+	/** Pain average for the 7 days starting at `from`, or null without entries. */
+	function painAverage(from: string): number | null {
+		const to = addDays(from, 6);
+		const scores = painLog.filter((p) => p.date >= from && p.date <= to).map((p) => p.score);
+		return scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
+	}
+	const painLast = $derived(painAverage(review.from));
+	const painBefore = $derived(painAverage(addDays(review.from, -7)));
+	const showReview = $derived(
+		settings.reviewDismissed !== thisMonday && (review.scheduled > 0 || review.activeDays > 0 || painLast !== null)
+	);
+
+	function dismissReview(): void {
+		updateSettings({ reviewDismissed: thisMonday });
+	}
+
+	function dayName(key: string): string {
+		const [y, m, d] = key.split('-').map(Number);
+		return new Date(y, m - 1, d).toLocaleDateString([], { weekday: 'long' });
 	}
 
 	function openPlan(): void {
@@ -213,16 +284,52 @@
 	{/if}
 </div>
 
+{#if showReview}
+	<section class="card review-card" aria-labelledby="review-title">
+		<div class="spread">
+			<h2 id="review-title">Last week</h2>
+			<button class="icon-btn" aria-label="Dismiss last week’s review" onclick={dismissReview}>✕</button>
+		</div>
+		<div class="review-stats">
+			{#if review.scheduled > 0}
+				<div>
+					<strong>{Math.round((review.completed / review.scheduled) * 100)}%</strong>
+					<span class="muted small">of scheduled plays ({review.completed}/{review.scheduled})</span>
+				</div>
+			{/if}
+			<div>
+				<strong>{review.activeDays}/7</strong>
+				<span class="muted small">days you stretched</span>
+			</div>
+			{#if painLast !== null}
+				<div>
+					<strong>{painLast.toFixed(1)}</strong>
+					<span class="muted small">
+						average pain{painBefore !== null
+							? painLast < painBefore - 0.2
+								? `, down from ${painBefore.toFixed(1)} ↓`
+								: painLast > painBefore + 0.2
+									? `, up from ${painBefore.toFixed(1)}`
+									: ', about the same'
+							: ''}
+					</span>
+				</div>
+			{/if}
+		</div>
+		{#if review.bestDay}
+			<p class="muted small" style="margin: 0.5rem 0 0">Best day: {dayName(review.bestDay)}.</p>
+		{/if}
+	</section>
+{/if}
+
 <section class="card today-card">
 	<div class="today-row">
 		<div class="today-copy">
-			<span class="today-label">{upNext ? 'Up next' : 'Today'} · {dayNames[todayIndex]}</span>
+			<span class="today-label">{upNext?.state === 'due' ? 'Due now' : upNext ? 'Up next' : 'Today'} · {dayNames[todayIndex]}</span>
 			{#if upNext}
 				<strong>{upNext.routine.name || 'Untitled routine'}</strong>
 				<span class="muted small">
-					{upNext.why}{upNext.target > 1 && upNext.why !== `${upNext.done}/${upNext.target} this week`
-						? ` · ${upNext.done}/${upNext.target} today`
-						: ''} · {routineMinutes(upNext.routine)}{due.length > 1 ? ` · ${due.length - 1} more after this` : ''}
+					{upNext.why}{upNext.time && upNext.target > 1 ? ` · ${upNext.done + 1} of ${upNext.target} today` : ''} · {routineLength(upNext.routine)}{due.length > 1 ? ` · ${due.length - 1} more after this` : ''}
 				</span>
 			{:else if scheduledToday}
 				<strong>All done for today ✓</strong>
@@ -235,7 +342,7 @@
 				<span class="muted small">A 2-minute micro-break counts toward your streak.</span>
 			{:else}
 				<strong>Plan your week</strong>
-				<span class="muted small">Pick routines for each day, or give a routine a goal, and they’ll be waiting here.</span>
+				<span class="muted small">Give routines days and times, and the next one will be waiting here.</span>
 			{/if}
 		</div>
 		{#if upNext}
@@ -270,7 +377,7 @@
 			{#if hasSchedule}
 				<button class="btn small ghost" onclick={() => (showWeekModal = true)}>📅 This week</button>
 			{:else}
-				<button class="btn small ghost" onclick={openPlan}>📅 Plan week</button>
+				<button class="btn small ghost" onclick={openPlan}>📅 Schedule routines</button>
 			{/if}
 		{/if}
 	</div>
@@ -330,13 +437,13 @@
 					<span class="routine-meta muted small">
 						{r.stretches.length} stretch{r.stretches.length === 1 ? '' : 'es'} · {routineMinutes(r)}{(r.sets ?? 1) > 1 ? ` · ${r.sets} sets` : ''}
 					</span>
-					{#if r.frequency}
-						{@const progress = frequencyProgress(r)}
-						{#if progress}
-							<span class="goal-pill" class:met={progress.done >= progress.target}>
-								{frequencyLabel(r.frequency)} · {progress.done >= progress.target ? '✓ ' : ''}{Math.min(progress.done, progress.target)}/{progress.target} {progress.period}
-							</span>
-						{/if}
+					{#if r.schedule || r.frequency?.per === 'week'}
+						{@const progress = goalProgress(r, now)}
+						<span class="goal-pill" class:met={!!progress && progress.done >= progress.target}>
+							{r.schedule ? scheduleLabel(r.schedule) : frequencyLabel(r.frequency!)}{progress
+								? ` · ${progress.done >= progress.target ? '✓ ' : ''}${Math.min(progress.done, progress.target)}/${progress.target} ${progress.period}`
+								: ''}
+						</span>
 					{/if}
 					{#if r.stretches.length > 0}
 						<span class="routine-thumbs" aria-hidden="true">
@@ -410,8 +517,12 @@
 							{@const met = it.done >= it.target}
 							<div class="week-item" class:met class:missed={d.past && !met}>
 								<span class="week-check" aria-hidden="true">{met ? '✓' : d.past ? '✕' : '○'}</span>
-								<span class="week-item-name">{it.routine.name || 'Untitled routine'}</span>
-								<span class="muted small">{it.target > 1 ? `${Math.min(it.done, it.target)}/${it.target}` : it.why}</span>
+								<span class="week-item-name"
+									>{it.routine.name || 'Untitled routine'}<small class="muted"
+										>{it.times.length ? it.times.map(formatTime).join(', ') : 'Any time'}</small
+									></span
+								>
+								{#if it.target > 1}<span class="muted small">{Math.min(it.done, it.target)}/{it.target}</span>{/if}
 								{#if d.isToday && !met}
 									<button class="btn small primary" onclick={() => play(it.routine)} disabled={it.routine.stretches.length === 0}>Play</button>
 								{/if}
@@ -424,7 +535,7 @@
 		{#if weeklyGoals.length > 0}
 			<div class="section-label">Weekly goals</div>
 			{#each weeklyGoals as r (r.id)}
-				{@const progress = frequencyProgress(r)}
+				{@const progress = goalProgress(r, now)}
 				{#if progress}
 					<div class="week-item" class:met={progress.done >= progress.target}>
 						<span class="week-check" aria-hidden="true">{progress.done >= progress.target ? '✓' : '○'}</span>
@@ -434,27 +545,46 @@
 				{/if}
 			{/each}
 		{/if}
-		<button class="btn" style="width: 100%; margin-top: 1rem" onclick={openPlan}>Edit weekly plan</button>
-		<p class="muted small" style="margin: 0.6rem 0 0">Set a daily or weekly goal on any routine from its edit screen.</p>
+		<div class="week-actions">
+			<button class="btn" onclick={openPlan}>Edit schedule</button>
+			<button class="btn" onclick={exportCalendar}>📅 Add to calendar</button>
+		</div>
+		<p class="muted small" style="margin: 0.6rem 0 0">Set times of day on a routine from its edit screen.</p>
 	</Modal>
 {/if}
 
 {#if showPlanModal}
-	<Modal title="Weekly plan" subtitle="Pick a routine for each day" onclose={() => (showPlanModal = false)}>
-		<div class="plan-list">
-			{#each planDays as day (day)}
-				{@const current = plannedRoutine(day)?.id ?? ''}
-				<label class="plan-row" class:today={day === todayIndex}>
-					<span>{dayNames[day]}</span>
-					<select value={current} onchange={(e) => setPlan(day, e.currentTarget.value)}>
-						<option value="">Rest day</option>
-						{#each routines as r (r.id)}
-							<option value={r.id}>{r.name || 'Untitled routine'}</option>
+	<Modal title="Schedule" subtitle="Tick the days each routine is for" onclose={() => (showPlanModal = false)}>
+		{#if routines.length === 0}
+			<p class="muted">Make a routine first.</p>
+		{:else}
+			<div class="plan-grid">
+				<div class="plan-grid-row plan-grid-head">
+					<span></span>
+					{#each planDays as day (day)}
+						<span class:today={day === todayIndex}>{dayNames[day][0]}</span>
+					{/each}
+				</div>
+				{#each routines as r (r.id)}
+					<div class="plan-grid-row">
+						<span class="plan-grid-name">
+							{r.name || 'Untitled routine'}
+							{#if r.schedule?.times.length}<small class="muted">{r.schedule.times.map(formatTime).join(', ')}</small>{/if}
+						</span>
+						{#each planDays as day (day)}
+							{@const on = !!r.schedule?.days.includes(day)}
+							<button
+								class="plan-cell"
+								class:on
+								aria-pressed={on}
+								aria-label="{r.name || 'Untitled routine'} on {dayNames[day]}"
+								onclick={() => toggleScheduled(r, day)}>{on ? '✓' : ''}</button
+							>
 						{/each}
-					</select>
-				</label>
-			{/each}
-		</div>
+					</div>
+				{/each}
+			</div>
+		{/if}
 		<button class="btn primary" style="width: 100%; margin-top: 1rem" onclick={() => (showPlanModal = false)}>Done</button>
 	</Modal>
 {/if}

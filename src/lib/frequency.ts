@@ -1,20 +1,47 @@
-import type { Routine, RoutineFrequency } from './types.ts';
+import type { Routine, RoutineFrequency, RoutineSchedule } from './types.ts';
 import { addDays, todayKey } from './time.ts';
 
-/** 'Daily', '3× a day', 'Weekly', '3× a week'. */
+const SHORT_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+/** 'Weekly', '3× a week' (and the legacy per-day forms). */
 export function frequencyLabel(f: RoutineFrequency): string {
 	if (f.times <= 1) return f.per === 'day' ? 'Daily' : 'Weekly';
 	return `${f.times}× a ${f.per}`;
 }
 
-/** Plays so far against the goal, for today or this week (Monday first). */
-export function frequencyProgress(r: Routine, now: Date = new Date()): { done: number; target: number; period: string } | null {
-	const f = r.frequency;
-	if (!f) return null;
-	const today = todayKey(now);
-	const from = f.per === 'day' ? today : addDays(today, -((now.getDay() + 6) % 7));
-	const done = (r.completions ?? []).filter((d) => d >= from && d <= today).length;
-	return { done, target: f.times, period: f.per === 'day' ? 'today' : 'this week' };
+/** '13:30' -> '1:30 pm' (or '13:30', following the locale). */
+export function formatTime(hhmm: string): string {
+	const [h, m] = hhmm.split(':').map(Number);
+	return new Date(2000, 0, 1, h, m).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+}
+
+/** 'Every day', 'Weekdays', 'Weekends' or 'Mon, Wed, Fri'. */
+export function daysLabel(days: number[]): string {
+	const set = new Set(days);
+	if (set.size === 7) return 'Every day';
+	if (set.size === 5 && [1, 2, 3, 4, 5].every((d) => set.has(d))) return 'Weekdays';
+	if (set.size === 2 && set.has(0) && set.has(6)) return 'Weekends';
+	return [1, 2, 3, 4, 5, 6, 0].filter((d) => set.has(d)).map((d) => SHORT_DAYS[d]).join(', ');
+}
+
+/** 'Weekdays · 9:00 am, 1:00 pm' or 'Every day · any time'. */
+export function scheduleLabel(s: RoutineSchedule): string {
+	if (s.days.length === 0) return 'No days picked';
+	return `${daysLabel(s.days)} · ${s.times.length ? s.times.map(formatTime).join(', ') : 'any time'}`;
+}
+
+/** Plays wanted on a scheduled day: one per time, or once when there are no times. */
+export function dailyTarget(s: RoutineSchedule): number {
+	return Math.max(1, s.times.length);
+}
+
+function weekdayOf(key: string): number {
+	const [y, m, d] = key.split('-').map(Number);
+	return new Date(y, m - 1, d).getDay();
+}
+
+function mondayOf(key: string): string {
+	return addDays(key, -((weekdayOf(key) + 6) % 7));
 }
 
 /** Plays of a routine on one day. */
@@ -22,44 +49,144 @@ export function playsOn(r: Routine, key: string): number {
 	return (r.completions ?? []).filter((d) => d === key).length;
 }
 
+/** Plays of a routine in the Monday-to-Sunday week containing `key`, up to that day. */
+export function playsInWeek(r: Routine, key: string): number {
+	const from = mondayOf(key);
+	return (r.completions ?? []).filter((d) => d >= from && d <= key).length;
+}
+
+/** Progress for a routine card: today's scheduled plays, or a weekly goal. */
+export function goalProgress(r: Routine, now: Date = new Date()): { done: number; target: number; period: string } | null {
+	const today = todayKey(now);
+	if (r.schedule?.days.includes(now.getDay())) {
+		return { done: playsOn(r, today), target: dailyTarget(r.schedule), period: 'today' };
+	}
+	if (r.frequency?.per === 'week') {
+		return { done: playsInWeek(r, today), target: r.frequency.times, period: 'this week' };
+	}
+	return null;
+}
+
 export interface ScheduledItem {
 	routine: Routine;
 	/** plays wanted that day */
 	target: number;
 	done: number;
+	times: string[];
+}
+
+/** Routines scheduled on a date, earliest first time first, any-time ones last. */
+export function scheduledOn(routines: Routine[], key: string): ScheduledItem[] {
+	const weekday = weekdayOf(key);
+	return routines
+		.filter((r) => r.schedule?.days.includes(weekday))
+		.map((r) => {
+			const s = r.schedule as RoutineSchedule;
+			return { routine: r, target: dailyTarget(s), done: playsOn(r, key), times: s.times };
+		})
+		.toSorted((a, b) => (a.times[0] ?? '99').localeCompare(b.times[0] ?? '99'));
+}
+
+export interface DueItem {
+	routine: Routine;
+	/** the slot this play is for, or null for any time today */
+	time: string | null;
+	/** due: its time has come; later: still ahead today; anytime: no set time */
+	state: 'due' | 'later' | 'anytime';
+	done: number;
+	target: number;
+	/** short reason, e.g. 'Due 9:00 am', 'At 1:00 pm', '1/3 this week' */
 	why: string;
 }
 
-/**
- * Routines scheduled on a date: the weekly plan's pick for that weekday, then
- * every daily goal. A routine that is both is listed once with the higher target.
- */
-export function scheduledOn(routines: Routine[], weekPlan: (string | null)[], key: string): ScheduledItem[] {
-	const [y, m, d] = key.split('-').map(Number);
-	const weekday = new Date(y, m - 1, d).getDay();
-	const items: ScheduledItem[] = [];
-	const planned = routines.find((r) => r.id === weekPlan?.[weekday]);
-	if (planned) {
-		const daily = planned.frequency?.per === 'day' ? planned.frequency.times : 1;
-		items.push({ routine: planned, target: daily, done: playsOn(planned, key), why: 'Planned' });
-	}
-	for (const r of routines) {
-		if (r === planned || r.frequency?.per !== 'day') continue;
-		items.push({ routine: r, target: r.frequency.times, done: playsOn(r, key), why: frequencyLabel(r.frequency) });
-	}
-	return items;
+function nowHHMM(now: Date): string {
+	return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 }
 
-/** What's still to do today, in order: planned and daily routines, then unmet weekly goals not yet played today. */
-export function dueToday(routines: Routine[], weekPlan: (string | null)[], now: Date = new Date()): ScheduledItem[] {
+/**
+ * What's still to do today, one entry per routine at its next unplayed slot.
+ * Order: slots whose time has come (earliest first), then any-time routines and
+ * unmet weekly goals, then slots later today.
+ */
+export function dueToday(routines: Routine[], now: Date = new Date()): DueItem[] {
 	const today = todayKey(now);
-	const due = scheduledOn(routines, weekPlan, today).filter((i) => i.done < i.target);
-	for (const r of routines) {
-		if (r.frequency?.per !== 'week' || due.some((i) => i.routine === r)) continue;
-		const progress = frequencyProgress(r, now);
-		if (progress && progress.done < progress.target && playsOn(r, today) === 0) {
-			due.push({ routine: r, target: progress.target, done: progress.done, why: `${progress.done}/${progress.target} this week` });
+	const clock = nowHHMM(now);
+	const items: DueItem[] = [];
+	for (const it of scheduledOn(routines, today)) {
+		if (it.done >= it.target) continue;
+		const time = it.times[it.done] ?? null;
+		if (time === null) {
+			items.push({ routine: it.routine, time, state: 'anytime', done: it.done, target: it.target, why: 'Any time today' });
+		} else {
+			const due = time <= clock;
+			items.push({
+				routine: it.routine,
+				time,
+				state: due ? 'due' : 'later',
+				done: it.done,
+				target: it.target,
+				why: `${due ? 'Due' : 'At'} ${formatTime(time)}`
+			});
 		}
 	}
-	return due;
+	for (const r of routines) {
+		if (r.frequency?.per !== 'week' || r.schedule || items.some((i) => i.routine === r) || playsOn(r, today) > 0) continue;
+		const done = playsInWeek(r, today);
+		if (done < r.frequency.times) {
+			items.push({ routine: r, time: null, state: 'anytime', done, target: r.frequency.times, why: `${done}/${r.frequency.times} this week` });
+		}
+	}
+	const rank = { due: 0, anytime: 1, later: 2 };
+	return items.toSorted((a, b) => rank[a.state] - rank[b.state] || (a.time ?? '').localeCompare(b.time ?? ''));
+}
+
+/** Evenly spread times between 9am and 5pm, used when migrating 'N× a day' goals. */
+export function spreadTimes(count: number): string[] {
+	if (count <= 1) return [];
+	// Half-hour steps so up to 17 slots stay distinct.
+	const slots = Array.from({ length: count }, (_, i) => Math.round(18 + (i * 16) / (count - 1)) * 30);
+	return [...new Set(slots)].map((m) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${m % 60 ? '30' : '00'}`);
+}
+
+/* ------------------------------ last week ------------------------------ */
+
+export interface WeekReview {
+	/** Monday of the reviewed week */
+	from: string;
+	scheduled: number;
+	completed: number;
+	/** days with any finished routine */
+	activeDays: number;
+	bestDay: string | null;
+}
+
+/** Scheduled plays done vs planned in the week before the one containing `now` (schedules as they are today). */
+export function reviewLastWeek(routines: Routine[], completedDates: string[], now: Date = new Date()): WeekReview {
+	const from = addDays(mondayOf(todayKey(now)), -7);
+	let scheduled = 0;
+	let completed = 0;
+	let activeDays = 0;
+	let bestDay: string | null = null;
+	let bestPlays = 0;
+	for (let i = 0; i < 7; i++) {
+		const key = addDays(from, i);
+		for (const it of scheduledOn(routines, key)) {
+			if (it.routine.schedule?.since && key < it.routine.schedule.since) continue;
+			scheduled += it.target;
+			completed += Math.min(it.done, it.target);
+		}
+		if (completedDates.includes(key)) activeDays += 1;
+		const plays = routines.reduce((n, r) => n + playsOn(r, key), 0);
+		if (plays > bestPlays) {
+			bestPlays = plays;
+			bestDay = key;
+		}
+	}
+	// Weekly goals count as scheduled plays too.
+	for (const r of routines) {
+		if (r.frequency?.per !== 'week' || r.schedule || (r.frequency.since && r.frequency.since > addDays(from, 6))) continue;
+		scheduled += r.frequency.times;
+		completed += Math.min(playsInWeek(r, addDays(from, 6)), r.frequency.times);
+	}
+	return { from, scheduled, completed, activeDays, bestDay };
 }
