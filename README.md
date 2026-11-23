@@ -36,6 +36,7 @@ A fast, phone-first, 100% offline web app for building, timing, and tracking str
 - **1-Tap Save to Google Drive / Files**: Native cloud backup export using the Web Share API (which directly triggers Android's system "Save to Google Drive" dialog).
 - **File System Auto-Sync**: Link a local or cloud-synced backup file (via File System Access API) that auto-updates on every change.
 - **Auto-Backup on Finish**: Optional automatic backup trigger whenever a routine is completed.
+- **Complete Backups**: Backups include routines, pain scores and morning checks; restoring merges them without duplicates.
 
 ### 🧪 Developer & Testing Mode
 - **Speed Multipliers**: Fast-forward player timing at `1x`, `5x`, `10x`, or `30x` speed to test a full routine in seconds.
@@ -63,6 +64,7 @@ A fast, phone-first, 100% offline web app for building, timing, and tracking str
 - **Rising-Pain Alert**: A card appears if pain rises week on week or two mornings feel worse, with a "When to get it checked" guide to warning signs.
 - **Ready to Progress?**: After a calm fortnight on a routine (6+ plays, pain ≤3, no bad mornings), you're offered one step up: +5s per stretch or +1 set. It never changes anything without asking.
 - **Forgiving Streaks**: Shows days practised in the last 30 alongside the streak, because missing a single day doesn't undo a habit (Lally et al., 2010).
+- **Optional by Design**: Pain scores, the morning check, rising-pain alerts, progress prompts and the weekly review can each be switched off in Settings → Tracking & prompts.
 
 ### 🚀 Starter Routine Presets
 Includes 6 ready-to-use stretching routines with illustrated previews:

@@ -21,7 +21,12 @@ export const defaultSettings: Settings = {
 	playbackSpeed: 1,
 	autoBackupOnFinish: false,
 	reminderEnabled: false,
-	reminderHour: 18
+	reminderHour: 18,
+	painTracking: true,
+	morningCheck: true,
+	painAlerts: true,
+	progressPrompts: true,
+	weeklyReview: true
 };
 
 export const defaultStreak: StreakState = { completedDates: [], fixersUsed: 0 };

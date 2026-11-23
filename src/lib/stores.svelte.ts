@@ -621,6 +621,9 @@ export interface RoutineBackup {
 	exportedAt: string;
 	routines: Routine[];
 	photos: Record<string, string>;
+	/** absent in backups made before pain and morning checks were included */
+	pain?: PainEntry[];
+	morning?: MorningCheck[];
 }
 
 /** Serialize routines and their local photos into a portable JSON backup. */
@@ -637,7 +640,9 @@ export async function exportBackup(): Promise<string> {
 		version: 1,
 		exportedAt: new Date().toISOString(),
 		routines: JSON.parse(JSON.stringify(routines)) as Routine[],
-		photos
+		photos,
+		pain: JSON.parse(JSON.stringify(painLog)) as PainEntry[],
+		morning: JSON.parse(JSON.stringify(morningChecks)) as MorningCheck[]
 	};
 	return JSON.stringify(backup, null, 2);
 }
@@ -669,7 +674,63 @@ function importGoal(candidate: Record<string, unknown>): Pick<Routine, 'schedule
 	return {};
 }
 
-export async function importBackup(raw: string): Promise<{ added: number; skipped: number }> {
+const DATE_KEY = /^\d{4}-\d{2}-\d{2}$/;
+
+/** A YYYY-MM-DD key no later than tomorrow (allowing for time zones), so bad dates can't jump the queue. */
+function validDay(value: unknown): value is string {
+	return typeof value === 'string' && DATE_KEY.test(value) && !Number.isNaN(Date.parse(value)) && value <= addDays(todayKey(), 1);
+}
+
+/**
+ * Merge backed-up pain scores, skipping ones already here (same timestamp), and
+ * point them at the restored copies of their routines. Returns how many were added.
+ */
+function importPain(value: unknown, idMap: Map<string, string>): number {
+	if (!Array.isArray(value)) return 0;
+	const seen = new Set(painLog.map((p) => p.at));
+	let added = 0;
+	for (const p of value) {
+		if (!isRecord(p) || !validDay(p.date)) continue;
+		if (typeof p.score !== 'number' || p.score < 0 || p.score > 10 || typeof p.at !== 'number' || p.at > Date.now() + 86_400_000 || seen.has(p.at)) continue;
+		const oldId = typeof p.routineId === 'string' ? p.routineId : null;
+		// The micro-break has a fixed id and isn't in the routine list.
+		const routineId =
+			oldId === null || oldId === MICRO_BREAK_ID
+				? oldId
+				: (idMap.get(oldId) ?? (routines.some((r) => r.id === oldId) ? oldId : null));
+		painLog.push({ date: p.date, score: Math.round(p.score), routineId, at: p.at, ...(p.gentle === true && { gentle: true }) });
+		seen.add(p.at);
+		added += 1;
+	}
+	if (added) {
+		painLog.sort((a, b) => a.at - b.at);
+		savePain(painLog);
+	}
+	return added;
+}
+
+/** Merge backed-up morning checks for days that don't have one yet. */
+function importMorning(value: unknown): number {
+	if (!Array.isArray(value)) return 0;
+	const days = new Set(morningChecks.map((c) => c.date));
+	let added = 0;
+	for (const c of value) {
+		if (!isRecord(c) || !validDay(c.date) || days.has(c.date)) continue;
+		if (c.verdict !== 'better' && c.verdict !== 'same' && c.verdict !== 'worse') continue;
+		morningChecks.push({ date: c.date, verdict: c.verdict, at: typeof c.at === 'number' ? c.at : Date.now() });
+		days.add(c.date);
+		added += 1;
+	}
+	if (added) {
+		morningChecks.sort((a, b) => a.date.localeCompare(b.date));
+		saveMorningChecks(morningChecks);
+	}
+	return added;
+}
+
+export async function importBackup(
+	raw: string
+): Promise<{ added: number; skipped: number; pain: number; morning: number }> {
 	const parsed: unknown = JSON.parse(raw);
 	const source = Array.isArray(parsed) ? { routines: parsed, photos: {} } : parsed;
 	if (!isRecord(source) || !Array.isArray(source.routines)) throw new Error('This file is not a valid Stretch Timer backup.');
@@ -677,6 +738,8 @@ export async function importBackup(raw: string): Promise<{ added: number; skippe
 	const photos = isRecord(source.photos) ? source.photos : {};
 	let added = 0;
 	let skipped = 0;
+	/** backed-up routine id -> its restored copy, so pain scores follow */
+	const idMap = new Map<string, string>();
 	for (const candidate of source.routines) {
 		if (!isRecord(candidate) || typeof candidate.name !== 'string' || !Array.isArray(candidate.stretches)) {
 			skipped += 1;
@@ -718,10 +781,11 @@ export async function importBackup(raw: string): Promise<{ added: number; skippe
 			continue;
 		}
 		routines.push(routine);
+		if (typeof candidate.id === 'string') idMap.set(candidate.id, routine.id);
 		added += 1;
 	}
 	saveRoutines(routines);
-	return { added, skipped };
+	return { added, skipped, pain: importPain(source.pain, idMap), morning: importMorning(source.morning) };
 }
 
 /* ----------------------------- Streak actions ----------------------------- */

@@ -144,7 +144,11 @@
 		if (!file) return;
 		try {
 			const result = await importBackup(await file.text());
-			notify(`${result.added} routine${result.added === 1 ? '' : 's'} restored.`);
+			const extras = [
+				result.pain && `${result.pain} pain score${result.pain === 1 ? '' : 's'}`,
+				result.morning && `${result.morning} morning check${result.morning === 1 ? '' : 's'}`
+			].filter(Boolean);
+			notify(`${result.added} routine${result.added === 1 ? '' : 's'}${extras.length ? `, ${extras.join(' and ')}` : ''} restored.`);
 			refreshSnapshots();
 		} catch (error) {
 			notify(error instanceof Error ? error.message : 'Could not restore backup.');
@@ -156,6 +160,19 @@
 	function formatWhen(ts: number): string {
 		return new Date(ts).toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 	}
+
+	/** Features some people won't want; switching one off hides it everywhere and keeps its data. */
+	const optionalFeatures: Array<{
+		key: 'painTracking' | 'morningCheck' | 'painAlerts' | 'progressPrompts' | 'weeklyReview';
+		label: string;
+		hint: string;
+	}> = [
+		{ key: 'painTracking', label: 'Pain scores', hint: 'Ask for a 0–10 score after routines, and chart it on Streak' },
+		{ key: 'morningCheck', label: 'Morning check', hint: 'Better, same or worse, the day after a routine' },
+		{ key: 'painAlerts', label: 'Rising-pain alerts', hint: 'A card on Home when pain climbs week on week' },
+		{ key: 'progressPrompts', label: 'Ready to progress?', hint: 'Suggest a step up after a calm fortnight on a routine' },
+		{ key: 'weeklyReview', label: 'Weekly review', hint: 'Last week’s summary on Home each Monday' }
+	];
 
 	const cues = [
 		{ key: 'beepStart', cue: 'start', label: 'Stretch starts', hint: 'A beep as each stretch begins' },
@@ -266,6 +283,17 @@
 				/>
 			</div>
 		{/if}
+	</div>
+</section>
+
+<section class="set-section">
+	<h2 class="section-label">Tracking &amp; prompts</h2>
+	<div class="card set-card">
+		{#each optionalFeatures as f (f.key)}
+			<div class="set-row">
+				<Toggle bind:checked={settings[f.key]} onchange={saveAll} label={f.label} hint={f.hint} />
+			</div>
+		{/each}
 	</div>
 </section>
 

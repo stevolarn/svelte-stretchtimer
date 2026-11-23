@@ -121,6 +121,17 @@ export interface Settings {
 	reviewDismissed?: string;
 	/** Monday of the week whose rising-pain card was dismissed */
 	trendDismissed?: string;
+	/* Optional features, all on by default; each can be switched off in Settings. */
+	/** 0-10 pain score after routines, pain zones, and the pain chart on Stats */
+	painTracking: boolean;
+	/** Better / Same / Worse question the morning after a routine */
+	morningCheck: boolean;
+	/** card when pain rises week on week */
+	painAlerts: boolean;
+	/** "Ready to progress?" prompt in the routine editor */
+	progressPrompts: boolean;
+	/** last week's summary card on Home */
+	weeklyReview: boolean;
 }
 
 export interface StorageSnapshot {

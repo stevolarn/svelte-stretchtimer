@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { applyFixer, logPain, painLog, streak, undoLastPain } from '$lib/stores.svelte';
+	import { applyFixer, logPain, painLog, settings, streak, undoLastPain } from '$lib/stores.svelte';
 	import { currentStreak, fixerProgress, fixersAvailable, longestStreak, repairGap } from '$lib/streak';
 	import { addDays, todayKey } from '$lib/time';
 	import { daysPractised } from '$lib/recovery';
@@ -167,40 +167,42 @@
 	</div>
 </section>
 
-<section class="card">
-	<h2 class="cal-title">Pain, last {PAIN_DAYS} days</h2>
-	{#if painPoints.length === 0}
-		<p class="muted small" style="margin: 0 0 0.6rem">
-			Rate your pain after a routine (or below) and the trend shows up here.
-		</p>
-	{:else}
-		<svg class="pain-chart" viewBox="-24 -8 {CHART_W + 32} {CHART_H + 28}" role="img" aria-label="Daily average pain, 0 to 10">
-			{#each [0, 5, 10] as v (v)}
-				{@const y = CHART_H - (v / 10) * CHART_H}
-				<line class="grid" x1="0" x2={CHART_W} y1={y} y2={y} />
-				<text class="axis" x="-8" y={y + 4} text-anchor="end">{v}</text>
-			{/each}
-			<text class="axis" x="0" y={CHART_H + 18}>{formatDay(painDays[0].key)}</text>
-			<text class="axis" x={CHART_W} y={CHART_H + 18} text-anchor="end">Today</text>
-			{#if painPoints.length > 1}<path class="line" d={painPath} />{/if}
-			{#each painPoints as p (p.key)}
-				<circle class="dot" cx={p.x} cy={p.y} r="3.5"><title>{formatDay(p.key)}: {p.avg.toFixed(1)}</title></circle>
-			{/each}
-		</svg>
-	{/if}
-	<div class="pain-now">
-		<span class="small">{loggedToday === null ? 'Log pain now' : `Logged ${loggedToday}/10 today — tap to change`}</span>
-		<div class="pain-row">
-			{#each Array.from({ length: 11 }, (_, i) => i) as n (n)}
-				<button class="pain-btn" class:on={loggedToday === n} aria-label="Pain {n} out of 10" onclick={() => logPainNow(n)}>{n}</button>
-			{/each}
+{#if settings.painTracking}
+	<section class="card">
+		<h2 class="cal-title">Pain, last {PAIN_DAYS} days</h2>
+		{#if painPoints.length === 0}
+			<p class="muted small" style="margin: 0 0 0.6rem">
+				Rate your pain after a routine (or below) and the trend shows up here.
+			</p>
+		{:else}
+			<svg class="pain-chart" viewBox="-24 -8 {CHART_W + 32} {CHART_H + 28}" role="img" aria-label="Daily average pain, 0 to 10">
+				{#each [0, 5, 10] as v (v)}
+					{@const y = CHART_H - (v / 10) * CHART_H}
+					<line class="grid" x1="0" x2={CHART_W} y1={y} y2={y} />
+					<text class="axis" x="-8" y={y + 4} text-anchor="end">{v}</text>
+				{/each}
+				<text class="axis" x="0" y={CHART_H + 18}>{formatDay(painDays[0].key)}</text>
+				<text class="axis" x={CHART_W} y={CHART_H + 18} text-anchor="end">Today</text>
+				{#if painPoints.length > 1}<path class="line" d={painPath} />{/if}
+				{#each painPoints as p (p.key)}
+					<circle class="dot" cx={p.x} cy={p.y} r="3.5"><title>{formatDay(p.key)}: {p.avg.toFixed(1)}</title></circle>
+				{/each}
+			</svg>
+		{/if}
+		<div class="pain-now">
+			<span class="small">{loggedToday === null ? 'Log pain now' : `Logged ${loggedToday}/10 today — tap to change`}</span>
+			<div class="pain-row">
+				{#each Array.from({ length: 11 }, (_, i) => i) as n (n)}
+					<button class="pain-btn" class:on={loggedToday === n} aria-label="Pain {n} out of 10" onclick={() => logPainNow(n)}>{n}</button>
+				{/each}
+			</div>
 		</div>
-	</div>
-	<p class="muted small pain-guide">
-		Up to 5/10 during or after a session is usually fine if it’s settled by the next morning.
-		<button class="link-btn" onclick={() => (showSigns = true)}>When to get it checked</button>
-	</p>
-</section>
+		<p class="muted small pain-guide">
+			Up to 5/10 during or after a session is usually fine if it’s settled by the next morning.
+			<button class="link-btn" onclick={() => (showSigns = true)}>When to get it checked</button>
+		</p>
+	</section>
+{/if}
 
 {#if showSigns}
 	<WarningSigns onclose={() => (showSigns = false)} />

@@ -245,7 +245,12 @@
 
 	/* ---------------------- ready to progress? ---------------------- */
 
-	const progress = $derived(routine ? readyToProgress(routine, painLog, morningChecks) : null);
+	// Switched-off tracking doesn't count, so old scores or mornings can't trigger or block it.
+	const progress = $derived(
+		routine && settings.progressPrompts
+			? readyToProgress(routine, settings.painTracking ? painLog : [], settings.morningCheck ? morningChecks : [])
+			: null
+	);
 	const canLengthen = $derived(routine?.stretches.some((s) => s.durationSeconds < 600) ?? false);
 
 	/** Graded loading, one variable at a time: longer holds, an extra set, or neither for now. */

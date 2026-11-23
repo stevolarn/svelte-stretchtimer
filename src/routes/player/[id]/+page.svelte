@@ -423,23 +423,25 @@
 					{/if}
 				</span>
 			</div>
-			<div class="pain-check" role="group" aria-labelledby="pain-q">
-				{#if painScore === null}
-					<span id="pain-q" class="small">How’s the pain right now? <span class="muted">(optional)</span></span>
-					<div class="pain-chips">
-						{#each Array.from({ length: 11 }, (_, i) => i) as n (n)}
-							<button class="pain-chip" style="--pain: {n}" aria-label="Pain {n} out of 10" onclick={() => checkIn(n)}>{n}</button>
-						{/each}
-					</div>
-					<span class="pain-scale muted small"><span>0 none</span><span>10 worst</span></span>
-				{:else}
-					<span id="pain-q" class="small pain-logged">
-						<span class="zone-dot zone-{painZone(painScore)}" aria-hidden="true"></span>
-						<span><strong>{painScore}/10.</strong> {zoneAdvice[painZone(painScore)]}</span>
-					</span>
-					<button class="btn small ghost" onclick={undoCheckIn}>Undo</button>
-				{/if}
-			</div>
+			{#if settings.painTracking}
+				<div class="pain-check" role="group" aria-labelledby="pain-q">
+					{#if painScore === null}
+						<span id="pain-q" class="small">How’s the pain right now? <span class="muted">(optional)</span></span>
+						<div class="pain-chips">
+							{#each Array.from({ length: 11 }, (_, i) => i) as n (n)}
+								<button class="pain-chip" style="--pain: {n}" aria-label="Pain {n} out of 10" onclick={() => checkIn(n)}>{n}</button>
+							{/each}
+						</div>
+						<span class="pain-scale muted small"><span>0 none</span><span>10 worst</span></span>
+					{:else}
+						<span id="pain-q" class="small pain-logged">
+							<span class="zone-dot zone-{painZone(painScore)}" aria-hidden="true"></span>
+							<span><strong>{painScore}/10.</strong> {zoneAdvice[painZone(painScore)]}</span>
+						</span>
+						<button class="btn small ghost" onclick={undoCheckIn}>Undo</button>
+					{/if}
+				</div>
+			{/if}
 			<div class="finish-actions">
 				<button class="btn primary" onclick={done}>Done</button>
 				<button class="btn" onclick={restart}>Play again</button>

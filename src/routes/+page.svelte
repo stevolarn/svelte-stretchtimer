@@ -221,10 +221,11 @@
 		const scores = painLog.filter((p) => p.date >= from && p.date <= to).map((p) => p.score);
 		return scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
 	}
-	const painLast = $derived(painAverage(review.from));
+	const painLast = $derived(settings.painTracking ? painAverage(review.from) : null);
 	const painBefore = $derived(painAverage(addDays(review.from, -7)));
 	const showReview = $derived(
-		settings.reviewDismissed !== thisMonday && (review.scheduled > 0 || review.activeDays > 0 || painLast !== null)
+		settings.weeklyReview &&
+			settings.reviewDismissed !== thisMonday && (review.scheduled > 0 || review.activeDays > 0 || painLast !== null)
 	);
 
 	function dismissReview(): void {
@@ -235,11 +236,13 @@
 
 	/* ----------------------- recovery check-ins ----------------------- */
 
-	const askMorning = $derived(needsMorningCheck(routines, streak.completedDates, morningChecks, todayKey(now)));
+	const askMorning = $derived(settings.morningCheck && needsMorningCheck(routines, streak.completedDates, morningChecks, todayKey(now)));
 	/** A worse morning after yesterday's session: today's routine is suggested in its gentle version. */
-	const easeOff = $derived(morningVerdict(morningChecks, todayKey(now)) === 'worse');
-	const trend = $derived(painTrend(painLog, morningChecks, todayKey(now)));
-	const showTrend = $derived(trend.rising && settings.trendDismissed !== thisMonday);
+	const easeOff = $derived(settings.morningCheck && morningVerdict(morningChecks, todayKey(now)) === 'worse');
+	const trend = $derived(
+		painTrend(settings.painTracking ? painLog : [], settings.morningCheck ? morningChecks : [], todayKey(now))
+	);
+	const showTrend = $derived(settings.painAlerts && trend.rising && settings.trendDismissed !== thisMonday);
 	let showSigns = $state(false);
 
 	function answerMorning(verdict: 'better' | 'same' | 'worse'): void {
