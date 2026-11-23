@@ -10,6 +10,7 @@
 		'typing-break': { from: '#5fd3a0', to: '#1f9468', pose: 'wrist-flexor' },
 		'wrist-relief': { from: '#f7c35f', to: '#dc7f1c', pose: 'prayer-stretch' },
 		'thoracic-outlet': { from: '#56b8de', to: '#22679a', pose: 'scalene' },
+		'finger-band': { from: '#5ad0f0', to: '#1f8fc4', pose: 'finger-band' },
 		'nerve-glides': { from: '#e47ff2', to: '#9b2bb0', pose: 'nerve-glide' },
 		'neck-shoulder-release': { from: '#f39a86', to: '#c24a52', pose: 'upper-trap' },
 		'morning-mobility': { from: '#ffb547', to: '#f2702e', pose: 'standing-side-bend' },

@@ -18,6 +18,7 @@ export type MovementType =
 	| 'static'
 	| 'dynamic'
 	| 'isometrics'
+	| 'eccentrics'
 	| 'calisthenics'
 	| 'mobility'
 	| 'yoga'
@@ -32,7 +33,7 @@ export type StockCategory = BodyArea;
 export interface StockStretch {
 	id: string;
 	name: string;
-	type: 'static' | 'dynamic' | 'isometrics' | 'calisthenics' | 'mobility' | 'yoga' | 'cardio';
+	type: 'static' | 'dynamic' | 'isometrics' | 'eccentrics' | 'calisthenics' | 'mobility' | 'yoga' | 'cardio';
 	position: 'standing' | 'seated' | 'floor';
 	area: 'upper-body' | 'spine' | 'hips' | 'legs' | 'full-body';
 	category?: 'upper-body' | 'spine' | 'hips' | 'legs' | 'full-body';

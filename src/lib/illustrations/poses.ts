@@ -1022,5 +1022,31 @@ export const poses: Record<string, PoseDef> = {
 		],
 		dur: 4.5,
 		glow: [['neck', 'pelvis']]
+	},
+
+	/* -------------------------------------------- Finger extensor band (one hand) */
+	'finger-band': {
+		view: 'front',
+		frames: [
+			{ ...FRONT, arm: 48, forearm: 160, farArm: -16, farForearm: -8 },
+			{ arm: 50, forearm: 164 }
+		],
+		dur: 2.2,
+		glow: ['hand'],
+		arrows: [
+			{ at: 'hand', d: 'M1 -5v-6', gold: true },
+			{ at: 'hand', d: 'M4 -3l5 -5', gold: true },
+			{ at: 'hand', d: 'M5 1h7', gold: true }
+		]
+	},
+	'thumb-band': {
+		view: 'front',
+		frames: [
+			{ ...FRONT, arm: 48, forearm: 160, farArm: -16, farForearm: -8 },
+			{ arm: 50, forearm: 164 }
+		],
+		dur: 2.2,
+		glow: ['hand'],
+		arrows: [{ at: 'hand', d: 'M-3 -3l-4 -6', gold: true }]
 	}
 };

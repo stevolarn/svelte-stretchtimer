@@ -27,6 +27,7 @@
 		{ kind: 'typing-break', title: 'Typing break', description: 'A quick reset between keyboard sessions' },
 		{ kind: 'wrist-relief', title: 'Wrist & forearm', description: 'For RSI-prone hands and forearms' },
 		{ kind: 'thoracic-outlet', title: 'Thoracic outlet', description: 'Open the neck, chest and collarbone' },
+		{ kind: 'finger-band', title: 'Finger band', description: 'Extensor band: reps, holds and slow lowers' },
 		{ kind: 'nerve-glides', title: 'Nerve glides', description: 'Gentle arm nerve flossing, two rounds' },
 		{ kind: 'neck-shoulder-release', title: 'Neck & shoulders', description: 'Ease tension from desk work' },
 		{ kind: 'morning-mobility', title: 'Morning mobility', description: 'Wake up your whole body' },

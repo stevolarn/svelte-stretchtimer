@@ -1186,6 +1186,120 @@ export const stockStretches: StockStretch[] = [
 		sides: 'one',
 		defaultSeconds: 30,
 		iconKey: 'shoulder-rolls'
+	},
+
+	/* ==========================================================================
+	   9. FINGER EXTENSOR BAND
+	   ========================================================================== */
+	{
+		id: 'dynamic-finger-band-extensions',
+		name: 'Finger Band Extensions',
+		type: 'dynamic',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Fingers and thumb in the loops, open the hand wide against the band, then close it with control. Steady reps.',
+		sides: 'two',
+		defaultSeconds: 40,
+		iconKey: 'finger-band'
+	},
+	{
+		id: 'dynamic-finger-band-pulses',
+		name: 'Finger Band Pulses',
+		type: 'dynamic',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Open the hand about halfway and pulse quickly in and out against the band. Keep the wrist relaxed and straight.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'finger-band'
+	},
+	{
+		id: 'dynamic-finger-band-spreads',
+		name: 'Finger Spreads (No Thumb)',
+		type: 'dynamic',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Thumb out of its loop, spread the four fingers apart sideways against the band, then bring them back together.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'finger-band'
+	},
+	{
+		id: 'dynamic-thumb-band-abduction',
+		name: 'Thumb Band Abductions',
+		type: 'dynamic',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Keep the fingers still and move the thumb out to the side against the band, then back. Small, smooth reps.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'thumb-band'
+	},
+	{
+		id: 'iso-finger-band-open-hold',
+		name: 'Finger Band Open Hold',
+		type: 'isometrics',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Open the hand fully against the band and hold the stretch-wide position. Breathe and keep the forearm soft.',
+		sides: 'two',
+		defaultSeconds: 20,
+		iconKey: 'finger-band'
+	},
+	{
+		id: 'iso-finger-band-half-hold',
+		name: 'Finger Band Half-Open Hold',
+		type: 'isometrics',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Open the hand halfway and hold steady against the band. Easier on sore hands than a full open hold.',
+		sides: 'two',
+		defaultSeconds: 25,
+		iconKey: 'finger-band'
+	},
+	{
+		id: 'iso-thumb-band-hold',
+		name: 'Thumb Band Hold',
+		type: 'isometrics',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Move the thumb out to the side against the band and hold it there without letting the fingers curl.',
+		sides: 'two',
+		defaultSeconds: 20,
+		iconKey: 'thumb-band'
+	},
+	{
+		id: 'ecc-finger-band-slow-close',
+		name: 'Finger Band Slow Close',
+		type: 'eccentrics',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Open the hand quickly, then let the band close it over a slow count of four. Resist all the way in.',
+		sides: 'two',
+		defaultSeconds: 40,
+		iconKey: 'finger-band'
+	},
+	{
+		id: 'ecc-thumb-band-slow-return',
+		name: 'Thumb Band Slow Return',
+		type: 'eccentrics',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Move the thumb out briskly, then let the band pull it back in over a slow count of four.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'thumb-band'
+	},
+	{
+		id: 'ecc-finger-band-single-finger',
+		name: 'Single-Finger Slow Lowers',
+		type: 'eccentrics',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'With the hand open, let one finger at a time drift back toward the palm slowly while the others stay wide.',
+		sides: 'two',
+		defaultSeconds: 40,
+		iconKey: 'finger-band'
 	}
 ];
 

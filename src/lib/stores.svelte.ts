@@ -71,7 +71,8 @@ export type StarterRoutineKind =
 	| 'typing-break'
 	| 'nerve-glides'
 	| 'thoracic-outlet'
-	| 'neck-shoulder-release';
+	| 'neck-shoulder-release'
+	| 'finger-band';
 
 type StarterStretch = Partial<Stretch> & Pick<Stretch, 'name' | 'description' | 'sides'>;
 
@@ -280,6 +281,22 @@ const starterDefinitions: Record<
 			stock('static-scalene-stretch'),
 			stock('static-cross-body-shoulder'),
 			stock('mob-thread-needle', 30)
+		]
+	},
+	'finger-band': {
+		name: 'Finger band workout',
+		breakSeconds: 10,
+		stretches: [
+			stock('mob-tendon-glides', 30),
+			stock('dynamic-finger-band-extensions'),
+			stock('dynamic-finger-band-spreads'),
+			stock('dynamic-thumb-band-abduction'),
+			stock('iso-finger-band-open-hold'),
+			stock('iso-thumb-band-hold'),
+			stock('ecc-finger-band-slow-close'),
+			stock('ecc-thumb-band-slow-return'),
+			stock('static-prayer-stretch'),
+			stock('static-wrist-flexor')
 		]
 	}
 };

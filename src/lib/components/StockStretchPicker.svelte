@@ -27,6 +27,7 @@
 		{ id: 'mobility', label: 'Mobility' },
 		{ id: 'yoga', label: 'Yoga' },
 		{ id: 'isometrics', label: 'Isometrics' },
+		{ id: 'eccentrics', label: 'Eccentrics' },
 		{ id: 'calisthenics', label: 'Calisthenics' },
 		{ id: 'cardio', label: 'Cardio' }
 	];
@@ -91,6 +92,8 @@
 				return 'Full Body';
 			case 'isometrics':
 				return 'Isometric';
+			case 'eccentrics':
+				return 'Eccentric';
 			case 'calisthenics':
 				return 'Calisthenic';
 			default:
