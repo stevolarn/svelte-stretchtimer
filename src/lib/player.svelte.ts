@@ -36,7 +36,6 @@ let endAt = 0;
 let lastTick = 0;
 let finished = false;
 let settingsSnapshot: Settings | null = null;
-const originalTitle = typeof document !== 'undefined' ? document.title : '';
 
 function clearTimer(): void {
 	if (timer !== null) {
@@ -50,14 +49,17 @@ function updateTitle(): void {
 	const seg = player.segments[player.index];
 	if (seg && (player.status === 'running' || player.status === 'paused')) {
 		const side = seg.side === 'left' ? 'L' : seg.side === 'right' ? 'R' : '';
-		document.title = `${formatSeconds(player.remaining)} ${side ? side + ' · ' : ''}${seg.label} · ${player.routineName}`;
+		const paused = player.status === 'paused' ? 'Paused · ' : '';
+		document.title = `${paused}${formatSeconds(player.remaining)} ${side ? side + ' · ' : ''}${seg.label} · ${player.routineName}`;
 	} else {
 		restoreTitle();
 	}
 }
 
+/** Back to the player page's own title (svelte:head won't rewrite it while its value is unchanged). */
 function restoreTitle(): void {
-	if (document.title !== originalTitle) document.title = originalTitle;
+	if (typeof document === 'undefined') return;
+	document.title = `${player.routineName || 'Routine'} · Stretch Timer`;
 }
 
 function enterSegment(index: number, settings: Settings): void {
@@ -161,6 +163,7 @@ export function togglePause(): void {
 		player.remaining = Math.max(0, ((endAt - Date.now()) / 1000) * speed);
 		player.status = 'paused';
 		clearTimer();
+		updateTitle();
 	} else if (player.status === 'paused') {
 		player.status = 'running';
 		endAt = Date.now() + (player.remaining / speed) * 1000;
