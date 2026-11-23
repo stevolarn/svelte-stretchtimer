@@ -51,6 +51,15 @@ export interface Routine {
 	breakSeconds?: number;
 	/** how many times to play the full set; 1 (default) = once, no repeats */
 	sets?: number;
+	/** goal for how often to do this routine; absent = no goal */
+	frequency?: RoutineFrequency;
+	/** 'YYYY-MM-DD' for each finished play, one entry per play, last two weeks only */
+	completions?: string[];
+}
+
+export interface RoutineFrequency {
+	per: 'day' | 'week';
+	times: number;
 }
 
 export type Theme = 'light' | 'dark' | 'system';

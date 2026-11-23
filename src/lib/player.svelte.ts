@@ -1,7 +1,7 @@
 import type { Routine, Segment, Settings } from './types.ts';
 import { beepFinish, beepSideSwitch, beepStart, beepTick } from './audio.ts';
 import { buildTimeline } from './timeline.ts';
-import { creditToday } from './stores.svelte.ts';
+import { creditToday, recordCompletion } from './stores.svelte.ts';
 import { formatSeconds } from './time.ts';
 import { autoSaveToFileHandle, isFileAutoBackupConnected } from './backup.ts';
 
@@ -119,6 +119,7 @@ function finish(settings: Settings): void {
 	if (settings.beepFinish) beepFinish();
 	if (!finished) {
 		finished = true;
+		if (player.routineId) recordCompletion(player.routineId);
 		creditToday();
 		if (settings.autoBackupOnFinish && isFileAutoBackupConnected()) {
 			void autoSaveToFileHandle().catch(() => {});

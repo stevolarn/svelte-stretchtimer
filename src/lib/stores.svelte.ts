@@ -513,6 +513,7 @@ export async function duplicateRoutine(id: string): Promise<Routine> {
 		name: `${src.name} copy`,
 		breakSeconds: src.breakSeconds,
 		stretches: [],
+		completions: [],
 		createdAt: Date.now()
 	};
 	for (const s of src.stretches) {
@@ -636,6 +637,16 @@ export async function importBackup(raw: string): Promise<{ added: number; skippe
 /* ----------------------------- Streak actions ----------------------------- */
 
 /** Credit today as a completed day (idempotent per day). */
+/** Log a finished play against the routine's frequency goal. */
+export function recordCompletion(id: string, now: Date = new Date()): void {
+	const r = routines.find((item) => item.id === id);
+	if (!r) return;
+	const today = todayKey(now);
+	const cutoff = addDays(today, -13);
+	r.completions = [...(r.completions ?? []).filter((d) => d >= cutoff), today];
+	saveAll();
+}
+
 export function creditToday(now: Date = new Date()): void {
 	const key = todayKey(now);
 	if (!streak.completedDates.includes(key)) {

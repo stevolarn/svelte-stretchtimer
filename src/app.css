@@ -610,6 +610,21 @@ textarea {
 	background: var(--surface-2);
 }
 
+.goal-pill {
+	align-self: flex-start;
+	padding: 0.15rem 0.55rem;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--accent);
+	background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.goal-pill.met {
+	color: #fff;
+	background: var(--accent);
+}
+
 .today-pill.done {
 	color: #fff;
 	background: var(--accent);
@@ -656,12 +671,16 @@ textarea {
 	display: grid;
 	grid-template-columns: repeat(7, 1fr);
 	gap: 0.35rem;
-	list-style: none;
+	width: 100%;
 	margin: 0.75rem 0 0;
 	padding: 0;
+	border: 0;
+	background: none;
+	font: inherit;
+	cursor: pointer;
 }
 
-.week-strip li {
+.week-strip .week-day {
 	display: grid;
 	place-items: center;
 	height: 1.9rem;
@@ -672,27 +691,84 @@ textarea {
 	background: var(--surface-2);
 }
 
-.week-strip li.rest {
+.week-strip .week-day.rest {
 	color: var(--muted);
 	background: transparent;
 	border: 1px dashed var(--border);
 }
 
-.week-strip li.missed {
+.week-strip .week-day.missed {
 	color: var(--muted);
 	background: transparent;
 	border: 1px solid var(--border);
 }
 
-.week-strip li.done {
+.week-strip .week-day.done {
 	color: #fff;
 	background: var(--accent);
 	border: none;
 }
 
-.week-strip li.today {
+.week-strip .week-day.today {
 	outline: 2px solid var(--accent);
 	outline-offset: 2px;
+}
+
+.week-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+}
+
+.week-list-day {
+	padding: 0.55rem 0.65rem;
+	border-radius: 12px;
+	background: var(--surface-2);
+}
+
+.week-list-day.today {
+	background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+	outline: 1.5px solid var(--accent);
+}
+
+.week-list-head {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	margin-bottom: 0.2rem;
+}
+
+.week-item {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	min-height: 2rem;
+}
+
+.week-item-name {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.week-check {
+	width: 1.3rem;
+	text-align: center;
+	font-weight: 700;
+	color: var(--muted);
+}
+
+.week-item.met .week-check {
+	color: var(--accent);
+}
+
+.week-item.missed .week-item-name {
+	color: var(--muted);
 }
 
 .today-actions {

@@ -9,6 +9,8 @@
 	import { showToast } from '$lib/toast.svelte';
 	import { type Stretch, type StockStretch } from '$lib/types';
 	import Stepper from '$lib/components/Stepper.svelte';
+	import Segmented from '$lib/components/Segmented.svelte';
+	import { frequencyLabel } from '$lib/frequency';
 	import PhotoPicker from '$lib/components/PhotoPicker.svelte';
 	import PhotoThumb from '$lib/components/PhotoThumb.svelte';
 	import StretchIllustration from '$lib/components/StretchIllustration.svelte';
@@ -179,6 +181,23 @@
 		}
 	}
 
+	const goalOptions = [
+		{ value: 'off', label: 'Off' },
+		{ value: 'day', label: 'Daily' },
+		{ value: 'week', label: 'Weekly' }
+	];
+
+	function setGoal(value: string): void {
+		if (!routine) return;
+		if (value === 'off') routine.frequency = undefined;
+		else {
+			const per = value as 'day' | 'week';
+			const times = Math.min(routine.frequency?.times ?? 1, per === 'day' ? 12 : 7);
+			routine.frequency = { per, times };
+		}
+		saveAll();
+	}
+
 	function removeRoutine(): void {
 		if (!routine) return;
 		const id = routine.id;
@@ -241,6 +260,31 @@
 				onchange={saveAll}
 			/>
 		</div>
+		<div class="option-row">
+			<div class="option-copy">
+				<span class="option-title">Goal</span>
+				<span class="muted small">{routine.frequency ? frequencyLabel(routine.frequency) : 'No target'}</span>
+			</div>
+			<Segmented value={routine.frequency?.per ?? 'off'} options={goalOptions} label="How often" onchange={setGoal} />
+		</div>
+		{#if routine.frequency}
+			{@const freq = routine.frequency}
+			<div class="option-row">
+				<div class="option-copy">
+					<span class="option-title">Times a {freq.per}</span>
+					<span class="muted small">Progress shows on the routines list</span>
+				</div>
+				<Stepper
+					bind:value={freq.times}
+					min={1}
+					max={freq.per === 'day' ? 12 : 7}
+					step={1}
+					label={`Times a ${freq.per}`}
+					suffix="×"
+					onchange={saveAll}
+				/>
+			</div>
+		{/if}
 	</section>
 
 	<div class="spread list-heading">
