@@ -1048,5 +1048,42 @@ export const poses: Record<string, PoseDef> = {
 		dur: 2.2,
 		glow: ['hand'],
 		arrows: [{ at: 'hand', d: 'M-3 -3l-4 -6', gold: true }]
+	},
+
+	/* ------------------------------------------------------- Wrist dumbbell */
+	'db-wrist-extension': {
+		frames: [{ ...STAND, arm: 22, forearm: 98 }, { forearm: 82 }],
+		dur: 2.4,
+		props: [{ type: 'dumbbell', at: 'hand', angle: [8, -14] }],
+		glow: [['elbow', 'hand']],
+		arrows: [{ at: 'hand', d: 'M6 2v-8', gold: true }]
+	},
+	'db-wrist-flexion': {
+		frames: [{ ...STAND, arm: 22, forearm: 82 }, { forearm: 98 }],
+		dur: 2.4,
+		props: [{ type: 'dumbbell', at: 'hand', angle: [-14, 8] }],
+		glow: [['elbow', 'hand']],
+		arrows: [{ at: 'hand', d: 'M6 -6v8', gold: true }]
+	},
+	'db-forearm-rotation': {
+		frames: [{ ...STAND, arm: 22, forearm: 90 }, { forearm: 91 }],
+		dur: 2.6,
+		props: [{ type: 'dumbbell', at: 'hand', angle: [0, 90] }],
+		glow: [['elbow', 'hand']],
+		arrows: [{ at: 'hand', d: 'M-2 -8a8 8 0 0 1 10 6', gold: true }]
+	},
+	'db-ulnar-deviation': {
+		frames: [{ ...STAND, arm: 14, forearm: 18 }, { forearm: 20 }],
+		dur: 2.4,
+		props: [{ type: 'dumbbell', at: 'hand', angle: [90, 118] }],
+		glow: ['hand'],
+		arrows: [{ at: 'hand', d: 'M-6 4v-7', gold: true }]
+	},
+	'db-radial-deviation': {
+		frames: [{ ...STAND, arm: 14, forearm: 18 }, { forearm: 20 }],
+		dur: 2.4,
+		props: [{ type: 'dumbbell', at: 'hand', angle: [90, 62] }],
+		glow: ['hand'],
+		arrows: [{ at: 'hand', d: 'M6 4v-7', gold: true }]
 	}
 };

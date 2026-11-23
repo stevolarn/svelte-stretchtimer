@@ -1300,6 +1300,142 @@ export const stockStretches: StockStretch[] = [
 		sides: 'two',
 		defaultSeconds: 40,
 		iconKey: 'finger-band'
+	},
+
+	/* ==========================================================================
+	   10. WRIST DUMBBELL
+	   ========================================================================== */
+	{
+		id: 'dynamic-db-wrist-extension',
+		name: 'Dumbbell Wrist Extension',
+		type: 'dynamic',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Forearm supported, palm down. Lift the back of the hand toward you, then lower slowly. Light weight, smooth reps.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'db-wrist-extension'
+	},
+	{
+		id: 'dynamic-db-wrist-flexion',
+		name: 'Dumbbell Wrist Flexion',
+		type: 'dynamic',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Forearm supported, palm up. Curl the weight up with the wrist only, then lower slowly to a comfortable stretch.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'db-wrist-flexion'
+	},
+	{
+		id: 'dynamic-db-pronation',
+		name: 'Dumbbell Pronation',
+		type: 'dynamic',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Elbow at 90°, hold the dumbbell upright by one end. Rotate the palm down, then slowly return to upright.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'db-forearm-rotation'
+	},
+	{
+		id: 'dynamic-db-supination',
+		name: 'Dumbbell Supination',
+		type: 'dynamic',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Elbow at 90°, hold the dumbbell upright by one end. Rotate the palm up, then slowly return to upright.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'db-forearm-rotation'
+	},
+	{
+		id: 'dynamic-db-ulnar-deviation',
+		name: 'Dumbbell Ulnar Deviation',
+		type: 'dynamic',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Arm by your side, grip one end with the weight behind you. Lift the back end by bending the wrist, then lower.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'db-ulnar-deviation'
+	},
+	{
+		id: 'dynamic-db-radial-deviation',
+		name: 'Dumbbell Radial Deviation',
+		type: 'dynamic',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Arm by your side, grip one end with the weight in front. Lift the front end with the thumb side, then lower.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'db-radial-deviation'
+	},
+	{
+		id: 'iso-db-wrist-extension-hold',
+		name: 'Dumbbell Wrist Extension Hold',
+		type: 'isometrics',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Palm down with the forearm supported. Hold the wrist slightly lifted and steady. Stop before any sharp pain.',
+		sides: 'two',
+		defaultSeconds: 20,
+		iconKey: 'db-wrist-extension'
+	},
+	{
+		id: 'iso-db-wrist-flexion-hold',
+		name: 'Dumbbell Wrist Flexion Hold',
+		type: 'isometrics',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Palm up with the forearm supported. Hold the wrist level against the weight without letting it drop.',
+		sides: 'two',
+		defaultSeconds: 20,
+		iconKey: 'db-wrist-flexion'
+	},
+	{
+		id: 'iso-db-pronation-hold',
+		name: 'Dumbbell Pronation Hold',
+		type: 'isometrics',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Elbow at 90°, rotate the upright dumbbell partway palm-down and hold it there against the pull of the weight.',
+		sides: 'two',
+		defaultSeconds: 20,
+		iconKey: 'db-forearm-rotation'
+	},
+	{
+		id: 'iso-db-supination-hold',
+		name: 'Dumbbell Supination Hold',
+		type: 'isometrics',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Elbow at 90°, rotate the upright dumbbell partway palm-up and hold it there against the pull of the weight.',
+		sides: 'two',
+		defaultSeconds: 20,
+		iconKey: 'db-forearm-rotation'
+	},
+	{
+		id: 'iso-db-ulnar-deviation-hold',
+		name: 'Dumbbell Ulnar Deviation Hold',
+		type: 'isometrics',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Arm by your side, weight behind you. Lift the back end slightly and hold it level.',
+		sides: 'two',
+		defaultSeconds: 20,
+		iconKey: 'db-ulnar-deviation'
+	},
+	{
+		id: 'iso-db-radial-deviation-hold',
+		name: 'Dumbbell Radial Deviation Hold',
+		type: 'isometrics',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Arm by your side, weight in front. Lift the front end slightly and hold it level.',
+		sides: 'two',
+		defaultSeconds: 20,
+		iconKey: 'db-radial-deviation'
 	}
 ];
 

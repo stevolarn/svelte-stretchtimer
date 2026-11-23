@@ -11,6 +11,8 @@
 		'wrist-relief': { from: '#f7c35f', to: '#dc7f1c', pose: 'prayer-stretch' },
 		'thoracic-outlet': { from: '#56b8de', to: '#22679a', pose: 'scalene' },
 		'finger-band': { from: '#5ad0f0', to: '#1f8fc4', pose: 'finger-band' },
+		'wrist-dumbbells': { from: '#8c9cf8', to: '#4b58c8', pose: 'db-wrist-extension' },
+		'wrist-dumbbell-holds': { from: '#7fb0c8', to: '#36667e', pose: 'db-forearm-rotation' },
 		'nerve-glides': { from: '#e47ff2', to: '#9b2bb0', pose: 'nerve-glide' },
 		'neck-shoulder-release': { from: '#f39a86', to: '#c24a52', pose: 'upper-trap' },
 		'morning-mobility': { from: '#ffb547', to: '#f2702e', pose: 'standing-side-bend' },
@@ -90,6 +92,7 @@
 		--ill-mat: rgba(255, 255, 255, 0.45);
 		--ill-wall: rgba(255, 255, 255, 0.16);
 		--ill-band: #ffe08a;
+		--ill-weight: #fff;
 		--ill-shadow: rgba(0, 0, 0, 0.12);
 	}
 </style>

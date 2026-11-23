@@ -46,7 +46,9 @@ export interface Angles {
 export type Prop =
 	| { type: 'wall'; at: JointName; dx: number }
 	| { type: 'block'; at: JointName; w?: number; dx?: number }
-	| { type: 'band'; from: JointName; to: JointName; w?: number };
+	| { type: 'band'; from: JointName; to: JointName; w?: number }
+	/** handle direction per frame (same angle convention as limbs) */
+	| { type: 'dumbbell'; at: JointName; angle: number[] };
 
 export interface Arrow {
 	at: JointName;
@@ -117,7 +119,8 @@ const C = {
 	gold: 'var(--ill-gold)',
 	mat: 'var(--ill-mat)',
 	wall: 'var(--ill-wall)',
-	band: 'var(--ill-band)'
+	band: 'var(--ill-band)',
+	weight: 'var(--ill-weight)'
 };
 
 const rad = (deg: number) => (deg * Math.PI) / 180;
@@ -338,8 +341,25 @@ export function renderPose(def: PoseDef): Rendered {
 	layers.push({ tag: 'circle', cx: J('head').map((p) => n2(p[0])), cy: J('head').map((p) => n2(p[1])), r: R.head, fill: C.skin });
 	layers.push({ tag: 'path', d: P((s) => hairPath(s, front)), fill: C.hair });
 
-	// Near arm on top
+	// Near arm on top, gripping any dumbbell
 	layers.push({ tag: 'path', d: limb('shoulder', 'elbow', 'hand'), stroke: C.shirt, width: armW });
+	for (const prop of def.props ?? []) {
+		if (prop.type !== 'dumbbell') continue;
+		const ends = sk.map((s, i) => {
+			const a = prop.angle[Math.min(i, prop.angle.length - 1)] * (Math.PI / 180);
+			const d: Pt = [Math.sin(a), Math.cos(a)];
+			const n: Pt = [-d[1], d[0]];
+			const p = s.joints[prop.at];
+			return { a: add(p, d, -3.6), b: add(p, d, 3.6), n };
+		});
+		layers.push({ tag: 'path', d: ends.map((e) => `M${pt(e.a)}L${pt(e.b)}`), stroke: C.weight, width: 1.6 });
+		layers.push({
+			tag: 'path',
+			d: ends.map((e) => `M${pt(add(e.a, e.n, 2.3))}L${pt(add(e.a, e.n, -2.3))}M${pt(add(e.b, e.n, 2.3))}L${pt(add(e.b, e.n, -2.3))}`),
+			stroke: C.weight,
+			width: 2.6
+		});
+	}
 	layers.push(hand('hand'));
 
 	for (const a of def.arrows ?? []) {

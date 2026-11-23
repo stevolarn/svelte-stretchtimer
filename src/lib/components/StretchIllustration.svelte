@@ -152,6 +152,7 @@
 		--ill-mat: #8db8ea;
 		--ill-wall: rgba(48, 65, 93, 0.16);
 		--ill-band: #e2487a;
+		--ill-weight: #475569;
 		--ill-gold: #ffc93c;
 		--ill-shadow: rgba(15, 23, 42, 0.12);
 	}
@@ -169,6 +170,7 @@
 		--ill-mat: #4a6a95;
 		--ill-wall: rgba(226, 232, 240, 0.12);
 		--ill-band: #fb7aa4;
+		--ill-weight: #cbd5e1;
 		--ill-gold: #fde047;
 		--ill-shadow: rgba(0, 0, 0, 0.28);
 	}

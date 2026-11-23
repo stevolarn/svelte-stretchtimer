@@ -72,7 +72,9 @@ export type StarterRoutineKind =
 	| 'nerve-glides'
 	| 'thoracic-outlet'
 	| 'neck-shoulder-release'
-	| 'finger-band';
+	| 'finger-band'
+	| 'wrist-dumbbells'
+	| 'wrist-dumbbell-holds';
 
 type StarterStretch = Partial<Stretch> & Pick<Stretch, 'name' | 'description' | 'sides'>;
 
@@ -297,6 +299,32 @@ const starterDefinitions: Record<
 			stock('ecc-thumb-band-slow-return'),
 			stock('static-prayer-stretch'),
 			stock('static-wrist-flexor')
+		]
+	},
+	'wrist-dumbbells': {
+		name: 'Wrist dumbbells',
+		breakSeconds: 0,
+		sets: 3,
+		stretches: [
+			stock('dynamic-db-wrist-extension'),
+			stock('dynamic-db-wrist-flexion'),
+			stock('dynamic-db-pronation'),
+			stock('dynamic-db-supination'),
+			stock('dynamic-db-ulnar-deviation'),
+			stock('dynamic-db-radial-deviation')
+		]
+	},
+	'wrist-dumbbell-holds': {
+		name: 'Wrist dumbbell holds',
+		breakSeconds: 10,
+		sets: 2,
+		stretches: [
+			stock('iso-db-wrist-extension-hold'),
+			stock('iso-db-wrist-flexion-hold'),
+			stock('iso-db-pronation-hold'),
+			stock('iso-db-supination-hold'),
+			stock('iso-db-ulnar-deviation-hold'),
+			stock('iso-db-radial-deviation-hold')
 		]
 	}
 };
