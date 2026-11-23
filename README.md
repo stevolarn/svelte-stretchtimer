@@ -10,7 +10,7 @@ A fast, phone-first, 100% offline web app for building, timing, and tracking str
 - **Installable from Chrome on Android**: Full Progressive Web App (PWA) with Web App Manifest, offline-first Service Worker, and high-resolution icons (192px, 512px, maskable, and SVG).
 - **Standalone App Experience**: Launches full-screen from your Android home screen with zero browser URL bar or navigation clutter.
 - **Zero-Scroll Player**: Calibrated to fit mobile viewports (e.g. Google Pixel 9 Pro) within `100dvh` without page scrolling.
-- **Mobile Bottom Navigation Bar**: Quick, thumb-friendly access to Routines, Streak, and Settings with safe-area inset padding.
+- **Mobile Bottom Navigation Bar**: Quick, thumb-friendly access to Home, Routines, Streak, and Settings with safe-area inset padding.
 - **Touch-Native Drag & Drop**: Smooth pointer-event drag-and-drop reordering with haptic feedback, alongside dedicated 1-tap `↑` / `↓` controls.
 - **Screen Wake Lock**: Automatically prevents your phone screen from dimming or sleeping during routine playback using the Screen Wake Lock API.
 

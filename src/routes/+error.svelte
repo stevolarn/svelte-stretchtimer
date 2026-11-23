@@ -13,7 +13,7 @@
 			? 'This link doesn’t lead anywhere. Your routines are safe.'
 			: (page.error?.message ?? 'Try going back to your routines.')}
 	</p>
-	<a class="btn primary" href="/">← Back to routines</a>
+	<a class="btn primary" href="/">← Back to home</a>
 </div>
 
 <style>

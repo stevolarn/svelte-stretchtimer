@@ -273,7 +273,7 @@
 	function removeRoutine(): void {
 		if (!routine) return;
 		const id = routine.id;
-		goto('/').then(() => deleteRoutineWithUndo(id));
+		goto('/routines').then(() => deleteRoutineWithUndo(id));
 	}
 </script>
 
@@ -284,10 +284,10 @@
 {#if !routine}
 	<div class="card">
 		<p class="muted" style="margin: 0">This routine doesn’t exist any more.</p>
-		<a class="btn small" href="/" style="margin-top: 0.6rem">← Back to routines</a>
+		<a class="btn small" href="/routines" style="margin-top: 0.6rem">← Back to routines</a>
 	</div>
 {:else}
-	<a class="back-link" href="/">‹ Routines</a>
+	<a class="back-link" href="/routines">‹ Routines</a>
 
 	<input
 		class="title-input"
