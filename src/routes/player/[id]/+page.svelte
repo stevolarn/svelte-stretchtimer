@@ -584,7 +584,9 @@
 	.stage-visual img {
 		width: 100%;
 		height: 100%;
-		object-fit: cover;
+		/* Show the whole uploaded photo; letterbox rather than crop. */
+		object-fit: contain;
+		background: var(--surface-2, rgba(127, 127, 127, 0.12));
 	}
 	.stage-visual.is-preview {
 		cursor: default;
@@ -719,7 +721,8 @@
 	}
 	.zoom-visual img {
 		aspect-ratio: 5 / 4;
-		object-fit: cover;
+		object-fit: contain;
+		background: var(--surface-2, rgba(127, 127, 127, 0.12));
 		border-radius: 18px;
 	}
 	.zoom-desc {

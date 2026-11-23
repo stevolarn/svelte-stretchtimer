@@ -599,6 +599,22 @@ textarea {
 	font-size: 1.05rem;
 }
 
+.today-pill {
+	flex-shrink: 0;
+	padding: 0.25rem 0.6rem;
+	border-radius: 999px;
+	font-size: 0.78rem;
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--muted);
+	background: var(--surface-2);
+}
+
+.today-pill.done {
+	color: #fff;
+	background: var(--accent);
+}
+
 .chevron {
 	font-size: 1.6rem;
 	line-height: 1;

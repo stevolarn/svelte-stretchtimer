@@ -14,7 +14,7 @@
 	} from '$lib/stores.svelte';
 	import { buildTimeline, timelineTotal } from '$lib/timeline';
 	import { currentStreak, fixersAvailable, fixerProgress, repairGap } from '$lib/streak';
-	import { formatSeconds } from '$lib/time';
+	import { formatSeconds, todayKey } from '$lib/time';
 	import { type Routine } from '$lib/types';
 	import StarterArt from '$lib/components/StarterArt.svelte';
 	import Modal from '$lib/components/Modal.svelte';
@@ -104,6 +104,7 @@
 	}
 
 	const streakNow = $derived(currentStreak(streak));
+	const doneToday = $derived(streak.completedDates.includes(todayKey()));
 	const fixers = $derived(fixersAvailable(streak));
 	const gap = $derived(repairGap(streak));
 	const canRepair = $derived(gap.length > 0 && fixers >= gap.length);
@@ -134,11 +135,14 @@
 			<span class="muted small">
 				{#if streakNow === 0}
 					Finish any routine to start one
+				{:else if !doneToday && !canRepair}
+					Finish a routine today to keep it going
 				{:else}
 					{fixers} fixer{fixers === 1 ? '' : 's'} · {fixerProgress(streak)}/7 days to the next
 				{/if}
 			</span>
 		</span>
+		<span class="today-pill" class:done={doneToday}>{doneToday ? '✓ Done today' : 'Not done today'}</span>
 		{#if !canRepair}<span class="chevron" aria-hidden="true">›</span>{/if}
 	</a>
 	{#if canRepair}
