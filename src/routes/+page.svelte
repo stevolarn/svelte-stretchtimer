@@ -25,6 +25,9 @@
 	const starterOptions: Array<{ kind: StarterRoutineKind; title: string; description: string }> = [
 		{ kind: 'desk-reset', title: 'Desk reset', description: 'Neck, shoulders and wrists' },
 		{ kind: 'typing-break', title: 'Typing break', description: 'A quick reset between keyboard sessions' },
+		{ kind: 'rsi-upper-body', title: 'RSI circuit', description: 'Neck to fingertips in one go' },
+		{ kind: 'elbow-relief', title: 'Elbow relief', description: 'Tennis and golfer’s elbow rehab' },
+		{ kind: 'shoulder-rehab', title: 'Shoulder & upper back', description: 'Rotator cuff and posture work' },
 		{ kind: 'wrist-relief', title: 'Wrist & forearm', description: 'For RSI-prone hands and forearms' },
 		{ kind: 'thoracic-outlet', title: 'Thoracic outlet', description: 'Open the neck, chest and collarbone' },
 		{ kind: 'finger-band', title: 'Finger band', description: 'Extensor band: reps, holds and slow lowers' },

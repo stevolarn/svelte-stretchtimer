@@ -1085,5 +1085,148 @@ export const poses: Record<string, PoseDef> = {
 		props: [{ type: 'dumbbell', at: 'hand', angle: [90, 62] }],
 		glow: ['hand'],
 		arrows: [{ at: 'hand', d: 'M6 4v-7', gold: true }]
+	},
+
+	/* ---------------------------------------------------------- RSI rehab */
+	'hand-resist-extension': {
+		frames: [
+			{ ...STAND, arm: 22, forearm: 90, farArm: 34, farForearm: 96 },
+			{ forearm: 89, farForearm: 95 }
+		],
+		dur: 2,
+		glow: [['elbow', 'hand']],
+		arrows: [{ at: 'hand', d: 'M5 3v-7', gold: true }]
+	},
+	'hand-resist-flexion': {
+		frames: [
+			{ ...STAND, arm: 22, forearm: 90, farArm: 12, farForearm: 84 },
+			{ forearm: 91, farForearm: 85 }
+		],
+		dur: 2,
+		glow: [['elbow', 'hand']],
+		arrows: [{ at: 'hand', d: 'M5 -4v7', gold: true }]
+	},
+	'elbow-glide': {
+		frames: [{ ...STAND, arm: 8, forearm: 18 }, { arm: 14, forearm: 160 }],
+		dur: 2.6,
+		glow: ['elbow'],
+		arrows: [{ at: 'elbow', d: 'M7 2a8 8 0 0 0 -1 -11' }]
+	},
+	'wall-biceps': {
+		frames: [
+			{ ...STAND, arm: -72, forearm: -74 },
+			{ torso: 176, head: 178, arm: -80, forearm: -82, thigh: 8, shin: 2 }
+		],
+		anchor: 'hand',
+		props: [{ type: 'wall', at: 'hand', dx: -1.5 }],
+		glow: [['shoulder', 'elbow']],
+		arrows: [{ at: 'shoulder', d: 'M4 -4h6', gold: true }]
+	},
+	'wall-pec': {
+		frames: [
+			{ ...STAND, arm: -90, forearm: 180, thigh: 18, shin: 4, farThigh: -10, farShin: -6 },
+			{ torso: 174, head: 178, arm: -98, forearm: 178, thigh: 24, shin: 2 }
+		],
+		anchor: 'hand',
+		props: [{ type: 'wall', at: 'hand', dx: -1.5 }],
+		glow: [['shoulder', 'neck']],
+		arrows: [{ at: 'neck', d: 'M4 -4h6', gold: true }]
+	},
+	'towel-stretch': {
+		view: 'front',
+		frames: [
+			{ ...FRONT, arm: 14, forearm: -48, farArm: -164, farForearm: 26 },
+			{ arm: 12, forearm: -40, farArm: -170, farForearm: 20 }
+		],
+		props: [{ type: 'band', from: 'hand', to: 'farHand' }],
+		glow: ['shoulder'],
+		arrows: [{ at: 'farHand', d: 'M3 2v-6', gold: true }]
+	},
+	pendulum: {
+		frames: [
+			{ ...STAND, torso: 118, head: 112, arm: -10, forearm: -8, farArm: 72, farForearm: 70, thigh: 8, farThigh: -14, farShin: -10 },
+			{ arm: 4, forearm: 4 },
+			{ arm: 16, forearm: 18 }
+		],
+		loop: true,
+		dur: 3,
+		props: [{ type: 'block', at: 'farHand', w: 10 }],
+		glow: ['shoulder'],
+		arrows: [{ at: 'hand', d: 'M-6 2a7 4 0 1 0 12 0' }]
+	},
+	'wall-external-rotation': {
+		view: 'front',
+		frames: [{ ...FRONT, arm: 6, forearm: 86 }, { forearm: 88 }],
+		dur: 2,
+		props: [{ type: 'wall', at: 'hand', dx: 1.5 }],
+		glow: ['shoulder'],
+		arrows: [{ at: 'hand', d: 'M-6 -4h5', gold: true }]
+	},
+	'wall-slide': {
+		frames: [
+			{ ...STAND, arm: 98, forearm: 178, farArm: 94, farForearm: 176 },
+			{ arm: 124, forearm: 174, farArm: 120, farForearm: 172 }
+		],
+		anchor: 'foot',
+		props: [{ type: 'wall', at: 'hand', dx: 1.5 }],
+		dur: 3,
+		glow: [['shoulder', 'neck']],
+		arrows: [{ at: 'hand', d: 'M3 4v-8' }]
+	},
+	'prone-ytw': {
+		frames: [
+			{ ...PRONE, head: 98, arm: 104, forearm: 104, farArm: 100, farForearm: 100 },
+			{ arm: -112, forearm: 104, farArm: -116, farForearm: 100 }
+		],
+		dur: 4.5,
+		glow: [['shoulder', 'neck']],
+		arrows: [{ at: 'shoulder', d: 'M-2 -6v-5', gold: true }]
+	},
+	'prone-cobra': {
+		frames: [
+			{ ...PRONE, torso: 98, head: 96, arm: -96, forearm: -96, farArm: -98, farForearm: -98 },
+			{ torso: 104, head: 100, arm: -106, forearm: -106, farArm: -108, farForearm: -108 }
+		],
+		dur: 3,
+		glow: [['shoulder', 'neck']],
+		arrows: [{ at: 'neck', d: 'M0 -4v-6', gold: true }]
+	},
+	'reach-round': {
+		frames: [
+			{ ...STAND, head: 172, arm: 90, forearm: 92, farArm: 88, farForearm: 90 },
+			{ torso: 174, head: 140, bend: -5, arm: 96, forearm: 96, farArm: 94, farForearm: 94 }
+		],
+		dur: 3.4,
+		glow: [['neck', 'shoulder']],
+		arrows: [{ at: 'hand', d: 'M3 0h6' }]
+	},
+	'supine-chest-opener': {
+		frames: [
+			{ ...SUPINE, arm: -96, forearm: -92, farArm: -100, farForearm: -96 },
+			{ arm: -104, forearm: -98, farArm: -108, farForearm: -102 }
+		],
+		dur: 4,
+		props: [{ type: 'block', at: 'shoulder', w: 16 }],
+		glow: [['shoulder', 'neck']]
+	},
+	'supine-chin-nod': {
+		frames: [{ ...SUPINE }, { head: -78 }],
+		dur: 2.4,
+		glow: ['neck'],
+		arrows: [{ at: 'head', d: 'M-2 -8q-6 3 -5 9', gold: true }]
+	},
+	'neck-rotation': {
+		view: 'front',
+		frames: [{ ...FRONT, head: 180 }, { head: 182 }],
+		dur: 3,
+		glow: ['neck'],
+		arrows: [{ at: 'head', d: 'M-9 -9q9 -7 18 0' }]
+	},
+	'thumb-tuck': {
+		view: 'front',
+		frames: [{ ...FRONT, arm: 30, forearm: 92 }, { forearm: 112 }],
+		dur: 3,
+		glow: ['hand'],
+		arrows: [{ at: 'hand', d: 'M4 -2q2 5 -1 8', gold: true }]
 	}
 };

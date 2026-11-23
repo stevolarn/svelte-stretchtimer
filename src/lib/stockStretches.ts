@@ -1436,6 +1436,208 @@ export const stockStretches: StockStretch[] = [
 		sides: 'two',
 		defaultSeconds: 20,
 		iconKey: 'db-radial-deviation'
+	},
+
+	/* ==========================================================================
+	   11. RSI REHAB: ELBOW, SHOULDER, UPPER BACK, CHEST AND NECK
+	   ========================================================================== */
+	{
+		id: 'ecc-tennis-elbow',
+		name: 'Tennis Elbow Slow Lowers',
+		type: 'eccentrics',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Forearm on your thigh or a table, palm down, light dumbbell. Use the other hand to help the weight up, then lower it on its own over 3–5 seconds. A mild ache is fine; sharp pain means go lighter.',
+		sides: 'two',
+		defaultSeconds: 45,
+		iconKey: 'db-wrist-extension'
+	},
+	{
+		id: 'ecc-golfers-elbow',
+		name: 'Golfer’s Elbow Slow Lowers',
+		type: 'eccentrics',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Forearm on your thigh or a table, palm up, light dumbbell. Use the other hand to help the weight up, then lower it on its own over 3–5 seconds. Works the inner-elbow tendons.',
+		sides: 'two',
+		defaultSeconds: 45,
+		iconKey: 'db-wrist-flexion'
+	},
+	{
+		id: 'iso-hand-wrist-extension',
+		name: 'Hand-Resisted Wrist Extension Hold',
+		type: 'isometrics',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Elbow bent, palm down. Rest the other hand on the back of it and push up into it at about half effort, without the wrist moving. A gentle way to calm tennis-elbow pain.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'hand-resist-extension'
+	},
+	{
+		id: 'iso-hand-wrist-flexion',
+		name: 'Hand-Resisted Wrist Flexion Hold',
+		type: 'isometrics',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Elbow bent, palm up. Rest the other hand in your palm and curl up into it at about half effort, without the wrist moving. Calms inner-elbow (golfer’s elbow) pain.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'hand-resist-flexion'
+	},
+	{
+		id: 'static-wall-biceps',
+		name: 'Wall Biceps & Forearm Stretch',
+		type: 'static',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Palm flat on a wall behind you at shoulder height, fingers pointing back, arm straight. Turn your body gently away until you feel the front of the arm and forearm stretch.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'wall-biceps'
+	},
+	{
+		id: 'mob-elbow-bend-turn',
+		name: 'Elbow Bend & Turn',
+		type: 'mobility',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Slowly bend the elbow fully with the palm turning up, then straighten it with the palm turning down. Keeps the elbow and forearm moving after long typing sessions.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'elbow-glide'
+	},
+	{
+		id: 'static-thumb-tuck',
+		name: 'Thumb Tuck Wrist Tilt',
+		type: 'static',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Tuck the thumb inside a loose fist, then tilt the wrist gently toward the little finger until you feel a mild stretch along the thumb side. Back off if it’s sharp. Helps thumb-side wrist pain (De Quervain’s).',
+		sides: 'two',
+		defaultSeconds: 20,
+		iconKey: 'thumb-tuck'
+	},
+	{
+		id: 'mob-pendulum-swings',
+		name: 'Pendulum Swings',
+		type: 'mobility',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Lean on a table with one hand and let the other arm hang loose. Rock your body so the arm swings in small circles, then the other way. Relaxes a sore, guarded shoulder.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'pendulum'
+	},
+	{
+		id: 'static-towel-shoulder',
+		name: 'Behind-Back Towel Stretch',
+		type: 'static',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Hold a towel over one shoulder with the top hand and behind your back with the lower hand. Pull the lower hand gently upward with the top hand. Stretches the back and front of the shoulder.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'towel-stretch'
+	},
+	{
+		id: 'iso-doorframe-external-rotation',
+		name: 'Doorframe External Rotation Hold',
+		type: 'isometrics',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Elbow tucked at your side, bent to 90°. Press the back of the hand out into a doorframe at half effort and hold. Strengthens the rotator cuff with no band needed.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'wall-external-rotation'
+	},
+	{
+		id: 'dynamic-forearm-wall-slides',
+		name: 'Forearm Wall Slides',
+		type: 'dynamic',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Forearms on a wall, shoulder-width apart. Slide your arms up while gently pressing into the wall and letting the shoulder blades wrap forward, then slide back down slowly.',
+		sides: 'one',
+		defaultSeconds: 40,
+		iconKey: 'wall-slide'
+	},
+	{
+		id: 'dynamic-prone-ytw',
+		name: 'Prone Y-T-W Raises',
+		type: 'dynamic',
+		position: 'floor',
+		area: 'upper-body',
+		description: 'Lie face down, forehead on a towel. Lift your arms a few centimetres into a Y, then a T, then a W, drawing the shoulder blades down and back each time. Small, slow lifts.',
+		sides: 'one',
+		defaultSeconds: 45,
+		iconKey: 'prone-ytw'
+	},
+	{
+		id: 'iso-prone-cobra',
+		name: 'Prone Cobra Hold',
+		type: 'isometrics',
+		position: 'floor',
+		area: 'spine',
+		description: 'Lie face down, arms by your sides. Lift the chest slightly, turn the thumbs out and draw the shoulder blades toward your back pockets. Keep the chin tucked and the neck long.',
+		sides: 'one',
+		defaultSeconds: 20,
+		iconKey: 'prone-cobra'
+	},
+	{
+		id: 'static-reach-round',
+		name: 'Reach & Round Upper Back Stretch',
+		type: 'static',
+		position: 'standing',
+		area: 'spine',
+		description: 'Clasp your hands in front at shoulder height and push them away, rounding your upper back and letting your head drop. Feel the stretch between the shoulder blades.',
+		sides: 'one',
+		defaultSeconds: 30,
+		iconKey: 'reach-round'
+	},
+	{
+		id: 'static-wall-pec',
+		name: 'Single-Arm Wall Pec Stretch',
+		type: 'static',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Forearm against a wall or doorframe, elbow at shoulder height. Step through and turn the chest away until you feel a stretch across the front of the chest and shoulder.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'wall-pec'
+	},
+	{
+		id: 'static-towel-roll-chest',
+		name: 'Towel-Roll Chest Opener',
+		type: 'static',
+		position: 'floor',
+		area: 'upper-body',
+		description: 'Lie on a rolled towel running along your spine, arms out wide or overhead, palms up. Let gravity open the chest while you breathe slowly. Undoes a hunched desk posture.',
+		sides: 'one',
+		defaultSeconds: 60,
+		iconKey: 'supine-chest-opener'
+	},
+	{
+		id: 'iso-deep-neck-flexor',
+		name: 'Deep Neck Flexor Hold',
+		type: 'isometrics',
+		position: 'floor',
+		area: 'upper-body',
+		description: 'Lie on your back, knees bent. Nod your chin gently as if saying yes and lift the head a few millimetres. Hold without the front neck muscles straining; rest and repeat if they do.',
+		sides: 'one',
+		defaultSeconds: 30,
+		iconKey: 'supine-chin-nod'
+	},
+	{
+		id: 'static-neck-rotation',
+		name: 'Neck Rotation Stretch',
+		type: 'static',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Sit tall and turn your head to look over one shoulder until you feel a mild stretch. Keep the shoulders still and breathe.',
+		sides: 'two',
+		defaultSeconds: 20,
+		iconKey: 'neck-rotation'
 	}
 ];
 

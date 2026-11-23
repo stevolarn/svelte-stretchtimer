@@ -77,7 +77,10 @@ export type StarterRoutineKind =
 	| 'neck-shoulder-release'
 	| 'finger-band'
 	| 'wrist-dumbbells'
-	| 'wrist-dumbbell-holds';
+	| 'wrist-dumbbell-holds'
+	| 'elbow-relief'
+	| 'shoulder-rehab'
+	| 'rsi-upper-body';
 
 type StarterStretch = Partial<Stretch> & Pick<Stretch, 'name' | 'description' | 'sides'>;
 
@@ -315,6 +318,49 @@ const starterDefinitions: Record<
 			stock('dynamic-db-supination'),
 			stock('dynamic-db-ulnar-deviation'),
 			stock('dynamic-db-radial-deviation')
+		]
+	},
+	'elbow-relief': {
+		name: 'Elbow relief',
+		breakSeconds: 10,
+		stretches: [
+			stock('mob-elbow-bend-turn'),
+			stock('static-wall-biceps'),
+			stock('static-wrist-flexor'),
+			stock('static-wrist-extensor'),
+			stock('iso-hand-wrist-extension'),
+			stock('iso-hand-wrist-flexion'),
+			stock('ecc-tennis-elbow'),
+			stock('ecc-golfers-elbow')
+		]
+	},
+	'shoulder-rehab': {
+		name: 'Shoulder & upper back',
+		breakSeconds: 10,
+		stretches: [
+			stock('mob-pendulum-swings'),
+			stock('static-towel-shoulder'),
+			stock('iso-doorframe-external-rotation'),
+			stock('dynamic-forearm-wall-slides'),
+			stock('dynamic-prone-ytw'),
+			stock('iso-prone-cobra'),
+			stock('static-towel-roll-chest')
+		]
+	},
+	'rsi-upper-body': {
+		name: 'RSI upper-body circuit',
+		breakSeconds: 5,
+		stretches: [
+			stock('mob-chin-tucks'),
+			stock('static-neck-rotation'),
+			stock('static-wall-pec'),
+			stock('static-reach-round'),
+			stock('iso-doorframe-external-rotation'),
+			stock('mob-elbow-bend-turn'),
+			stock('static-wrist-flexor'),
+			stock('static-wrist-extensor'),
+			stock('mob-tendon-glides'),
+			stock('mob-median-nerve-glide')
 		]
 	},
 	'wrist-dumbbell-holds': {

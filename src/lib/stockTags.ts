@@ -1,12 +1,13 @@
 import type { StockStretch } from './types';
 
 /** Finer-grained tags than area, worked out from each movement's name and cues. */
-export type Focus = 'neck' | 'shoulders' | 'wrist-hand' | 'back' | 'core' | 'hips' | 'legs';
+export type Focus = 'neck' | 'shoulders' | 'elbow' | 'wrist-hand' | 'back' | 'core' | 'hips' | 'legs';
 export type Equipment = 'none' | 'band' | 'finger-band' | 'dumbbell' | 'wall' | 'chair';
 
 export const focusLabels: Record<Focus, string> = {
 	neck: 'Neck',
 	shoulders: 'Shoulders & chest',
+	elbow: 'Elbow & forearm',
 	'wrist-hand': 'Wrist & hand',
 	back: 'Back',
 	core: 'Core',
@@ -26,6 +27,7 @@ export const equipmentLabels: Record<Equipment, string> = {
 const focusRules: Array<[Focus, RegExp]> = [
 	['neck', /\bneck|chin|scalene|levator|upper trap|cervical/],
 	['shoulders', /shoulder|\bpecs?\b|chest|doorway|rotator|scapula|shrug|arm circle|\btriceps?|\bbiceps?|wall angel|thoracic outlet/],
+	['elbow', /elbow|forearm|pronation|supination|nerve glide/],
 	['wrist-hand', /wrist|finger|thumb|\bhands?\b|forearm|\bgrip|pronation|supination|deviation|tendon glide|prayer|nerve glide/],
 	['back', /\bback\b|spine|spinal|thoracic|cat|cobra|twist|lumbar|\btorso|child/],
 	['core', /\bcore\b|plank|\babs\b|abdominal|dead bug|bird dog|hollow|crunch|diaphragm/],
@@ -65,7 +67,18 @@ const focusOverrides: Record<string, Focus[]> = {
 	'cardio-butt-kicks': ['legs'],
 	'cardio-mountain-climbers': ['core', 'legs'],
 	'cardio-skater-hops': ['legs'],
-	'cardio-shadow-boxing': ['shoulders', 'core']
+	'cardio-shadow-boxing': ['shoulders', 'core'],
+	'iso-hand-wrist-extension': ['elbow', 'wrist-hand'],
+	'iso-hand-wrist-flexion': ['elbow', 'wrist-hand'],
+	'ecc-tennis-elbow': ['elbow', 'wrist-hand'],
+	'ecc-golfers-elbow': ['elbow', 'wrist-hand'],
+	'mob-pendulum-swings': ['shoulders'],
+	'iso-doorframe-external-rotation': ['shoulders'],
+	'dynamic-forearm-wall-slides': ['shoulders', 'back'],
+	'dynamic-prone-ytw': ['shoulders', 'back'],
+	'iso-prone-cobra': ['back', 'shoulders', 'neck'],
+	'static-towel-roll-chest': ['shoulders', 'back'],
+	'static-reach-round': ['back', 'shoulders']
 };
 
 function text(s: StockStretch): string {
@@ -94,7 +107,7 @@ export function equipmentOf(s: StockStretch): Equipment[] {
 		if (/dumbbell/.test(t)) found.push('dumbbell');
 		if (/finger-band|thumb-band|finger band|thumb band/.test(t)) found.push('finger-band');
 		else if (/\bband\b|band-/.test(t)) found.push('band');
-		if (/\bwall\b|doorway|door frame/.test(t)) found.push('wall');
+		if (/\bwall\b|doorway|door ?frame/.test(t)) found.push('wall');
 		if (s.id !== 'yoga-chair-pose' && /chair|\bdesk\b/.test(t)) found.push('chair');
 		hit = found.length ? found : ['none'];
 		equipmentCache.set(s.id, hit);
