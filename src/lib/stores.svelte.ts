@@ -144,7 +144,8 @@ export type StarterRoutineKind =
 	| 'tennis-elbow-loading'
 	| 'golfers-elbow-loading'
 	| 'wrist-forearm-strength'
-	| 'physio-wrist-shoulder';
+	| 'physio-wrist-shoulder'
+	| 'loop-band-full-body';
 
 type StarterStretch = Partial<Stretch> & Pick<Stretch, 'name' | 'description' | 'sides'>;
 
@@ -509,6 +510,28 @@ const starterDefinitions: Record<
 			dose('dynamic-shoulder-rolls', { reps: 12, repSeconds: 3, sets: 3, load: '20 lbs' }),
 			dose('static-upper-trap', { seconds: 20, sets: 3 }),
 			dose('dynamic-thoracic-openers', { reps: 12, repSeconds: 4, sets: 2 })
+		]
+	},
+	// Beginner full-body loop band session: 10 reps each (per side where one-sided), then 45 s of scissor kicks.
+	'loop-band-full-body': {
+		name: 'Loop band full body',
+		breakSeconds: 10,
+		stretches: [
+			stock('loop-band-external-rotation'),
+			stock('loop-band-tricep-pushdown'),
+			stock('loop-band-bicep-curl'),
+			stock('loop-band-chest-pull-apart'),
+			stock('loop-band-overhead-pull-down'),
+			stock('loop-band-behind-back-pull-apart'),
+			stock('loop-band-lateral-leg-raise'),
+			stock('loop-band-glute-kickback'),
+			stock('loop-band-front-leg-raise'),
+			stock('loop-band-wide-squat'),
+			stock('loop-band-narrow-squat'),
+			stock('loop-band-glute-bridge'),
+			stock('loop-band-supine-abduction'),
+			stock('loop-band-straight-leg-abduction'),
+			stock('loop-band-scissor-kicks')
 		]
 	},
 	'wrist-dumbbell-holds': {

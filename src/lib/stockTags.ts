@@ -86,7 +86,16 @@ const focusOverrides: Record<string, Focus[]> = {
 	'dynamic-prone-ytw': ['shoulders', 'back'],
 	'iso-prone-cobra': ['back', 'shoulders', 'neck'],
 	'static-towel-roll-chest': ['shoulders', 'back'],
-	'static-reach-round': ['back', 'shoulders']
+	'static-reach-round': ['back', 'shoulders'],
+	'loop-band-external-rotation': ['shoulders'],
+	'loop-band-overhead-pull-down': ['shoulders', 'back'],
+	'loop-band-behind-back-pull-apart': ['shoulders', 'back'],
+	'loop-band-lateral-leg-raise': ['hips', 'legs'],
+	'loop-band-front-leg-raise': ['hips', 'legs'],
+	'loop-band-wide-squat': ['legs', 'hips'],
+	'loop-band-supine-abduction': ['hips'],
+	'loop-band-straight-leg-abduction': ['hips'],
+	'loop-band-scissor-kicks': ['core', 'hips']
 };
 
 function text(s: StockStretch): string {

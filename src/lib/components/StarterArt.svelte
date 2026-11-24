@@ -34,6 +34,7 @@
 		'tennis-elbow-loading': { from: '#ffb15e', to: '#c4571a', pose: 'db-wrist-extension' },
 		'golfers-elbow-loading': { from: '#f08f9c', to: '#b73a55', pose: 'db-wrist-flexion' },
 		'wrist-forearm-strength': { from: '#9aa8ff', to: '#5a4fc9', pose: 'db-forearm-rotation' },
+		'loop-band-full-body': { from: '#ffd36e', to: '#d9822b', pose: 'squat' },
 		'physio-wrist-shoulder': { from: '#7fd8c3', to: '#2c8a7a', pose: 'wall-pec' }
 	};
 
