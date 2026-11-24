@@ -46,7 +46,8 @@ export interface Angles {
 export type Prop =
 	| { type: 'wall'; at: JointName; dx: number }
 	| { type: 'block'; at: JointName; w?: number; dx?: number }
-	| { type: 'band'; from: JointName; to: JointName; w?: number }
+	/** over: drawn on top of the near leg, e.g. a loop round both knees seen side on */
+	| { type: 'band'; from: JointName; to: JointName; w?: number; over?: boolean }
 	/** handle direction per frame (same angle convention as limbs) */
 	| { type: 'dumbbell'; at: JointName; angle: number[] };
 
@@ -299,6 +300,14 @@ export function renderPose(def: PoseDef): Rendered {
 	const shoe = (f: JointName, t: 'toe' | 'farToe') => P((s) => `M${pt(s.joints[f])}L${pt(s[t])}`);
 	const hand = (h: JointName): Layer => ({ tag: 'circle', cx: J(h).map((p) => n2(p[0])), cy: J(h).map((p) => n2(p[1])), r: R.hand, fill: C.skin });
 
+	const band = (prop: Extract<Prop, { type: 'band' }>): Layer => ({
+		tag: 'path',
+		d: P((s) => bandPath(s.joints[prop.from], s.joints[prop.to], prop.w ?? 2.4)),
+		stroke: C.band,
+		width: 1.8,
+		fill: 'none'
+	});
+
 	const armW = 4.3;
 	const legW = 5.4;
 	const shirtFar = front ? C.shirt : C.shirtFar;
@@ -314,13 +323,14 @@ export function renderPose(def: PoseDef): Rendered {
 
 	// Bands sit between far and near limbs
 	for (const prop of def.props ?? []) {
-		if (prop.type !== 'band') continue;
-		layers.push({ tag: 'path', d: P((s) => bandPath(s.joints[prop.from], s.joints[prop.to], prop.w ?? 2.4)), stroke: C.band, width: 1.8, fill: 'none' });
+		if (prop.type !== 'band' || prop.over) continue;
+		layers.push(band(prop));
 	}
 
 	// Trunk
 	layers.push({ tag: 'path', d: shoe('foot', 'toe'), stroke: C.shoe, width: 4 });
 	layers.push({ tag: 'path', d: legPath('hipNear', 'knee', 'foot'), stroke: C.pants, width: legW });
+	for (const prop of def.props ?? []) if (prop.type === 'band' && prop.over) layers.push(band(prop));
 	layers.push({
 		tag: 'path',
 		d: P((s) => `M${pt(s.hipNear)}L${pt(s.hipFar)}`),

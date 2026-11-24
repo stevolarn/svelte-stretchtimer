@@ -778,6 +778,132 @@ export const poses: Record<string, PoseDef> = {
 		props: [{ type: 'band', from: 'hand', to: 'farHand', w: 1.6 }],
 		glow: [['shoulder', 'elbow']]
 	},
+	'band-overhead-pulldown': {
+		view: 'front',
+		frames: [
+			{ ...FRONT, arm: 162, forearm: 172, farArm: -162, farForearm: -172 },
+			{ arm: 100, forearm: 176, farArm: -100, farForearm: -176 }
+		],
+		dur: 2.6,
+		still: 1,
+		props: [{ type: 'band', from: 'hand', to: 'farHand', w: 2 }],
+		glow: [['shoulder', 'farShoulder']]
+	},
+	'band-behind-back': {
+		frames: [
+			{ ...STAND, arm: -20, forearm: -24, farArm: -34, farForearm: -40 },
+			{ head: 184, arm: -30, forearm: -34, farArm: -46, farForearm: -54 }
+		],
+		dur: 2.6,
+		still: 1,
+		props: [{ type: 'band', from: 'hand', to: 'farHand', w: 2.4 }],
+		glow: [['shoulder', 'neck']]
+	},
+	'band-lateral-leg-raise': {
+		view: 'front',
+		frames: [
+			{ ...FRONT, arm: 70, forearm: 80, farArm: -14, farForearm: -8, thigh: 4, shin: 4, farThigh: -4, farShin: -2 },
+			{ thigh: 36, shin: 36, foot: 94 }
+		],
+		anchor: 'farFoot',
+		dur: 2.4,
+		still: 1,
+		props: [{ type: 'band', from: 'foot', to: 'farFoot', w: 1.6 }],
+		glow: ['pelvis']
+	},
+	'band-kickback': {
+		frames: [
+			{ ...STAND, torso: 174, arm: 60, forearm: 80, thigh: 2, shin: 0, farThigh: -2, farShin: -2 },
+			{ thigh: -30, shin: -32 }
+		],
+		anchor: 'farFoot',
+		dur: 2.4,
+		still: 1,
+		props: [{ type: 'band', from: 'foot', to: 'farFoot', w: 1.8 }],
+		glow: ['pelvis']
+	},
+	'band-front-leg-raise': {
+		frames: [
+			{ ...STAND, arm: 8, forearm: 14, thigh: 2, shin: 0, farThigh: -4, farShin: -2 },
+			{ thigh: 36, shin: 36 }
+		],
+		anchor: 'farFoot',
+		dur: 2.4,
+		still: 1,
+		props: [{ type: 'band', from: 'foot', to: 'farFoot', w: 1.8 }],
+		glow: [['pelvis', 'knee']]
+	},
+	'band-wide-squat': {
+		view: 'front',
+		frames: [
+			{ ...FRONT, arm: 30, forearm: -70, farArm: -30, farForearm: 70, thigh: 20, shin: 12, farThigh: -20, farShin: -12 },
+			{ thigh: 66, shin: 14, farThigh: -66, farShin: -14 }
+		],
+		anchor: 'pelvis',
+		dur: 2.6,
+		still: 1,
+		props: [{ type: 'band', from: 'knee', to: 'farKnee', w: 1.6 }],
+		glow: [['pelvis', 'knee'], ['pelvis', 'farKnee']]
+	},
+	'band-narrow-squat': {
+		view: 'front',
+		frames: [
+			{ ...FRONT, arm: 30, forearm: -70, farArm: -30, farForearm: 70, thigh: 8, shin: 2, farThigh: -8, farShin: -2 },
+			{ thigh: 44, shin: -10, farThigh: -44, farShin: 10 }
+		],
+		anchor: 'pelvis',
+		dur: 2.6,
+		still: 1,
+		props: [{ type: 'band', from: 'knee', to: 'farKnee', w: 1.6 }],
+		glow: [['pelvis', 'knee'], ['pelvis', 'farKnee']]
+	},
+	'band-glute-bridge': {
+		frames: [
+			{ ...SUPINE, torso: -88, head: -92, arm: 90, forearm: 90, farArm: 88, farForearm: 88, thigh: 140, shin: 18, farThigh: 128, farShin: 10, foot: 108, farFoot: 100 },
+			{ torso: -66, head: -80, thigh: 124, shin: 4, farThigh: 112, farShin: -4, foot: 94, farFoot: 86 }
+		],
+		mat: true,
+		anchor: 'foot',
+		dur: 2.4,
+		still: 1,
+		props: [{ type: 'band', from: 'knee', to: 'farKnee', w: 2.6, over: true }],
+		glow: ['pelvis']
+	},
+	'band-supine-abduction': {
+		frames: [
+			{ ...SUPINE, arm: 90, forearm: 90, farArm: 88, farForearm: 88, thigh: 140, shin: 18, farThigh: 136, farShin: 16, foot: 108, farFoot: 106 },
+			{ thigh: 158, shin: 34, farThigh: 112, farShin: 0 }
+		],
+		mat: true,
+		anchor: 'pelvis',
+		dur: 2.4,
+		still: 1,
+		props: [{ type: 'band', from: 'knee', to: 'farKnee', w: 2.6, over: true }],
+		glow: ['pelvis']
+	},
+	'band-straight-leg-abduction': {
+		frames: [
+			{ ...SUPINE, arm: 92, forearm: 90, farArm: 88, farForearm: 90, thigh: 176, shin: 176, farThigh: 172, farShin: 172, foot: 86, farFoot: 82 },
+			{ thigh: -164, shin: -164, foot: 106, farThigh: 150, farShin: 150, farFoot: 60 }
+		],
+		mat: true,
+		anchor: 'pelvis',
+		dur: 2.4,
+		still: 1,
+		props: [{ type: 'band', from: 'foot', to: 'farFoot', w: 1.6 }],
+		glow: ['pelvis']
+	},
+	'band-scissor-kicks': {
+		frames: [
+			{ ...SUPINE, arm: 92, forearm: 90, farArm: 88, farForearm: 90, thigh: 150, shin: 150, farThigh: 126, farShin: 126, foot: 60, farFoot: 36 },
+			{ thigh: 126, shin: 126, foot: 36, farThigh: 150, farShin: 150, farFoot: 60 }
+		],
+		mat: true,
+		anchor: 'pelvis',
+		dur: 1.2,
+		props: [{ type: 'band', from: 'foot', to: 'farFoot', w: 1.6 }],
+		glow: [['pelvis', 'neck']]
+	},
 	'band-plank': {
 		frames: [
 			{ ...HIGH_PLANK, arm: 6, forearm: 6, farArm: -10, farForearm: -10 },

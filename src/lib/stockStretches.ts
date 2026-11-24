@@ -1736,7 +1736,7 @@ export const stockStretches: StockStretch[] = [
 		defaultSeconds: 30,
 		defaultReps: 10,
 		repSeconds: 3,
-		iconKey: 'wall-angels'
+		iconKey: 'band-overhead-pulldown'
 	},
 	{
 		id: 'loop-band-behind-back-pull-apart',
@@ -1749,7 +1749,7 @@ export const stockStretches: StockStretch[] = [
 		defaultSeconds: 30,
 		defaultReps: 10,
 		repSeconds: 3,
-		iconKey: 'chest-opener'
+		iconKey: 'band-behind-back'
 	},
 	{
 		id: 'loop-band-lateral-leg-raise',
@@ -1762,7 +1762,7 @@ export const stockStretches: StockStretch[] = [
 		defaultSeconds: 30,
 		defaultReps: 10,
 		repSeconds: 3,
-		iconKey: 'lateral-swings'
+		iconKey: 'band-lateral-leg-raise'
 	},
 	{
 		id: 'loop-band-glute-kickback',
@@ -1775,7 +1775,7 @@ export const stockStretches: StockStretch[] = [
 		defaultSeconds: 30,
 		defaultReps: 10,
 		repSeconds: 3,
-		iconKey: 'leg-swings'
+		iconKey: 'band-kickback'
 	},
 	{
 		id: 'loop-band-front-leg-raise',
@@ -1788,7 +1788,7 @@ export const stockStretches: StockStretch[] = [
 		defaultSeconds: 30,
 		defaultReps: 10,
 		repSeconds: 3,
-		iconKey: 'leg-swings'
+		iconKey: 'band-front-leg-raise'
 	},
 	{
 		id: 'loop-band-wide-squat',
@@ -1801,7 +1801,7 @@ export const stockStretches: StockStretch[] = [
 		defaultSeconds: 30,
 		defaultReps: 10,
 		repSeconds: 3,
-		iconKey: 'squat'
+		iconKey: 'band-wide-squat'
 	},
 	{
 		id: 'loop-band-narrow-squat',
@@ -1814,7 +1814,7 @@ export const stockStretches: StockStretch[] = [
 		defaultSeconds: 30,
 		defaultReps: 10,
 		repSeconds: 3,
-		iconKey: 'squat'
+		iconKey: 'band-narrow-squat'
 	},
 	{
 		id: 'loop-band-glute-bridge',
@@ -1827,7 +1827,7 @@ export const stockStretches: StockStretch[] = [
 		defaultSeconds: 30,
 		defaultReps: 10,
 		repSeconds: 3,
-		iconKey: 'bridge-hold'
+		iconKey: 'band-glute-bridge'
 	},
 	{
 		id: 'loop-band-supine-abduction',
@@ -1840,7 +1840,7 @@ export const stockStretches: StockStretch[] = [
 		defaultSeconds: 30,
 		defaultReps: 10,
 		repSeconds: 3,
-		iconKey: 'bridge-pulses'
+		iconKey: 'band-supine-abduction'
 	},
 	{
 		id: 'loop-band-straight-leg-abduction',
@@ -1853,7 +1853,7 @@ export const stockStretches: StockStretch[] = [
 		defaultSeconds: 30,
 		defaultReps: 10,
 		repSeconds: 3,
-		iconKey: 'legs-up-wall'
+		iconKey: 'band-straight-leg-abduction'
 	},
 	{
 		id: 'loop-band-scissor-kicks',
@@ -1864,7 +1864,7 @@ export const stockStretches: StockStretch[] = [
 		description: 'On your back, band around the ankles, legs raised. Step, cycle or scissor the legs against the band at a steady pace, keeping the lower back down.',
 		sides: 'one',
 		defaultSeconds: 45,
-		iconKey: 'legs-up-wall'
+		iconKey: 'band-scissor-kicks'
 	},
 	{
 		id: 'dynamic-ball-squeeze',
