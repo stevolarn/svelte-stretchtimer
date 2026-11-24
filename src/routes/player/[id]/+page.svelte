@@ -1,10 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
-	import { goto } from '$app/navigation';
+	import { beforeNavigate, goto } from '$app/navigation';
 	import {
 		back,
+		extend,
+		finishEarly,
 		instantComplete,
+		jumpTo,
 		jumpToCountdown,
 		player,
 		restart,
@@ -99,8 +102,10 @@
 	const routineElapsed = $derived(
 		player.segments.slice(0, player.index).reduce((sum, item) => sum + item.seconds, 0) + player.elapsed
 	);
-	const routineProgress = $derived(total > 0 ? Math.min(1, routineElapsed / total) : 0);
-	const remainingTotal = $derived(Math.max(0, total - routineElapsed));
+	/** Planned length as playing, including any +15s. */
+	const liveTotal = $derived(player.segments.reduce((sum, item) => sum + item.seconds, 0) || total);
+	const routineProgress = $derived(liveTotal > 0 ? Math.min(1, routineElapsed / liveTotal) : 0);
+	const remainingTotal = $derived(Math.max(0, liveTotal - routineElapsed));
 	const secondsLeft = $derived(Math.ceil(player.remaining));
 	const sideLabel = (side: 'left' | 'right' | null | undefined) => (side === 'left' ? 'Left' : side === 'right' ? 'Right' : '');
 
@@ -170,8 +175,77 @@
 		goto('/');
 	}
 
+	/* ------------------------ ending early ------------------------ */
+	/** Below this much played, leaving needs no confirmation. */
+	const CONFIRM_AFTER = 15;
+	let showEndSheet = $state(false);
+	let resumeOnKeep = false;
+	/** Where the user was heading when the sheet interrupted them. */
+	let pendingUrl: URL | null = null;
+	const inProgress = () => (player.status === 'running' || player.status === 'paused') && player.played >= CONFIRM_AFTER;
+
+	function askEnd(url: URL | null = null): void {
+		pendingUrl = url;
+		resumeOnKeep = player.status === 'running';
+		if (player.status === 'running') togglePause();
+		showEndSheet = true;
+	}
+
+	function requestEnd(): void {
+		if (inProgress()) askEnd();
+		else done();
+	}
+
+	function keepGoing(): void {
+		showEndSheet = false;
+		if (resumeOnKeep && player.status === 'paused') togglePause();
+	}
+
+	function endWorkout(): void {
+		showEndSheet = false;
+		const url = pendingUrl;
+		stopPlayer();
+		goto(url ? url.pathname + url.search : '/');
+	}
+
+	function endAndCount(): void {
+		showEndSheet = false;
+		finishEarly();
+	}
+
+	beforeNavigate((nav) => {
+		if (!inProgress() || showEndSheet) return;
+		nav.cancel();
+		// Closing the tab gets the browser's own prompt; everything else gets the sheet.
+		if (nav.type !== 'leave') askEnd(nav.to?.url ?? null);
+	});
+
+	function confirmRestart(): void {
+		if (!inProgress() || confirm('Restart from the beginning?')) restart();
+	}
+
+	/* ------------------------ jump to a stretch ------------------------ */
+	let showJumpSheet = $state(false);
+	/** One row per stretch in the current set, at its first side and first per-move set. */
+	const jumpRows = $derived(
+		player.segments.flatMap((s, index) => (isStart(s) && (s.set ?? 1) === currentSet ? [{ s, index }] : []))
+	);
+
+	function jump(index: number): void {
+		jumpTo(index);
+		showJumpSheet = false;
+	}
+
+	/* ---------------------- clamped description ---------------------- */
+	let cueEl = $state<HTMLElement>();
+	let cueClamped = $state(false);
+	$effect(() => {
+		void segment?.stretch?.description;
+		if (cueEl) cueClamped = cueEl.scrollHeight > cueEl.clientHeight + 1;
+	});
+
 	function onKey(e: KeyboardEvent): void {
-		if (player.status === 'idle' || player.status === 'finished' || showZoomModal) return;
+		if (player.status === 'idle' || player.status === 'finished' || showZoomModal || showEndSheet || showJumpSheet) return;
 		if ((e.target as HTMLElement | null)?.closest('button, input, textarea, select') && e.key === ' ') return;
 		if (e.key === ' ') {
 			e.preventDefault();
@@ -265,14 +339,14 @@
 {:else}
 	<div class="pl pl-active" class:paused={player.status === 'paused'} class:on-break={segment?.kind === 'break'}>
 		<div class="pl-top">
-			<button class="icon-btn pl-icon" onclick={done} aria-label="End workout" title="End workout">✕</button>
-			<div class="pl-title">
+			<button class="icon-btn pl-icon" onclick={requestEnd} aria-label="End workout" title="End workout">✕</button>
+			<button class="pl-title" onclick={() => (showJumpSheet = true)} aria-label="Show all stretches" title="Jump to a stretch">
 				<span class="pl-routine">{player.routineName}</span>
 				<span class="muted small">
-					Stretch {stretchNumber} of {stretchCount} · {formatSeconds(remainingTotal)} left
+					Stretch {stretchNumber} of {stretchCount} · {formatSeconds(remainingTotal)} left <span aria-hidden="true">▾</span>
 				</span>
-			</div>
-			<button class="icon-btn pl-icon" onclick={restart} title="Restart from the beginning" aria-label="Restart">
+			</button>
+			<button class="icon-btn pl-icon" onclick={confirmRestart} title="Restart from the beginning" aria-label="Restart">
 				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 					<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
 					<path d="M3 3v5h5" />
@@ -363,6 +437,9 @@
 							{/if}
 						</div>
 					</ProgressRing>
+					{#if !segment.reps}
+						<button class="extend-btn" onclick={() => extend(15)} aria-label="Add 15 seconds">+15s</button>
+					{/if}
 				</div>
 
 				{#if segment.kind === 'break'}
@@ -374,7 +451,10 @@
 						<p class="stage-cue">Breathe and get ready</p>
 					{/if}
 				{:else if segment.stretch?.description}
-					<p class="stage-cue">{segment.stretch.description}</p>
+					<button class="stage-cue-btn" onclick={() => (showZoomModal = true)} aria-label="Show full instructions">
+						<span class="stage-cue" bind:this={cueEl}>{segment.stretch.description}</span>
+						{#if cueClamped}<span class="cue-more">More ›</span>{/if}
+					</button>
 				{/if}
 			</div>
 		{/if}
@@ -432,12 +512,45 @@
 		</Modal>
 	{/if}
 
+	{#if showEndSheet}
+		<Modal title="End workout?" subtitle={`${formatSeconds(Math.round(player.played))} done · ${formatSeconds(remainingTotal)} to go`} onclose={keepGoing}>
+			<div class="end-actions">
+				<button class="btn primary" onclick={keepGoing}>Keep going</button>
+				{#if liveTotal > 0 && player.played / liveTotal >= 0.5}
+					<button class="btn" onclick={endAndCount}>End and count it</button>
+				{/if}
+				<button class="btn ghost danger" onclick={endWorkout}>End without saving</button>
+			</div>
+		</Modal>
+	{/if}
+
+	{#if showJumpSheet}
+		<Modal title="Jump to" subtitle={totalSets > 1 ? `Set ${currentSet} of ${totalSets}` : undefined} onclose={() => (showJumpSheet = false)}>
+			<ol class="jump-list">
+				{#each jumpRows as row, i (row.index)}
+					<li>
+						<button class="jump-row" class:current={i + 1 === stretchNumber} onclick={() => jump(row.index)}>
+							<span class="idle-num">{i + 1}</span>
+							<PhotoThumb photoId={row.s.stretch?.photoId} iconKey={row.s.stretch?.iconKey} name={row.s.stretch?.name ?? row.s.label} size={40} rounded={8} />
+							<span class="idle-name">{row.s.stretch?.name || row.s.label}</span>
+							{#if row.s.stretch}<span class="idle-dur muted small">{stretchDurationLabel(row.s.stretch)}</span>{/if}
+						</button>
+					</li>
+				{/each}
+			</ol>
+		</Modal>
+	{/if}
+
 	{#if player.status === 'finished'}
 		<div class="finish" role="dialog" aria-modal="true" aria-labelledby="finish-title">
 			<div class="finish-burst" aria-hidden="true">🎉</div>
-			<h2 id="finish-title">Routine complete</h2>
+			<h2 id="finish-title">{player.partial ? 'Counted as done' : 'Routine complete'}</h2>
 			<p class="finish-stats muted">
-				{formatSeconds(total)} · {stretchCount} stretch{stretchCount === 1 ? '' : 'es'}{totalSets > 1 ? ` × ${totalSets} sets` : ''}
+				{#if player.partial}
+					{formatSeconds(Math.round(player.played))} of {formatSeconds(liveTotal)} · stretch {stretchNumber} of {stretchCount}
+				{:else}
+					{formatSeconds(total)} · {stretchCount} stretch{stretchCount === 1 ? '' : 'es'}{totalSets > 1 ? ` × ${totalSets} sets` : ''}
+				{/if}
 			</p>
 			<div class="finish-streak">
 				<span class="finish-flame" aria-hidden="true">🔥</span>
@@ -680,6 +793,18 @@
 		text-align: center;
 		line-height: 1.2;
 	}
+	button.pl-title {
+		background: none;
+		border: 0;
+		color: inherit;
+		font: inherit;
+		cursor: pointer;
+		padding: 0.15rem 0.3rem;
+		border-radius: 8px;
+	}
+	button.pl-title:hover {
+		background: var(--surface-2);
+	}
 	.pl-routine {
 		font-weight: 700;
 		max-width: 100%;
@@ -800,6 +925,69 @@
 	.stage-timer {
 		flex-shrink: 0;
 		transition: opacity 0.2s;
+		position: relative;
+	}
+	.extend-btn {
+		position: absolute;
+		right: -3.2rem;
+		bottom: 0.4rem;
+		padding: 0.35rem 0.6rem;
+		border-radius: 999px;
+		border: 1px solid var(--border);
+		background: var(--surface);
+		color: var(--text);
+		font: inherit;
+		font-size: 0.85rem;
+		font-weight: 700;
+		cursor: pointer;
+	}
+	.stage-cue-btn {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.15rem;
+		background: none;
+		border: 0;
+		padding: 0;
+		font: inherit;
+		color: inherit;
+		cursor: pointer;
+	}
+	.cue-more {
+		color: var(--accent);
+		font-size: 0.85rem;
+		font-weight: 600;
+	}
+	.end-actions {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+	.jump-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+	.jump-row {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		width: 100%;
+		padding: 0.4rem 0.5rem;
+		border: 1px solid transparent;
+		border-radius: 10px;
+		background: none;
+		color: inherit;
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
+	}
+	.jump-row.current {
+		border-color: var(--accent);
+		background: color-mix(in srgb, var(--accent) 10%, transparent);
 	}
 	.paused .stage-timer {
 		opacity: 0.55;

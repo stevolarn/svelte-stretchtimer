@@ -305,6 +305,96 @@
 	{/if}
 </div>
 
+<section class="card today-card">
+	<div class="today-row">
+		<div class="today-copy">
+			<span class="today-label">{upNext?.state === 'due' ? 'Due now' : upNext ? 'Up next' : 'Today'} · {dayNames[todayIndex]}</span>
+			{#if upNext}
+				<strong>{upNext.routine.name || 'Untitled routine'}</strong>
+				{#if upNext.routine.cue}
+					<span class="today-cue small">↪ After I {upNext.routine.cue}</span>
+				{/if}
+				{#if easeOff}
+					<span class="today-cue small">🌧 Worse this morning — gentle version today</span>
+				{/if}
+				<span class="muted small">
+					{upNext.why}{upNext.time && upNext.target > 1 ? ` · ${upNext.done + 1} of ${upNext.target} today` : ''} · {routineLength(upNext.routine)}
+				</span>
+			{:else if scheduledToday}
+				<strong>All done for today ✓</strong>
+				<span class="muted small">Nice work. A micro-break is always a bonus.</span>
+			{:else if hasSchedule}
+				<strong>Rest day</strong>
+				<span class="muted small">Nothing scheduled. A micro-break still counts.</span>
+			{:else if routines.length === 0}
+				<strong>Make your first routine</strong>
+				<span class="muted small">Pick a ready-made flow or build your own. A 2-minute micro-break counts meanwhile.</span>
+			{:else}
+				<strong>Plan your week</strong>
+				<span class="muted small">Give routines days and times, and the next one will be waiting here.</span>
+			{/if}
+		</div>
+		{#if upNext}
+			<button
+				class="play-fab"
+				onclick={() => play(upNext.routine, easeOff)}
+				disabled={upNext.routine.stretches.length === 0}
+				aria-label={`Play ${upNext.routine.name || 'routine'}`}
+				title="Play"
+			>
+				<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" /></svg>
+			</button>
+		{/if}
+	</div>
+	{#if due.length > 1}
+		<ul class="due-list" aria-label="Also due today">
+			{#each due.slice(1) as item (item.routine.id)}
+				<li class="due-row">
+					<div class="due-copy">
+						<span class="due-name">{item.routine.name || 'Untitled routine'}</span>
+						<span class="muted small">{item.why} · {routineLength(item.routine)}</span>
+					</div>
+					<button
+						class="play-fab small"
+						onclick={() => play(item.routine, easeOff)}
+						disabled={item.routine.stretches.length === 0}
+						aria-label={`Play ${item.routine.name || 'routine'}`}
+						title="Play"
+					>
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" /></svg>
+					</button>
+				</li>
+			{/each}
+		</ul>
+	{/if}
+	{#if hasSchedule}
+		<button class="week-strip" aria-label="Open this week’s schedule" onclick={() => (showWeekModal = true)}>
+			{#each weekDays as d (d.key)}
+				<span
+					class="week-day"
+					class:done={d.allDone || (d.items.length === 0 && d.done)}
+					class:today={d.isToday}
+					class:missed={d.past && d.items.length > 0 && !d.allDone}
+					class:rest={d.items.length === 0}
+					aria-hidden="true">{d.letter}</span
+				>
+			{/each}
+		</button>
+	{/if}
+	<div class="today-actions">
+		{#if routines.length === 0}
+			<a class="btn small primary" href="/routines">＋ Add a routine</a>
+		{/if}
+		<button class="btn small" onclick={startMicroBreak}>⚡ 2-min micro-break</button>
+		{#if routines.length > 0}
+			{#if hasSchedule}
+				<button class="btn small ghost" onclick={() => (showWeekModal = true)}>📅 This week</button>
+			{:else}
+				<button class="btn small ghost" onclick={openPlan}>📅 Schedule routines</button>
+			{/if}
+		{/if}
+	</div>
+</section>
 {#if showMissCard && habitRoutine}
 	{@const r = habitRoutine}
 	<section class="card nudge-card" aria-labelledby="miss-title">
@@ -503,96 +593,6 @@
 	</section>
 {/if}
 
-<section class="card today-card">
-	<div class="today-row">
-		<div class="today-copy">
-			<span class="today-label">{upNext?.state === 'due' ? 'Due now' : upNext ? 'Up next' : 'Today'} · {dayNames[todayIndex]}</span>
-			{#if upNext}
-				<strong>{upNext.routine.name || 'Untitled routine'}</strong>
-				{#if upNext.routine.cue}
-					<span class="today-cue small">↪ After I {upNext.routine.cue}</span>
-				{/if}
-				{#if easeOff}
-					<span class="today-cue small">🌧 Worse this morning — gentle version today</span>
-				{/if}
-				<span class="muted small">
-					{upNext.why}{upNext.time && upNext.target > 1 ? ` · ${upNext.done + 1} of ${upNext.target} today` : ''} · {routineLength(upNext.routine)}
-				</span>
-			{:else if scheduledToday}
-				<strong>All done for today ✓</strong>
-				<span class="muted small">Nice work. A micro-break is always a bonus.</span>
-			{:else if hasSchedule}
-				<strong>Rest day</strong>
-				<span class="muted small">Nothing scheduled. A micro-break still counts.</span>
-			{:else if routines.length === 0}
-				<strong>Make your first routine</strong>
-				<span class="muted small">Pick a ready-made flow or build your own. A 2-minute micro-break counts meanwhile.</span>
-			{:else}
-				<strong>Plan your week</strong>
-				<span class="muted small">Give routines days and times, and the next one will be waiting here.</span>
-			{/if}
-		</div>
-		{#if upNext}
-			<button
-				class="play-fab"
-				onclick={() => play(upNext.routine, easeOff)}
-				disabled={upNext.routine.stretches.length === 0}
-				aria-label={`Play ${upNext.routine.name || 'routine'}`}
-				title="Play"
-			>
-				<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" /></svg>
-			</button>
-		{/if}
-	</div>
-	{#if due.length > 1}
-		<ul class="due-list" aria-label="Also due today">
-			{#each due.slice(1) as item (item.routine.id)}
-				<li class="due-row">
-					<div class="due-copy">
-						<span class="due-name">{item.routine.name || 'Untitled routine'}</span>
-						<span class="muted small">{item.why} · {routineLength(item.routine)}</span>
-					</div>
-					<button
-						class="play-fab small"
-						onclick={() => play(item.routine, easeOff)}
-						disabled={item.routine.stretches.length === 0}
-						aria-label={`Play ${item.routine.name || 'routine'}`}
-						title="Play"
-					>
-						<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" /></svg>
-					</button>
-				</li>
-			{/each}
-		</ul>
-	{/if}
-	{#if hasSchedule}
-		<button class="week-strip" aria-label="Open this week’s schedule" onclick={() => (showWeekModal = true)}>
-			{#each weekDays as d (d.key)}
-				<span
-					class="week-day"
-					class:done={d.allDone || (d.items.length === 0 && d.done)}
-					class:today={d.isToday}
-					class:missed={d.past && d.items.length > 0 && !d.allDone}
-					class:rest={d.items.length === 0}
-					aria-hidden="true">{d.letter}</span
-				>
-			{/each}
-		</button>
-	{/if}
-	<div class="today-actions">
-		{#if routines.length === 0}
-			<a class="btn small primary" href="/routines">＋ Add a routine</a>
-		{/if}
-		<button class="btn small" onclick={startMicroBreak}>⚡ 2-min micro-break</button>
-		{#if routines.length > 0}
-			{#if hasSchedule}
-				<button class="btn small ghost" onclick={() => (showWeekModal = true)}>📅 This week</button>
-			{:else}
-				<button class="btn small ghost" onclick={openPlan}>📅 Schedule routines</button>
-			{/if}
-		{/if}
-	</div>
-</section>
 
 {#if settings.tipDismissed !== thisMonday}
 	<section class="card tip-card" aria-label="Tip of the week">

@@ -312,7 +312,7 @@ export function notImproving(
 	if (early !== null && late !== null && early >= 3) {
 		const stuck = early - late < MEANINGFUL_CHANGE;
 		verdicts.push(stuck);
-		if (stuck) parts.push(`pain has gone from about ${early.toFixed(1)} to ${late.toFixed(1)}`);
+		if (stuck) parts.push(`pain ${shift(early - late, early, late)}`);
 	}
 	const fn = functionChange(checks);
 	const lastCheck = checks[checks.length - 1];
@@ -320,8 +320,17 @@ export function notImproving(
 	if (fn && fn.baseline < 8 && lastCheck.date > addDays(checks[0].date, 20) && lastCheck.date > addDays(today, -NOT_IMPROVING_DAYS)) {
 		const stuck = fn.change < MEANINGFUL_CHANGE;
 		verdicts.push(stuck);
-		if (stuck) parts.push(`your activity scores have gone from ${fn.baseline.toFixed(1)} to ${fn.latest.toFixed(1)}`);
+		if (stuck) parts.push(`your activity scores ${shift(fn.change, fn.baseline, fn.latest)}`);
 	}
 	if (verdicts.length === 0 || verdicts.some((v) => !v)) return null;
-	return { reason: `After six weeks, ${parts.join(' and ')}.` };
+	const note = parts.some((p) => p.includes('only a little')) ? ` A real change is usually ${MEANINGFUL_CHANGE} points or more.` : '';
+	return { reason: `After six weeks, ${parts.join(' and ')}.${note}` };
+}
+
+/** How a score moved, phrased so a small gain reads as a gain. `gain` is positive when things got better. */
+function shift(gain: number, from: number, to: number): string {
+	const range = `from about ${from.toFixed(1)} to ${to.toFixed(1)}`;
+	if (gain >= 0.5) return `improved only a little, ${range}`;
+	if (gain <= -0.5) return `got worse, ${range}`;
+	return `stayed about the same, around ${to.toFixed(1)}`;
 }

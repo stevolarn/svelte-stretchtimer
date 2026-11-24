@@ -18,6 +18,10 @@ export interface PlayerUiState {
 	/** reps segments: the rep currently in progress (1-based); 0 on holds and breaks */
 	rep: number;
 	speed: number;
+	/** seconds actually played (skips don't add to it), in routine time */
+	played: number;
+	/** ended early but counted */
+	partial: boolean;
 }
 
 export const player = $state<PlayerUiState>({
@@ -29,7 +33,9 @@ export const player = $state<PlayerUiState>({
 	remaining: 0,
 	elapsed: 0,
 	rep: 0,
-	speed: 1
+	speed: 1,
+	played: 0,
+	partial: false
 });
 
 /* ------------------------- engine internals ------------------------- */
@@ -42,6 +48,8 @@ let lastRep = 0;
 /** last half-rep (0 = first lift, 1 = first lower, ...) the metronome clicked on */
 let lastHalf = 0;
 let finished = false;
+/** wall-clock time of the last tick while running, for counting played time */
+let lastNow = 0;
 let settingsSnapshot: Settings | null = null;
 
 function clearTimer(): void {
@@ -121,6 +129,8 @@ function tick(): void {
 	const now = Date.now();
 	const speed = player.speed || settingsSnapshot?.playbackSpeed || 1;
 	const remainingRealMs = Math.max(0, endAt - now);
+	if (lastNow) player.played += ((Math.min(now, endAt) - lastNow) / 1000) * speed;
+	lastNow = now;
 	player.remaining = (remainingRealMs / 1000) * speed;
 	player.elapsed = Math.max(0, player.segments[player.index].seconds - player.remaining);
 
@@ -169,11 +179,14 @@ function advance(): void {
 	}
 }
 
-function finish(settings: Settings): void {
+function finish(settings: Settings, partial = false): void {
 	clearTimer();
 	player.status = 'finished';
-	player.remaining = 0;
-	player.elapsed = player.segments[player.index]?.seconds ?? 0;
+	player.partial = partial;
+	if (!partial) {
+		player.remaining = 0;
+		player.elapsed = player.segments[player.index]?.seconds ?? 0;
+	}
 	if (settings.beepFinish) beepFinish();
 	if (settings.voiceCues) speak('All done');
 	if (settings.vibrate) vibrate([100, 60, 100, 60, 200]);
@@ -189,6 +202,7 @@ function finish(settings: Settings): void {
 
 function startTimer(): void {
 	if (timer !== null) clearInterval(timer);
+	lastNow = Date.now();
 	timer = setInterval(tick, 100);
 }
 
@@ -201,6 +215,8 @@ export function startPlayer(routine: Routine, currentSettings: Settings): void {
 	settingsSnapshot = { ...currentSettings };
 	player.speed = currentSettings.playbackSpeed || 1;
 	finished = false;
+	player.played = 0;
+	player.partial = false;
 	const segments = buildTimeline(routine, currentSettings);
 	player.status = segments.length > 0 ? 'running' : 'idle';
 	player.routineId = routine.id;
@@ -273,6 +289,22 @@ export function jumpTo(index: number): void {
 	}
 }
 
+/** Add time to the current hold or rest (not reps, whose length is set by the tempo). */
+export function extend(seconds: number): void {
+	const seg = player.segments[player.index];
+	if (!seg || seg.reps || (player.status !== 'running' && player.status !== 'paused')) return;
+	const speed = player.speed || settingsSnapshot?.playbackSpeed || 1;
+	seg.seconds += seconds;
+	player.remaining += seconds;
+	if (player.status === 'running') endAt += (seconds / speed) * 1000;
+	lastTick = 0;
+}
+
+/** End now but count it as done, like reaching the end. */
+export function finishEarly(): void {
+	if (settingsSnapshot && (player.status === 'running' || player.status === 'paused')) finish(settingsSnapshot, true);
+}
+
 /** Testing Mode Helper: Jump current segment remaining time directly to 3s to test countdown ticks. */
 export function jumpToCountdown(seconds = 3): void {
 	if (player.status === 'idle' || player.status === 'finished') return;
@@ -306,6 +338,9 @@ export function instantComplete(): void {
 export function restart(): void {
 	const settings = settingsSnapshot;
 	if (!settings || player.segments.length === 0) return;
+	finished = false;
+	player.played = 0;
+	player.partial = false;
 	enterSegment(0, settings);
 	player.status = 'running';
 	startTimer();
@@ -326,6 +361,8 @@ export function stopPlayer(): void {
 	lastRep = 0;
 	lastHalf = 0;
 	player.speed = 1;
+	player.played = 0;
+	player.partial = false;
 	settingsSnapshot = null;
 }
 

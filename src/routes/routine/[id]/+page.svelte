@@ -461,6 +461,52 @@
 		</section>
 	{/if}
 
+	<div class="spread list-heading">
+		<h2>Stretches</h2>
+		{#if routine.stretches.length > 1}
+			<span class="muted small">Drag ⠿ to reorder</span>
+		{/if}
+	</div>
+
+	{#if routine.stretches.length === 0}
+		<div class="card empty-list">
+			<p style="margin: 0 0 0.75rem">No stretches yet.</p>
+			<button class="btn primary" onclick={() => (showPicker = true)}>＋ Add your first stretch</button>
+		</div>
+	{:else}
+		<ol class="st-list" bind:this={listEl}>
+			{#each routine.stretches as s, i (s.id)}
+				<li
+					class="card st-item"
+					class:over={dragIndex !== null && overIndex === i && dragIndex !== i}
+					class:dragging={dragIndex === i}
+				>
+					<span
+						class="drag-handle"
+						role="button"
+						tabindex="0"
+						aria-label={`Reorder ${s.name || 'stretch'} (use arrow keys)`}
+						title="Drag to reorder"
+						onpointerdown={(e) => handlePointerDown(e, i)}
+						onpointermove={handlePointerMove}
+						onpointerup={handlePointerUp}
+						onpointercancel={handlePointerCancel}
+						onkeydown={(e) => handleHandleKey(e, i)}>⠿</span
+					>
+					<button class="st-body" onclick={() => (editingId = s.id)}>
+						<PhotoThumb photoId={s.photoId} iconKey={s.iconKey} name={s.name} size={56} rounded={10} />
+						<span class="st-copy">
+							<span class="st-name">{s.name || 'Untitled stretch'}</span>
+							<span class="st-meta muted small">{stretchDurationLabel(s)}</span>
+						</span>
+						<span class="chevron" aria-hidden="true">›</span>
+					</button>
+				</li>
+			{/each}
+		</ol>
+		<button class="btn add-btn" onclick={() => (showPicker = true)}>＋ Add stretch</button>
+	{/if}
+
 	<section class="card options-card">
 		<div class="option-row">
 			<div class="option-copy">
@@ -573,52 +619,6 @@
 			<span class="muted small">Plan B for a busy or sore day. A little still keeps the habit going.</span>
 		</div>
 	</section>
-
-	<div class="spread list-heading">
-		<h2>Stretches</h2>
-		{#if routine.stretches.length > 1}
-			<span class="muted small">Drag ⠿ to reorder</span>
-		{/if}
-	</div>
-
-	{#if routine.stretches.length === 0}
-		<div class="card empty-list">
-			<p style="margin: 0 0 0.75rem">No stretches yet.</p>
-			<button class="btn primary" onclick={() => (showPicker = true)}>＋ Add your first stretch</button>
-		</div>
-	{:else}
-		<ol class="st-list" bind:this={listEl}>
-			{#each routine.stretches as s, i (s.id)}
-				<li
-					class="card st-item"
-					class:over={dragIndex !== null && overIndex === i && dragIndex !== i}
-					class:dragging={dragIndex === i}
-				>
-					<span
-						class="drag-handle"
-						role="button"
-						tabindex="0"
-						aria-label={`Reorder ${s.name || 'stretch'} (use arrow keys)`}
-						title="Drag to reorder"
-						onpointerdown={(e) => handlePointerDown(e, i)}
-						onpointermove={handlePointerMove}
-						onpointerup={handlePointerUp}
-						onpointercancel={handlePointerCancel}
-						onkeydown={(e) => handleHandleKey(e, i)}>⠿</span
-					>
-					<button class="st-body" onclick={() => (editingId = s.id)}>
-						<PhotoThumb photoId={s.photoId} iconKey={s.iconKey} name={s.name} size={56} rounded={10} />
-						<span class="st-copy">
-							<span class="st-name">{s.name || 'Untitled stretch'}</span>
-							<span class="st-meta muted small">{stretchDurationLabel(s)}</span>
-						</span>
-						<span class="chevron" aria-hidden="true">›</span>
-					</button>
-				</li>
-			{/each}
-		</ol>
-		<button class="btn add-btn" onclick={() => (showPicker = true)}>＋ Add stretch</button>
-	{/if}
 
 	{#if routine.history?.length}
 		<details class="dose-history">
@@ -996,6 +996,7 @@
 	.empty-list {
 		text-align: center;
 		padding: 1.4rem 1rem;
+		margin-bottom: 1.2rem;
 	}
 
 	.st-list {
@@ -1075,7 +1076,7 @@
 
 	.add-btn {
 		width: 100%;
-		margin-top: 0.6rem;
+		margin: 0.6rem 0 1.2rem;
 		border-style: dashed;
 		background: transparent;
 		color: var(--accent);
