@@ -18,6 +18,7 @@
 	} from '$lib/stores.svelte';
 	import { buildTimeline, timelineTotal } from '$lib/timeline';
 	import { onMount } from 'svelte';
+	import PainNow from '$lib/components/PainNow.svelte';
 	import { dueToday, formatTime, goalProgress, reviewLastWeek, scheduledOn } from '$lib/frequency';
 	import { scheduleIcs } from '$lib/calendar';
 	import { currentStreak, fixersAvailable, fixerProgress, repairGap } from '$lib/streak';
@@ -395,6 +396,12 @@
 		{/if}
 	</div>
 </section>
+{#if settings.painTracking}
+	<section class="card pain-card" aria-labelledby="pain-title">
+		<h2 id="pain-title">How’s the pain?</h2>
+		<PainNow />
+	</section>
+{/if}
 {#if showMissCard && habitRoutine}
 	{@const r = habitRoutine}
 	<section class="card nudge-card" aria-labelledby="miss-title">

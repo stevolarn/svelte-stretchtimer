@@ -978,6 +978,7 @@ textarea {
 }
 
 .review-card h2,
+.pain-card h2,
 .morning-card h2,
 .trend-card h2,
 .ease-card h2,
@@ -992,6 +993,10 @@ textarea {
 .ease-card p,
 .stuck-card p {
 	margin: 0.3rem 0 0.6rem;
+}
+
+.pain-card h2 {
+	margin-bottom: 0.5rem;
 }
 
 .morning-choices {

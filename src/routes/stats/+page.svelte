@@ -2,14 +2,11 @@
 	import {
 		applyFixer,
 		functionChecks,
-		logPain,
 		PAIN_AREAS,
 		painLog,
-		setLastPainAreas,
 		sessions,
 		settings,
-		streak,
-		undoLastPain
+		streak
 	} from '$lib/stores.svelte';
 	import { currentStreak, fixerProgress, fixersAvailable, longestStreak, repairGap } from '$lib/streak';
 	import { HABIT_DAYS, practiceDays } from '$lib/habits';
@@ -17,7 +14,7 @@
 	import { formatDuration, sessionTotals, sessionWhen } from '$lib/sessions';
 	import { checkScore, daysPractised, functionChange, MEANINGFUL_CHANGE, trackedActivities } from '$lib/recovery';
 	import type { PainArea } from '$lib/types';
-	import PainAreaChips from '$lib/components/PainAreaChips.svelte';
+	import PainNow from '$lib/components/PainNow.svelte';
 	import WarningSigns from '$lib/components/WarningSigns.svelte';
 
 	const WEEKS = 6;
@@ -69,23 +66,6 @@
 		)
 	);
 	const painPath = $derived(painPoints.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '));
-	const loggedToday = $derived(painLog.filter((p) => p.date === today && p.routineId === null).at(-1)?.score ?? null);
-	/** Areas can only be edited while today's quick score is still the latest entry. */
-	const quickEntry = $derived.by(() => {
-		const last = painLog.at(-1);
-		return last && last.routineId === null && last.date === today ? last : null;
-	});
-
-	function logPainNow(score: number): void {
-		const keep = quickEntry?.areas;
-		if (loggedToday !== null && quickEntry) undoLastPain();
-		logPain(score, null, false, score > 0 ? keep : []);
-	}
-
-	function setQuickAreas(areas: PainArea[]): void {
-		if (quickEntry) setLastPainAreas(areas);
-	}
-
 	/* --------------------------- everyday tasks (PSFS) --------------------------- */
 	const FN_H = 100;
 	const fnChange = $derived(functionChange(functionChecks));
@@ -311,18 +291,7 @@
 				{/each}
 			</svg>
 		{/if}
-		<div class="pain-now">
-			<span class="small">{loggedToday === null ? 'Log pain now' : `Logged ${loggedToday}/10 today — tap to change`}</span>
-			<div class="pain-row">
-				{#each Array.from({ length: 11 }, (_, i) => i) as n (n)}
-					<button class="pain-btn" class:on={loggedToday === n} aria-label="Pain {n} out of 10" onclick={() => logPainNow(n)}>{n}</button>
-				{/each}
-			</div>
-			{#if quickEntry && quickEntry.score > 0}
-				<span class="small where-label">Where? (optional)</span>
-				<PainAreaChips selected={quickEntry.areas ?? []} label="Where does it hurt?" onchange={setQuickAreas} />
-			{/if}
-		</div>
+		<div class="pain-now-wrap"><PainNow /></div>
 		<p class="muted small pain-guide">
 			Up to 5/10 during or after a session is usually fine if it’s settled by the next morning.
 			<button class="link-btn" onclick={() => (showSigns = true)}>When to get it checked</button>
@@ -455,9 +424,6 @@
 		border-color: var(--accent);
 		color: #fff;
 	}
-	.where-label {
-		margin-top: 0.3rem;
-	}
 	.fn-lead {
 		margin: 0 0 0.4rem;
 	}
@@ -522,34 +488,8 @@
 		justify-content: center;
 		margin-top: 1rem;
 	}
-	.pain-now {
-		display: flex;
-		flex-direction: column;
-		gap: 0.4rem;
+	.pain-now-wrap {
 		margin-top: 0.8rem;
-	}
-	.pain-row {
-		display: grid;
-		grid-template-columns: repeat(11, 1fr);
-		gap: 0.2rem;
-	}
-	.pain-btn {
-		aspect-ratio: 1;
-		min-width: 0;
-		padding: 0;
-		border-radius: 8px;
-		border: 1px solid var(--border);
-		background: var(--surface);
-		color: var(--text);
-		font: inherit;
-		font-size: 0.85rem;
-		font-weight: 700;
-		cursor: pointer;
-	}
-	.pain-btn.on {
-		background: var(--accent);
-		border-color: var(--accent);
-		color: #fff;
 	}
 	.page-title {
 		font-size: 1.45rem;
