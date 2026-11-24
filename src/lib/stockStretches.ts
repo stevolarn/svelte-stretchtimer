@@ -1427,6 +1427,45 @@ export const stockStretches: StockStretch[] = [
 		defaultSeconds: 40,
 		iconKey: 'finger-band'
 	},
+	{
+		id: 'dynamic-thumb-band-extension',
+		name: 'Thumb Band Extensions',
+		type: 'dynamic',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Band around the thumb and fingers, palm facing you. Move the thumb backward, away from the palm like a hitchhiker sign, against the band, then return slowly.',
+		sides: 'two',
+		defaultSeconds: 30,
+		defaultReps: 10,
+		repSeconds: 3,
+		iconKey: 'thumb-band-extension'
+	},
+	{
+		id: 'dynamic-finger-band-single-lifts',
+		name: 'Single-Finger Band Lifts',
+		type: 'dynamic',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Band around the fingers with the hand half closed. Lift one finger at a time straight against the band while the others stay still, then lower it slowly.',
+		sides: 'two',
+		defaultSeconds: 40,
+		defaultReps: 10,
+		repSeconds: 4,
+		iconKey: 'finger-band-single'
+	},
+	{
+		id: 'dynamic-thumb-band-opposition',
+		name: 'Thumb Opposition Taps',
+		type: 'dynamic',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'With the band still around the fingers and thumb, touch the thumb to each fingertip in turn, opening the hand fully against the band between taps.',
+		sides: 'two',
+		defaultSeconds: 40,
+		defaultReps: 8,
+		repSeconds: 5,
+		iconKey: 'thumb-opposition'
+	},
 
 	/* ==========================================================================
 	   10. WRIST DUMBBELL
@@ -2000,6 +2039,80 @@ export const stockStretches: StockStretch[] = [
 		defaultReps: 25,
 		repSeconds: 2,
 		iconKey: 'ball-squeeze'
+	},
+	{
+		id: 'dynamic-ball-finger-squeeze',
+		name: 'Finger Ball Squeeze',
+		type: 'dynamic',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Wedge a small soft ball or sponge between two fingers and squeeze them together, hold a second, then relax. Work along each gap between the fingers.',
+		sides: 'two',
+		defaultSeconds: 40,
+		defaultReps: 10,
+		repSeconds: 3,
+		iconKey: 'ball-finger-squeeze'
+	},
+	{
+		id: 'dynamic-ball-pinch',
+		name: 'Ball Pinch Squeeze',
+		type: 'dynamic',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Hold a soft ball between the thumb and the fingertips, fingers straight, and pinch it firmly. Hold a second, then let go slowly.',
+		sides: 'two',
+		defaultSeconds: 40,
+		defaultReps: 10,
+		repSeconds: 3,
+		iconKey: 'ball-pinch'
+	},
+	{
+		id: 'dynamic-ball-thumb-press',
+		name: 'Thumb Ball Press',
+		type: 'dynamic',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Rest a soft ball in your palm and press into it with the tip of the thumb only. Hold a second, then ease off slowly.',
+		sides: 'two',
+		defaultSeconds: 40,
+		defaultReps: 10,
+		repSeconds: 3,
+		iconKey: 'ball-thumb-press'
+	},
+	{
+		id: 'dynamic-ball-fingertip-squeeze',
+		name: 'Fingertip Ball Squeeze',
+		type: 'dynamic',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Hold a soft ball in the fingertips with the palm off it, like a claw. Squeeze with the fingertips only, then let go slowly.',
+		sides: 'two',
+		defaultSeconds: 40,
+		defaultReps: 10,
+		repSeconds: 3,
+		iconKey: 'ball-fingertip-squeeze'
+	},
+	{
+		id: 'iso-ball-squeeze-hold',
+		name: 'Ball Squeeze Hold',
+		type: 'isometrics',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Squeeze a soft ball in your whole hand at about half effort and hold it steady, breathing normally. Ease off if pain builds.',
+		sides: 'two',
+		defaultSeconds: 20,
+		iconKey: 'ball-squeeze'
+	},
+	{
+		id: 'mob-ball-roll',
+		name: 'Ball Roll',
+		type: 'mobility',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Sit at a table with a ball under your palm. Roll it forward and back with gentle pressure, letting the wrist and fingers open as the arm reaches out.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'ball-roll'
 	},
 	{
 		id: 'dynamic-prone-scapular-retraction',

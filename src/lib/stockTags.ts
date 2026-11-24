@@ -2,7 +2,7 @@ import type { StockStretch } from './types';
 
 /** Finer-grained tags than area, worked out from each movement's name and cues. */
 export type Focus = 'neck' | 'shoulders' | 'elbow' | 'wrist-hand' | 'back' | 'core' | 'hips' | 'legs';
-export type Equipment = 'none' | 'band' | 'finger-band' | 'dumbbell' | 'flexbar' | 'wall' | 'chair';
+export type Equipment = 'none' | 'band' | 'finger-band' | 'dumbbell' | 'flexbar' | 'wall' | 'chair' | 'ball';
 
 export const focusLabels: Record<Focus, string> = {
 	neck: 'Neck',
@@ -22,7 +22,8 @@ export const equipmentLabels: Record<Equipment, string> = {
 	dumbbell: 'Dumbbell',
 	flexbar: 'FlexBar or towel',
 	wall: 'Wall or door',
-	chair: 'Chair or desk'
+	chair: 'Chair or desk',
+	ball: 'Soft ball'
 };
 
 const focusRules: Array<[Focus, RegExp]> = [
@@ -38,6 +39,10 @@ const focusRules: Array<[Focus, RegExp]> = [
 
 /** Movements whose names don't say what they work. */
 const focusOverrides: Record<string, Focus[]> = {
+	'dynamic-ball-squeeze': ['wrist-hand', 'elbow'],
+	'dynamic-ball-pinch': ['wrist-hand'],
+	'iso-ball-squeeze-hold': ['wrist-hand', 'elbow'],
+	'mob-ball-roll': ['wrist-hand', 'elbow'],
 	'static-upward-salute': ['shoulders', 'back'],
 	'static-chair-overhead-reach': ['shoulders', 'back'],
 	'static-standing-diver': ['back', 'legs'],
@@ -131,6 +136,7 @@ export function equipmentOf(s: StockStretch): Equipment[] {
 		if (/finger-band|thumb-band|finger band|thumb band/.test(t)) found.push('finger-band');
 		else if (/\bband\b|band-/.test(t)) found.push('band');
 		if (/\bwall\b|doorway|door ?frame/.test(t)) found.push('wall');
+		if (/\bball\b/.test(t)) found.push('ball');
 		if (s.id !== 'yoga-chair-pose' && /chair|\bdesk\b/.test(t)) found.push('chair');
 		hit = found.length ? found : ['none'];
 		equipmentCache.set(s.id, hit);

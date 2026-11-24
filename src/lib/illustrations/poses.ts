@@ -1369,6 +1369,75 @@ export const poses: Record<string, PoseDef> = {
 		arrows: [{ at: 'hand', d: 'M-3 -3l-4 -6', gold: true }]
 	},
 
+	'thumb-band-extension': {
+		view: 'front',
+		frames: [
+			{ ...FRONT, arm: 48, forearm: 160, farArm: -16, farForearm: -8 },
+			{ arm: 50, forearm: 164 }
+		],
+		dur: 2.2,
+		glow: ['hand'],
+		arrows: [{ at: 'hand', d: 'M4 3h8', gold: true }]
+	},
+	'finger-band-single': {
+		view: 'front',
+		frames: [
+			{ ...FRONT, arm: 48, forearm: 160, farArm: -16, farForearm: -8 },
+			{ arm: 50, forearm: 164 }
+		],
+		dur: 2.2,
+		glow: ['hand'],
+		arrows: [{ at: 'hand', d: 'M1 -5v-7', gold: true }]
+	},
+	'thumb-opposition': {
+		view: 'front',
+		frames: [
+			{ ...FRONT, arm: 48, forearm: 160, farArm: -16, farForearm: -8 },
+			{ arm: 50, forearm: 164 }
+		],
+		dur: 2.2,
+		glow: ['hand'],
+		arrows: [{ at: 'hand', d: 'M-5 -2q1 -7 7 -7' }]
+	},
+	'ball-pinch': {
+		frames: [{ ...STAND, arm: 22, forearm: 90 }, { forearm: 91 }],
+		dur: 2,
+		props: [{ type: 'ball', at: 'hand' }],
+		glow: [['elbow', 'hand']],
+		arrows: [{ at: 'hand', d: 'M7 -7l-3 3', gold: true }, { at: 'hand', d: 'M7 6l-3 -3', gold: true }]
+	},
+	'ball-thumb-press': {
+		frames: [{ ...STAND, arm: 22, forearm: 90 }, { forearm: 91 }],
+		dur: 2,
+		props: [{ type: 'ball', at: 'hand' }],
+		glow: [['elbow', 'hand']],
+		arrows: [{ at: 'hand', d: 'M2 -10v5', gold: true }]
+	},
+	'ball-finger-squeeze': {
+		frames: [{ ...STAND, arm: 22, forearm: 90 }, { forearm: 91 }],
+		dur: 2,
+		props: [{ type: 'ball', at: 'hand' }],
+		glow: [['elbow', 'hand']],
+		arrows: [{ at: 'hand', d: 'M-2 -8l3 4', gold: true }, { at: 'hand', d: 'M9 -8l-3 4', gold: true }]
+	},
+	'ball-fingertip-squeeze': {
+		frames: [{ ...STAND, arm: 22, forearm: 90 }, { forearm: 91 }],
+		dur: 2,
+		props: [{ type: 'ball', at: 'hand' }],
+		glow: [['elbow', 'hand']],
+		arrows: [{ at: 'hand', d: 'M8 -5q3 4 -1 7', gold: true }]
+	},
+	'ball-roll': {
+		frames: [
+			{ ...CHAIR, arm: 50, forearm: 92 },
+			{ arm: 62, forearm: 98, torso: 174 }
+		],
+		dur: 2.6,
+		props: [...SEAT, { type: 'block', at: 'hand', w: 14, dx: 9 }, { type: 'ball', at: 'hand' }],
+		glow: [['elbow', 'hand']],
+		arrows: [{ at: 'hand', d: 'M-3 5h10' }]
+	},
+
 	/* ------------------------------------------------------- Wrist dumbbell */
 	'db-wrist-extension': {
 		frames: [{ ...STAND, arm: 22, forearm: 98 }, { forearm: 82 }],
