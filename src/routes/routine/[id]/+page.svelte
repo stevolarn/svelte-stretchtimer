@@ -705,20 +705,10 @@
 				</div>
 			</div>
 
-			<div class="field">
-				<span class="flabel">Type</span>
-				<Segmented
-					value={s.mode ?? 'hold'}
-					options={modeOptions}
-					label="Hold or reps"
-					onchange={(v) => setStretchMode(s, v)}
-				/>
-			</div>
-
 			<div class="option-row sheet-duration">
 				<div class="option-copy">
 					<span class="option-title">Sets</span>
-					<span class="muted small">Repeats of this move, with a break between</span>
+					<span class="muted small">Break between each</span>
 				</div>
 				<Stepper
 					bind:value={() => clampMoveSets(s.sets), (v) => setMoveSets(s, v)}
@@ -726,6 +716,17 @@
 					max={10}
 					step={1}
 					label="Sets"
+					suffix=""
+				/>
+			</div>
+
+			<div class="field">
+				<span class="flabel">Type</span>
+				<Segmented
+					value={s.mode ?? 'hold'}
+					options={modeOptions}
+					label="Hold or reps"
+					onchange={(v) => setStretchMode(s, v)}
 				/>
 			</div>
 
