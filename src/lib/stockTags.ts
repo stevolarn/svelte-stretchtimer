@@ -1,5 +1,5 @@
-import type { PainArea, StockStretch } from './types';
-import { muscleLabels, musclesFor } from './muscles.ts';
+import type { PainArea, Routine, StockStretch, Stretch } from './types';
+import { muscleLabels, musclesFor, stockFor } from './muscles.ts';
 
 /** Finer-grained tags than area, worked out from each movement's name and cues. */
 export type Focus = 'neck' | 'shoulders' | 'elbow' | 'wrist-hand' | 'back' | 'core' | 'hips' | 'legs';
@@ -171,3 +171,28 @@ export const painAreaFocus: Record<PainArea, Focus> = {
 	shoulder: 'shoulders',
 	'upper-back': 'back'
 };
+
+/** Focus for a stretch inside a routine: its library entry's, else guessed from its name. */
+export function stretchFocus(s: Pick<Stretch, 'name' | 'iconKey'>): Focus[] {
+	const stock = stockFor(s);
+	if (stock) return focusOf(stock);
+	const t = s.name.toLowerCase().replace(/-/g, ' ');
+	return focusRules.filter(([, re]) => re.test(t)).map(([f]) => f);
+}
+
+export function stretchEquipment(s: Pick<Stretch, 'name' | 'iconKey'>): Equipment[] {
+	const stock = stockFor(s);
+	return stock ? equipmentOf(stock) : ['none'];
+}
+
+/** Every focus a routine covers, most-hit first. */
+export function routineFocus(r: Pick<Routine, 'stretches'>): Focus[] {
+	const counts = new Map<Focus, number>();
+	for (const s of r.stretches) for (const f of stretchFocus(s)) counts.set(f, (counts.get(f) ?? 0) + 1);
+	return [...counts].toSorted((a, b) => b[1] - a[1]).map(([f]) => f);
+}
+
+/** Kit a routine needs beyond the floor. */
+export function routineEquipment(r: Pick<Routine, 'stretches'>): Equipment[] {
+	return [...new Set(r.stretches.flatMap((s) => stretchEquipment(s)))].filter((e) => e !== 'none');
+}

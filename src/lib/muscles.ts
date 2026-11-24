@@ -63,7 +63,8 @@ export function isMuscle(value: unknown): value is Muscle {
 	return typeof value === 'string' && known.has(value);
 }
 
-function stockFor(s: Pick<Stretch, 'name' | 'iconKey'>): StockStretch | undefined {
+/** The library entry a routine stretch came from: by name, then by picture. */
+export function stockFor(s: Pick<Stretch, 'name' | 'iconKey'>): StockStretch | undefined {
 	const name = s.name.trim().toLowerCase();
 	return (
 		stockStretches.find((item) => item.name.toLowerCase() === name) ??

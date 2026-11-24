@@ -6,6 +6,7 @@
 		deleteRoutineWithUndo,
 		duplicateRoutine,
 		newRoutine,
+		recentPainAreas,
 		routines,
 		sessions,
 		settings,
@@ -22,7 +23,8 @@
 	import { formatSeconds } from '$lib/time';
 	import { lastPlayedAt, playedAgo } from '$lib/sessions';
 	import { type Routine, type Stretch } from '$lib/types';
-	import StarterArt from '$lib/components/StarterArt.svelte';
+	import StarterList from '$lib/components/StarterList.svelte';
+	import { painAreaFocus, routineFocus } from '$lib/stockTags';
 	import Modal from '$lib/components/Modal.svelte';
 	import StretchIllustration from '$lib/components/StretchIllustration.svelte';
 	import PhotoThumb from '$lib/components/PhotoThumb.svelte';
@@ -88,21 +90,24 @@
 	let query = $state('');
 	let sort = $state<'played' | 'schedule' | 'recent' | 'name' | 'duration'>('played');
 	let menuFor = $state<string | null>(null);
-	let show = $state<'all' | 'scheduled' | 'unscheduled' | 'short' | 'long'>('all');
+	let show = $state<'all' | 'sore' | 'scheduled' | 'unscheduled' | 'short' | 'long'>('all');
 	let muscle = $state<Muscle | 'all'>('all');
 	const SHORT = 5 * 60;
-	const showFilters = [
-		{ id: 'all', label: 'All' },
-		{ id: 'scheduled', label: 'Scheduled' },
-		{ id: 'unscheduled', label: 'Unscheduled' },
-		{ id: 'short', label: '≤ 5 min' },
-		{ id: 'long', label: '> 5 min' }
-	] as const;
+	const soreFocus = $derived(new Set(recentPainAreas().map((a) => painAreaFocus[a])));
+	const showFilters = $derived([
+		{ id: 'all', label: 'All' } as const,
+		...(soreFocus.size > 0 ? [{ id: 'sore', label: 'My sore spots' } as const] : []),
+		{ id: 'scheduled', label: 'Scheduled' } as const,
+		{ id: 'unscheduled', label: 'Unscheduled' } as const,
+		{ id: 'short', label: '≤ 5 min' } as const,
+		{ id: 'long', label: '> 5 min' } as const
+	]);
 	/** Only muscles some routine actually works. */
 	const muscleOptions = $derived(muscleList.filter((m) => routines.some((r) => routineMuscles(r).some((x) => x.muscle === m))));
 
 	function matchesShow(r: Routine): boolean {
 		if (show === 'all') return true;
+		if (show === 'sore') return soreFocus.size === 0 || routineFocus(r).some((f) => soreFocus.has(f));
 		const planned = !!r.schedule || r.frequency?.per === 'week';
 		if (show === 'scheduled') return planned;
 		if (show === 'unscheduled') return !planned;
@@ -199,7 +204,7 @@
 	<div class="routine-filters">
 		<div class="routine-filter-pills" role="group" aria-label="Show routines">
 			{#each showFilters as f (f.id)}
-				<button class="routine-filter-pill" class:active={show === f.id} aria-pressed={show === f.id} onclick={() => (show = f.id)}>{f.label}</button>
+				<button class="routine-filter-pill" class:active={show === f.id || (f.id === 'all' && show === 'sore' && soreFocus.size === 0)} aria-pressed={show === f.id} onclick={() => (show = f.id)}>{f.label}</button>
 			{/each}
 		</div>
 		<select bind:value={muscle} aria-label="Filter by muscle">
@@ -221,18 +226,7 @@
 		</div>
 		<button class="btn primary new-blank-button" onclick={createRoutine}>＋ Blank routine</button>
 		<div class="section-label">Starter routines</div>
-		<div class="starter-grid">
-			{#each starterOptions as option (option.kind)}
-				<button class="starter-option" onclick={() => previewTemplate(option)}>
-					<StarterArt kind={option.kind} />
-					<span class="starter-option-copy">
-						<strong>{option.title}</strong>
-						<span class="muted small">{option.description}</span>
-						<span class="starter-duration">{starterDuration(option.kind)}</span>
-					</span>
-				</button>
-			{/each}
-		</div>
+		<StarterList options={starterOptions} onpick={previewTemplate} />
 	</section>
 {:else if visibleRoutines.length === 0}
 	<div class="card">
@@ -317,18 +311,7 @@
 	<Modal title="New routine" subtitle="Start blank or from a ready-made flow" onclose={() => (showNewModal = false)}>
 		<button class="btn primary new-blank-button" onclick={createRoutine} style="margin-top: 0">＋ Blank routine</button>
 		<div class="section-label">Starter routines</div>
-		<div class="starter-grid modal-starter-grid">
-			{#each starterOptions as option (option.kind)}
-				<button class="starter-option" onclick={() => previewTemplate(option)}>
-					<StarterArt kind={option.kind} />
-					<span class="starter-option-copy">
-						<strong>{option.title}</strong>
-						<span class="muted small">{option.description}</span>
-						<span class="starter-duration">{starterDuration(option.kind)}</span>
-					</span>
-				</button>
-			{/each}
-		</div>
+		<StarterList options={starterOptions} onpick={previewTemplate} />
 	</Modal>
 {/if}
 {#if preview}

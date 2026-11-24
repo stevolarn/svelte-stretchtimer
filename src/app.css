@@ -327,6 +327,7 @@ button {
 
 /* ------------------------------- forms -------------------------------- */
 input[type='text'],
+input[type='search'],
 textarea {
 	width: 100%;
 	background: var(--surface);
@@ -340,6 +341,7 @@ textarea {
 }
 
 input[type='text']:focus,
+input[type='search']:focus,
 textarea:focus {
 	outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
 	border-color: var(--accent);
