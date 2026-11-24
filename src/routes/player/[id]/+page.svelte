@@ -75,9 +75,11 @@
 		const s = segment?.kind === 'break' ? nextSegment?.stretch : segment?.stretch;
 		return s?.mode === 'reps' ? (s.load ?? '').trim() : '';
 	});
+	/** The segment whose per-move set to show (during a rest, the one coming up). */
+	const moveSetSeg = $derived(segment?.kind === 'break' ? nextSegment : segment);
 	const streakNow = $derived(currentStreak(streak));
 	/** A stretch "starts" on its first side; the right side continues the same stretch. */
-	const isStart = (s: (typeof player.segments)[number]) => s.kind === 'stretch' && s.side !== 'right';
+	const isStart = (s: (typeof player.segments)[number]) => s.kind === 'stretch' && s.side !== 'right' && (s.moveSet ?? 1) === 1;
 	/** Stretches per set, so the count matches the routine rather than growing with each repeat. */
 	const stretchCount = $derived(player.segments.filter((s) => isStart(s) && (s.set ?? 1) === 1).length);
 	const totalSets = $derived(player.segments[0]?.totalSets ?? 1);
@@ -312,6 +314,9 @@
 						<span class="pill pill-break">Rest</span>
 					{:else if segment.side}
 						<span class="pill pill-side">{sideLabel(segment.side)} side</span>
+					{/if}
+					{#if moveSetSeg?.moveSets}
+						<span class="pill">Set {moveSetSeg.moveSet} of {moveSetSeg.moveSets}</span>
 					{/if}
 					{#if segment.totalSets && segment.totalSets > 1}
 						<span class="pill">Set {segment.set} of {segment.totalSets}</span>

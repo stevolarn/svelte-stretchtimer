@@ -25,7 +25,7 @@ import { uid } from './util.ts';
 import { spreadTimes } from './frequency.ts';
 import { easeRoutine, progressRoutine, type DoseChange } from './recovery.ts';
 import { stockStretches } from './stockStretches.ts';
-import { clampReps, clampRepSeconds } from './timeline.ts';
+import { clampMoveSets, clampReps, clampRepSeconds } from './timeline.ts';
 import { autoSaveToFileHandle, isFileAutoBackupConnected } from './backup.ts';
 import { syncReminderState } from './reminders.ts';
 
@@ -143,7 +143,8 @@ export type StarterRoutineKind =
 	| 'neck-shoulder-strength'
 	| 'tennis-elbow-loading'
 	| 'golfers-elbow-loading'
-	| 'wrist-forearm-strength';
+	| 'wrist-forearm-strength'
+	| 'physio-wrist-shoulder';
 
 type StarterStretch = Partial<Stretch> & Pick<Stretch, 'name' | 'description' | 'sides'>;
 
@@ -162,6 +163,26 @@ function stock(id: string, durationSeconds?: number, reps?: number): StarterStre
 		return { ...base, mode: 'reps', reps: count, repSeconds: tempo, durationSeconds: count * tempo };
 	}
 	return { ...base, durationSeconds: durationSeconds ?? s.defaultSeconds };
+}
+
+/**
+ * A stock move at a prescribed dose: `sets` of either a hold (`seconds`) or `reps` at `repSeconds` each
+ * (a hold-style stock move becomes reps when `reps` is given).
+ */
+function dose(
+	id: string,
+	opts: { sets?: number; seconds?: number; reps?: number; repSeconds?: number; load?: string }
+): StarterStretch {
+	const base = stock(id, opts.seconds, opts.reps);
+	if (opts.reps !== undefined) {
+		base.mode = 'reps';
+		base.reps = clampReps(opts.reps);
+		base.repSeconds = clampRepSeconds(opts.repSeconds ?? base.repSeconds);
+		base.durationSeconds = base.reps * base.repSeconds;
+	}
+	if (opts.load) base.load = opts.load;
+	if (opts.sets && opts.sets > 1) base.sets = clampMoveSets(opts.sets);
+	return base;
 }
 
 const starterDefinitions: Record<
@@ -465,6 +486,29 @@ const starterDefinitions: Record<
 			stock('dynamic-db-wrist-flexion'),
 			stock('dynamic-db-pronation'),
 			stock('dynamic-db-supination')
+		]
+	},
+	// A typical physio home programme for wrist, forearm and shoulder blade, at the doses on the sheet.
+	'physio-wrist-shoulder': {
+		name: 'Physio programme: wrist & shoulder',
+		breakSeconds: 10,
+		stretches: [
+			dose('static-wrist-flexor', { seconds: 30, sets: 3 }),
+			dose('static-wrist-extensor', { seconds: 30, sets: 3 }),
+			dose('dynamic-finger-band-extensions', { reps: 25, sets: 3 }),
+			dose('dynamic-db-wrist-flexion', { reps: 15, sets: 3, load: '7 lbs' }),
+			dose('dynamic-db-wrist-extension', { reps: 15, sets: 3, load: '7 lbs' }),
+			dose('dynamic-ball-squeeze', { reps: 25, sets: 3 }),
+			dose('dynamic-prone-scapular-retraction', { reps: 12, sets: 3 }),
+			dose('static-chest-opener', { seconds: 20, sets: 3 }),
+			dose('static-doorway-pec-stretch', { seconds: 20, sets: 3 }),
+			dose('dynamic-plank-scapular-protraction', { reps: 10, sets: 3 }),
+			dose('dynamic-quadruped-scapular-protraction', { reps: 10, sets: 3 }),
+			dose('dynamic-sidelying-external-rotation', { reps: 12, sets: 3, load: '5 lbs' }),
+			dose('mob-chin-tucks', { reps: 10, repSeconds: 5, sets: 3 }),
+			dose('dynamic-shoulder-rolls', { reps: 12, repSeconds: 3, sets: 3, load: '20 lbs' }),
+			dose('static-upper-trap', { seconds: 20, sets: 3 }),
+			dose('dynamic-thoracic-openers', { reps: 12, repSeconds: 4, sets: 2 })
 		]
 	},
 	'wrist-dumbbell-holds': {
@@ -1003,6 +1047,7 @@ export async function importBackup(
 			if (typeof item.reps === 'number' && Number.isFinite(item.reps)) stretch.reps = clampReps(item.reps);
 			if (typeof item.repSeconds === 'number' && Number.isFinite(item.repSeconds)) stretch.repSeconds = clampRepSeconds(item.repSeconds);
 			if (typeof item.load === 'string' && item.load.trim()) stretch.load = item.load.trim().slice(0, 60).trimEnd();
+			if (typeof item.sets === 'number' && Number.isFinite(item.sets) && item.sets > 1) stretch.sets = clampMoveSets(item.sets);
 			if (originalPhotoId && typeof photos[originalPhotoId] === 'string') {
 				stretch.photoId = uid();
 				await savePhotoData(stretch.photoId, photos[originalPhotoId] as string).catch(() => {

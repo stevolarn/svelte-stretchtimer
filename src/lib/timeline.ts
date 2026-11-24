@@ -54,7 +54,12 @@ export function clampRepSeconds(value: number | undefined): number {
 	return clampSeconds(value ?? 3, 1, 20);
 }
 
-function stretchSegment(stretch: Routine['stretches'][number], side: Segment['side']): Segment {
+/** Sets of a single move (per-move sets, separate from routine.sets). */
+export function clampMoveSets(value: number | undefined): number {
+	return clampSeconds(value ?? 1, 1, 10);
+}
+
+function stretchSegment(stretch: Routine['stretches'][number], side: Segment['side'], moveSet = 1, moveSets = 1): Segment {
 	const seg: Segment = {
 		kind: 'stretch',
 		stretch,
@@ -62,6 +67,10 @@ function stretchSegment(stretch: Routine['stretches'][number], side: Segment['si
 		seconds: stretchSeconds(stretch),
 		label: stretch.name || 'Stretch'
 	};
+	if (moveSets > 1) {
+		seg.moveSet = moveSet;
+		seg.moveSets = moveSets;
+	}
 	if (stretch.mode === 'reps') {
 		seg.reps = clampReps(stretch.reps);
 		seg.repSeconds = clampRepSeconds(stretch.repSeconds);
@@ -73,21 +82,24 @@ function buildSet(routine: Routine, settings: Settings, breakSecs: number): Segm
 	const segments: Segment[] = [];
 	const last = routine.stretches.length - 1;
 
+	const pushBreak = () => {
+		if (settings.breaksEnabled && breakSecs > 0) {
+			segments.push({ kind: 'break', stretch: null, side: null, seconds: breakSecs, label: 'Break' });
+		}
+	};
+
 	routine.stretches.forEach((stretch, i) => {
-		if (stretch.sides === 'one') {
-			segments.push(stretchSegment(stretch, null));
-		} else {
-			segments.push(stretchSegment(stretch, 'left'));
-			if (settings.breaksEnabled && breakSecs > 0) {
-				segments.push({
-					kind: 'break',
-					stretch: null,
-					side: null,
-					seconds: breakSecs,
-					label: 'Break'
-				});
+		// Per-move sets run back to back (each side in turn), with a break between sets.
+		const moveSets = clampMoveSets(stretch.sets);
+		for (let n = 1; n <= moveSets; n++) {
+			if (n > 1) pushBreak();
+			if (stretch.sides === 'one') {
+				segments.push(stretchSegment(stretch, null, n, moveSets));
+			} else {
+				segments.push(stretchSegment(stretch, 'left', n, moveSets));
+				pushBreak();
+				segments.push(stretchSegment(stretch, 'right', n, moveSets));
 			}
-			segments.push(stretchSegment(stretch, 'right'));
 		}
 		if (settings.breaksEnabled && i < last && breakSecs > 0) {
 			segments.push({
@@ -112,7 +124,9 @@ export function stretchDurationLabel(stretch: Routine['stretches'][number]): str
 		stretch.mode === 'reps'
 			? `${clampReps(stretch.reps)} reps · ${clampRepSeconds(stretch.repSeconds)}s`
 			: durationText(stretch.durationSeconds);
-	return stretch.sides === 'one' ? time : `${time} each side`;
+	const sets = clampMoveSets(stretch.sets);
+	const dose = sets > 1 ? `${sets} × ${time}` : time;
+	return stretch.sides === 'one' ? dose : `${dose} each side`;
 }
 
 /** Compact duration: '45s' under a minute, otherwise '1:30'. */

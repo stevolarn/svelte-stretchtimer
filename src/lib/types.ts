@@ -15,6 +15,8 @@ export interface Stretch {
 	repSeconds?: number;
 	/** reps mode: free-text load, e.g. 'red band' or '1 kg' */
 	load?: string;
+	/** sets of this move done back to back, with the routine's break between them; 1 (default) to 10 */
+	sets?: number;
 	/** key into the IndexedDB photo store, null when no photo */
 	photoId: string | null;
 	/** key for stock illustration (e.g. 'cat-cow', 'childs-pose') */
@@ -225,6 +227,9 @@ export interface Segment {
 	reps?: number;
 	/** reps segments: seconds per rep */
 	repSeconds?: number;
+	/** 1-based set of this move when the move has its own sets */
+	moveSet?: number;
+	moveSets?: number;
 	/** 1-based set number when the routine repeats */
 	set?: number;
 	totalSets?: number;

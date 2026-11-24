@@ -28,6 +28,7 @@
 		{ kind: 'elbow-relief', title: 'Elbow relief', description: 'Tennis and golfer’s elbow rehab' },
 		{ kind: 'tennis-elbow-loading', title: 'Tennis elbow loading', description: 'A wrist hold, then 3 × 15 Tyler twists. Loading is the core treatment' },
 		{ kind: 'golfers-elbow-loading', title: 'Golfer’s elbow loading', description: 'A wrist hold, then 3 × 15 reverse Tyler twists. Loading is the core treatment' },
+		{ kind: 'physio-wrist-shoulder', title: 'Physio programme', description: '16 moves for wrist, forearm and shoulder blades, 2–3 sets each' },
 		{ kind: 'shoulder-rehab', title: 'Shoulder & upper back', description: 'Rotator cuff and posture work' },
 		{ kind: 'neck-shoulder-strength', title: 'Neck & shoulder strength', description: 'About 3 minutes with a light band, most days. The kind of dose that helped office neck pain in trials' },
 		{ kind: 'wrist-relief', title: 'Wrist & forearm', description: 'For RSI-prone hands and forearms' },

@@ -33,7 +33,8 @@
 		'neck-shoulder-strength': { from: '#7bd88f', to: '#2d8f5a', pose: 'band-lateral-raise' },
 		'tennis-elbow-loading': { from: '#ffb15e', to: '#c4571a', pose: 'db-wrist-extension' },
 		'golfers-elbow-loading': { from: '#f08f9c', to: '#b73a55', pose: 'db-wrist-flexion' },
-		'wrist-forearm-strength': { from: '#9aa8ff', to: '#5a4fc9', pose: 'db-forearm-rotation' }
+		'wrist-forearm-strength': { from: '#9aa8ff', to: '#5a4fc9', pose: 'db-forearm-rotation' },
+		'physio-wrist-shoulder': { from: '#7fd8c3', to: '#2c8a7a', pose: 'wall-pec' }
 	};
 
 	const uid = $props.id();

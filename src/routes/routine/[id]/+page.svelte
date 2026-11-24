@@ -18,7 +18,7 @@
 		stretchFromStock
 	} from '$lib/stores.svelte';
 	import { easeRoutine, needsEasing, progressRoutine, readyToProgress } from '$lib/recovery';
-	import { buildTimeline, clampRepSeconds, clampReps, durationText, stretchDurationLabel, stretchSeconds, timelineTotal } from '$lib/timeline';
+	import { buildTimeline, clampMoveSets, clampRepSeconds, clampReps, durationText, stretchDurationLabel, stretchSeconds, timelineTotal } from '$lib/timeline';
 	import { formatSeconds, todayKey } from '$lib/time';
 	import { uid } from '$lib/util';
 	import { showToast } from '$lib/toast.svelte';
@@ -117,6 +117,11 @@
 	function setRepSeconds(s: Stretch, value: number): void {
 		s.repSeconds = value;
 		syncRepDuration(s);
+		saveAll();
+	}
+
+	function setMoveSets(s: Stretch, value: number): void {
+		s.sets = value > 1 ? value : undefined;
 		saveAll();
 	}
 
@@ -707,6 +712,20 @@
 					options={modeOptions}
 					label="Hold or reps"
 					onchange={(v) => setStretchMode(s, v)}
+				/>
+			</div>
+
+			<div class="option-row sheet-duration">
+				<div class="option-copy">
+					<span class="option-title">Sets</span>
+					<span class="muted small">Repeats of this move, with a break between</span>
+				</div>
+				<Stepper
+					bind:value={() => clampMoveSets(s.sets), (v) => setMoveSets(s, v)}
+					min={1}
+					max={10}
+					step={1}
+					label="Sets"
 				/>
 			</div>
 
