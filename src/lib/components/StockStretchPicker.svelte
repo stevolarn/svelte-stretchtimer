@@ -408,10 +408,27 @@
 {/if}
 
 <style>
-	:global(.stock-picker-sheet) {
-		max-height: 90dvh;
+	/* Fixed full-height sheet so changing filters doesn't resize it; only the list scrolls. */
+	:global(.modal-sheet.stock-picker-sheet) {
+		height: 100dvh;
+		max-height: 100dvh;
+		max-width: none;
+		border-radius: 0;
+		border: none;
+		padding-top: max(1.1rem, env(safe-area-inset-top));
+		overflow: hidden;
 		display: flex;
 		flex-direction: column;
+	}
+
+	@media (min-width: 600px) {
+		:global(.modal-sheet.stock-picker-sheet) {
+			height: 85vh;
+			max-height: 85vh;
+			max-width: 540px;
+			border-radius: 20px;
+			border: 1px solid var(--border);
+		}
 	}
 
 	.stock-picker-top {
@@ -563,6 +580,8 @@
 	}
 
 	.stock-stretches-list {
+		flex: 1;
+		min-height: 0;
 		overflow-y: auto;
 		display: flex;
 		flex-direction: column;
