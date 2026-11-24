@@ -28,6 +28,7 @@
 		{ kind: 'elbow-relief', title: 'Elbow relief', description: 'Tennis and golfer’s elbow rehab' },
 		{ kind: 'tennis-elbow-loading', title: 'Tennis elbow loading', description: 'A wrist hold, then 3 × 15 Tyler twists. Loading is the core treatment' },
 		{ kind: 'golfers-elbow-loading', title: 'Golfer’s elbow loading', description: 'A wrist hold, then 3 × 15 reverse Tyler twists. Loading is the core treatment' },
+		{ kind: 'neck-shoulder-wrist-stretch', title: 'Neck, shoulders & wrists', description: '24 short stretches, 15 seconds each: neck, shoulders, chest and wrists, standing or on a chair' },
 		{ kind: 'loop-band-full-body', title: 'Loop band full body', description: '15 beginner moves with a loop band: arms, legs, glutes and core, 10 reps each' },
 		{ kind: 'physio-wrist-shoulder', title: 'Physio programme', description: '16 moves for wrist, forearm and shoulder blades, 2–3 sets each' },
 		{ kind: 'shoulder-rehab', title: 'Shoulder & upper back', description: 'Rotator cuff and posture work' },

@@ -280,6 +280,128 @@ export const stockStretches: StockStretch[] = [
 		iconKey: 'seated-forward-fold'
 	},
 
+	{
+		id: 'static-chair-overhead-triceps',
+		name: 'Chair Overhead Tricep Stretch',
+		type: 'static',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Sit tall on a chair. Reach one arm up, bend the elbow so the hand drops behind your head, and use the other hand to ease the elbow back.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'chair-overhead-triceps'
+	},
+	{
+		id: 'static-chair-shoulder-cross',
+		name: 'Chair Shoulder Cross',
+		type: 'static',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Sit tall on a chair. Bring one straight arm across your chest and hold it near the elbow with the other hand, keeping the shoulder down.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'chair-shoulder-cross'
+	},
+	{
+		id: 'static-neck-tilt',
+		name: 'Neck Tilt',
+		type: 'static',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Keep your shoulders level and relaxed and tip one ear toward that shoulder, without using your hand. Breathe and let the side of the neck lengthen.',
+		sides: 'two',
+		defaultSeconds: 20,
+		iconKey: 'neck-tilt'
+	},
+	{
+		id: 'static-reverse-shoulder',
+		name: 'Reverse Shoulder Stretch',
+		type: 'static',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Clasp your hands behind your back, straighten the arms and lift them gently away from your body while you hinge forward a little.',
+		sides: 'one',
+		defaultSeconds: 30,
+		iconKey: 'reverse-shoulder'
+	},
+	{
+		id: 'static-upward-salute',
+		name: 'Upward Salute',
+		type: 'static',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Stand tall, sweep both arms overhead with palms facing, and lift through the chest into a gentle backward lean.',
+		sides: 'one',
+		defaultSeconds: 20,
+		iconKey: 'upward-salute'
+	},
+	{
+		id: 'static-chair-wrist-extension',
+		name: 'Chair Wrist Extension',
+		type: 'static',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Sit on a chair and hold one arm out, palm up. With the other hand, ease the fingers down and back until you feel a stretch along the forearm.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'chair-wrist-extension'
+	},
+	{
+		id: 'dynamic-chair-shoulder-rolls',
+		name: 'Chair Shoulder Rolls',
+		type: 'dynamic',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Sit tall on a chair with hands resting on your thighs. Roll one shoulder up, back and down in slow circles, then switch sides.',
+		sides: 'two',
+		defaultSeconds: 30,
+		iconKey: 'chair-shoulder-rolls'
+	},
+	{
+		id: 'static-chair-overhead-reach',
+		name: 'Chair Overhead Reach',
+		type: 'static',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Sit tall on a chair, interlace or press the palms together and reach both arms straight up, lengthening through the sides of the body.',
+		sides: 'one',
+		defaultSeconds: 20,
+		iconKey: 'chair-overhead-reach'
+	},
+	{
+		id: 'static-standing-diver',
+		name: 'Standing Diver',
+		type: 'static',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Stand with soft knees, reach both arms forward and hinge from the hips with a long flat back until the body tips forward like a diver.',
+		sides: 'one',
+		defaultSeconds: 20,
+		iconKey: 'standing-diver'
+	},
+	{
+		id: 'static-bear-hug',
+		name: 'Bear Hug',
+		type: 'static',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Wrap your arms around yourself, hands reaching toward the opposite shoulder blades, and round the upper back to stretch between the shoulder blades. Swap which arm is on top.',
+		sides: 'two',
+		defaultSeconds: 20,
+		iconKey: 'bear-hug'
+	},
+	{
+		id: 'static-cactus-arms',
+		name: 'Standing Cactus Arms',
+		type: 'static',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Raise the arms to shoulder height with elbows bent to 90 degrees, like goalposts, then draw the elbows back and squeeze the shoulder blades together.',
+		sides: 'one',
+		defaultSeconds: 20,
+		iconKey: 'cactus-arms'
+	},
+
 	/* ==========================================================================
 	   2. DYNAMIC MOVEMENTS
 	   ========================================================================== */

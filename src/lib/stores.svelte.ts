@@ -145,7 +145,8 @@ export type StarterRoutineKind =
 	| 'golfers-elbow-loading'
 	| 'wrist-forearm-strength'
 	| 'physio-wrist-shoulder'
-	| 'loop-band-full-body';
+	| 'loop-band-full-body'
+	| 'neck-shoulder-wrist-stretch';
 
 type StarterStretch = Partial<Stretch> & Pick<Stretch, 'name' | 'description' | 'sides'>;
 
@@ -532,6 +533,36 @@ const starterDefinitions: Record<
 			stock('loop-band-supine-abduction'),
 			stock('loop-band-straight-leg-abduction'),
 			stock('loop-band-scissor-kicks')
+		]
+	},
+	'neck-shoulder-wrist-stretch': {
+		name: 'Neck, shoulders & wrists',
+		breakSeconds: 5,
+		stretches: [
+			stock('static-chair-overhead-triceps', 15),
+			stock('static-chair-shoulder-cross', 15),
+			stock('mob-chin-tucks', 15),
+			stock('static-scalene-stretch', 15),
+			stock('static-neck-rotation', 15),
+			stock('static-neck-tilt', 15),
+			stock('static-levator-scapulae', 15),
+			stock('static-neck-release', 15),
+			stock('dynamic-neck-half-circles', 15),
+			stock('static-standing-side-bend', 15),
+			stock('static-reverse-shoulder', 15),
+			stock('static-upward-salute', 15),
+			stock('mob-wrist-circles', 15),
+			stock('static-wrist-flexor', 15),
+			stock('static-wrist-extensor', 15),
+			stock('static-chair-wrist-extension', 15),
+			stock('dynamic-chair-shoulder-rolls', 15),
+			stock('static-chair-overhead-reach', 15),
+			stock('static-standing-diver', 15),
+			stock('static-bear-hug', 15),
+			stock('static-chest-opener', 15),
+			stock('static-cactus-arms', 15),
+			stock('static-doorway-pec-stretch', 15),
+			stock('static-wall-pec', 15)
 		]
 	},
 	'wrist-dumbbell-holds': {

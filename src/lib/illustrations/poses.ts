@@ -24,6 +24,9 @@ const FOREARM_PLANK: Angles = { ...HIGH_PLANK, torso: 104, head: 100, arm: 0, fo
 const LUNGE: Angles = { torso: 178, arm: 20, forearm: 70, farArm: 10, farForearm: 60, thigh: 85, shin: 0, farThigh: -15, farShin: -90, farFoot: -90 };
 /** standing split stance */
 const SPLIT: Angles = { torso: 180, arm: -25, forearm: 55, farArm: -30, farForearm: 50, thigh: 90, shin: 0, farThigh: -12, farShin: -78, farFoot: 0 };
+/** sitting upright on a chair, facing right */
+const CHAIR: Angles = { torso: 180, head: 180, arm: 4, forearm: 40, farArm: -2, farForearm: 36, thigh: 90, shin: 0, farThigh: 88, farShin: -2 };
+const SEAT = [{ type: 'block' as const, at: 'pelvis' as const, w: 18, dx: -2 }];
 const DOWN_DOG: Angles = { torso: 50, head: 40, arm: 50, forearm: 50, farArm: 48, farForearm: 48, thigh: -20, shin: -20, farThigh: -22, farShin: -22, foot: 90, farFoot: 90 };
 
 export const poses: Record<string, PoseDef> = {
@@ -956,6 +959,101 @@ export const poses: Record<string, PoseDef> = {
 		props: [{ type: 'dumbbell', at: 'hand', angle: [90, 90] }],
 		glow: ['shoulder'],
 		arrows: [{ at: 'elbow', d: 'M8 2q2 -8 -4 -12' }]
+	},
+	'chair-overhead-triceps': {
+		frames: [
+			{ ...CHAIR, arm: 172, forearm: -14, farArm: 150, farForearm: 176 },
+			{ arm: 176, forearm: -20, farArm: 154, farForearm: 178 }
+		],
+		props: SEAT,
+		glow: ['elbow']
+	},
+	'chair-shoulder-cross': {
+		frames: [
+			{ ...CHAIR, arm: 90, forearm: 90, farArm: 40, farForearm: 128 },
+			{ arm: 86, forearm: 86, farArm: 36, farForearm: 124 }
+		],
+		props: SEAT,
+		glow: ['shoulder'],
+		arrows: [{ at: 'hand', d: 'M6 -3h-6', gold: true }]
+	},
+	'neck-tilt': {
+		view: 'front',
+		frames: [{ ...FRONT, head: 180 }, { head: 152 }],
+		dur: 3,
+		glow: [['neck', 'farShoulder']],
+		arrows: [{ at: 'head', d: 'M-9 -7q4 -6 10 -6' }]
+	},
+	'reverse-shoulder': {
+		frames: [
+			{ ...STAND, arm: -30, forearm: -36, farArm: -34, farForearm: -40 },
+			{ torso: 172, head: 170, arm: -62, forearm: -66, farArm: -66, farForearm: -70 }
+		],
+		dur: 3.4,
+		glow: [['shoulder', 'neck']],
+		arrows: [{ at: 'hand', d: 'M-3 3q-4 -3 -3 -9', gold: true }]
+	},
+	'upward-salute': {
+		frames: [
+			{ ...STAND, arm: 176, forearm: 178, farArm: 172, farForearm: 176 },
+			{ head: 192, bend: 1.8, arm: 192, forearm: 194, farArm: 188, farForearm: 190 }
+		],
+		dur: 3.4,
+		glow: [['shoulder', 'pelvis']],
+		arrows: [{ at: 'hand', d: 'M0 -4v-6' }]
+	},
+	'chair-wrist-extension': {
+		frames: [
+			{ ...CHAIR, arm: 90, forearm: 90, farArm: 62, farForearm: 104 },
+			{ arm: 88, forearm: 88, farArm: 58, farForearm: 108 }
+		],
+		props: SEAT,
+		glow: [['elbow', 'hand']],
+		arrows: [{ at: 'hand', d: 'M5 3q2 -6 -2 -9', gold: true }]
+	},
+	'chair-shoulder-rolls': {
+		frames: [CHAIR, { arm: 14, forearm: 46, head: 182 }, { arm: 2, forearm: 38 }, { arm: -8, forearm: 30, head: 178 }],
+		loop: true,
+		dur: 2.4,
+		props: SEAT,
+		glow: ['shoulder'],
+		arrows: [{ at: 'shoulder', d: 'M-6 -2a6 6 0 1 1 3 5' }]
+	},
+	'chair-overhead-reach': {
+		frames: [
+			{ ...CHAIR, arm: 172, forearm: 176, farArm: 168, farForearm: 172 },
+			{ head: 184, arm: 178, forearm: 180, farArm: 174, farForearm: 178 }
+		],
+		dur: 3,
+		props: SEAT,
+		glow: [['shoulder', 'pelvis']],
+		arrows: [{ at: 'hand', d: 'M0 -4v-6' }]
+	},
+	'standing-diver': {
+		frames: [
+			{ ...STAND, arm: 176, forearm: 178, farArm: 172, farForearm: 176 },
+			{ torso: 118, head: 112, arm: 112, forearm: 112, farArm: 108, farForearm: 108, thigh: 14, shin: -8, farThigh: 8, farShin: -10 }
+		],
+		dur: 3.6,
+		glow: [['pelvis', 'knee']],
+		arrows: [{ at: 'hand', d: 'M3 0h6' }]
+	},
+	'bear-hug': {
+		frames: [
+			{ ...STAND, arm: 76, forearm: -88, farArm: 70, farForearm: -92 },
+			{ torso: 174, head: 160, bend: -2, arm: 68, forearm: -100, farArm: 62, farForearm: -104 }
+		],
+		dur: 3.4,
+		glow: [['shoulder', 'neck']]
+	},
+	'cactus-arms': {
+		view: 'front',
+		frames: [
+			{ ...FRONT, arm: 90, forearm: 180, farArm: -90, farForearm: 180 },
+			{ arm: 98, forearm: 176, farArm: -98, farForearm: -176 }
+		],
+		dur: 3,
+		glow: [['shoulder', 'farShoulder']]
 	},
 	'band-plank': {
 		frames: [

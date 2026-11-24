@@ -38,6 +38,11 @@ const focusRules: Array<[Focus, RegExp]> = [
 
 /** Movements whose names don't say what they work. */
 const focusOverrides: Record<string, Focus[]> = {
+	'static-upward-salute': ['shoulders', 'back'],
+	'static-chair-overhead-reach': ['shoulders', 'back'],
+	'static-standing-diver': ['back', 'legs'],
+	'static-bear-hug': ['shoulders', 'back'],
+	'static-cactus-arms': ['shoulders'],
 	'static-standing-side-bend': ['back', 'core'],
 	'static-forward-fold': ['legs', 'back'],
 	'static-puppy-pose': ['shoulders', 'back'],
