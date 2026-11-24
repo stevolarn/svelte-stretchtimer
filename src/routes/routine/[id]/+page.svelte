@@ -680,7 +680,7 @@
 	{/if}
 
 	{#if showPicker}
-		<StockStretchPicker onselect={handleSelectStock} oncustom={handleAddCustom} onclose={() => (showPicker = false)} />
+		<StockStretchPicker existing={routine.stretches} onselect={handleSelectStock} oncustom={handleAddCustom} onclose={() => (showPicker = false)} />
 	{/if}
 
 	{#if editing}

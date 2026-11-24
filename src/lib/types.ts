@@ -148,6 +148,10 @@ export interface MorningCheck {
 export type Theme = 'light' | 'dark' | 'system';
 
 export interface Settings {
+	/** library stretch ids starred in the picker */
+	favouriteStretches?: string[];
+	/** library stretch ids most recently added from the picker, newest first */
+	recentStretches?: string[];
 	theme: Theme;
 	beepStart: boolean;
 	beepSideSwitch: boolean;

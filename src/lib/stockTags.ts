@@ -1,4 +1,5 @@
-import type { StockStretch } from './types';
+import type { PainArea, StockStretch } from './types';
+import { muscleLabels, musclesFor } from './muscles.ts';
 
 /** Finer-grained tags than area, worked out from each movement's name and cues. */
 export type Focus = 'neck' | 'shoulders' | 'elbow' | 'wrist-hand' | 'back' | 'core' | 'hips' | 'legs';
@@ -153,8 +154,20 @@ export function searchText(s: StockStretch): string {
 		s.position,
 		s.area,
 		...focusOf(s).map((f) => focusLabels[f]),
-		...equipmentOf(s).map((e) => equipmentLabels[e])
+		...equipmentOf(s).map((e) => equipmentLabels[e]),
+		...musclesFor(s).map((m) => muscleLabels[m]),
+		s.defaultReps ? 'reps' : 'hold'
 	]
 		.join(' ')
 		.toLowerCase();
 }
+
+/** The body focus that covers each pain area you can log. */
+export const painAreaFocus: Record<PainArea, Focus> = {
+	'wrist-hand': 'wrist-hand',
+	thumb: 'wrist-hand',
+	'forearm-elbow': 'elbow',
+	neck: 'neck',
+	shoulder: 'shoulders',
+	'upper-back': 'back'
+};

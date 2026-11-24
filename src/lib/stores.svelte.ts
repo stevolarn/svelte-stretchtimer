@@ -819,6 +819,25 @@ export function dismissEase(id: string): void {
 	saveAll();
 }
 
+/** Star or unstar a library stretch. */
+export function toggleFavouriteStretch(id: string): void {
+	const list = settings.favouriteStretches ?? [];
+	settings.favouriteStretches = list.includes(id) ? list.filter((x) => x !== id) : [...list, id];
+	saveSettings(settings);
+}
+
+/** Remember a library stretch as recently added (newest first, last 20). */
+export function noteRecentStretch(id: string): void {
+	settings.recentStretches = [id, ...(settings.recentStretches ?? []).filter((x) => x !== id)].slice(0, 20);
+	saveSettings(settings);
+}
+
+/** Pain areas logged with any pain in the last two weeks. */
+export function recentPainAreas(): PainArea[] {
+	const since = addDays(todayKey(), -14);
+	return [...new Set(painLog.filter((e) => e.date >= since && e.score > 0).flatMap((e) => e.areas ?? []))];
+}
+
 /** Drop a new blank routine that was left without stretches (it was never saved). Returns true if dropped. */
 export function discardIfEmpty(id: string): boolean {
 	const idx = routines.findIndex((r) => r.id === id);

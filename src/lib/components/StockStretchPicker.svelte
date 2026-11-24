@@ -1,15 +1,17 @@
 <script lang="ts">
 	import Modal from './Modal.svelte';
 	import { stockStretches } from '$lib/stockStretches';
-	import type { BodyArea, MovementPosition, MovementType, StockStretch } from '$lib/types';
+	import type { MovementPosition, MovementType, StockStretch, Stretch } from '$lib/types';
 	import StretchIllustration from './StretchIllustration.svelte';
 	import MuscleChips from './MuscleChips.svelte';
-	import { musclesFor } from '$lib/muscles';
+	import { muscleLabels, muscleList, musclesFor, type Muscle } from '$lib/muscles';
+	import { noteRecentStretch, recentPainAreas, settings, toggleFavouriteStretch } from '$lib/stores.svelte';
 	import {
 		equipmentLabels,
 		equipmentOf,
 		focusLabels,
 		focusOf,
+		painAreaFocus,
 		searchText,
 		type Equipment,
 		type Focus
@@ -18,25 +20,44 @@
 	let {
 		onselect,
 		oncustom,
-		onclose
+		onclose,
+		existing = []
 	}: {
 		onselect: (stock: StockStretch) => void;
 		oncustom: () => void;
 		onclose: () => void;
+		/** stretches already in the routine, marked in the list */
+		existing?: Stretch[];
 	} = $props();
+
+	const stockNames = new Set(stockStretches.map((s) => s.name.toLowerCase()));
+	const existingNames = $derived(new Set(existing.map((s) => s.name.trim().toLowerCase())));
+	/** Pictures of routine stretches renamed from the library (starters use their own names). */
+	const existingPoses = $derived(
+		new Set(existing.filter((s) => s.iconKey && !stockNames.has(s.name.trim().toLowerCase())).map((s) => s.iconKey))
+	);
+	const inRoutine = (stock: StockStretch) => existingNames.has(stock.name.toLowerCase()) || existingPoses.has(stock.iconKey);
+
+	const favourites = $derived(new Set(settings.favouriteStretches ?? []));
+	/** Focus areas covering where you've logged pain in the last two weeks. */
+	const soreFocus = $derived(new Set(recentPainAreas().map((a) => painAreaFocus[a])));
 
 	/** how many times each stock stretch was added while the picker has been open */
 	let addedCounts = $state<Record<string, number>>({});
 
 	function add(stock: StockStretch): void {
 		addedCounts[stock.id] = (addedCounts[stock.id] ?? 0) + 1;
+		noteRecentStretch(stock.id);
 		onselect(stock);
 	}
 
 	let selectedType = $state<MovementType>('all');
 	let selectedPosition = $state<MovementPosition>('all');
-	let selectedArea = $state<BodyArea>('all');
+	/** A shortlist to pick from, alongside the focus. */
+	let selectedList = $state<'all' | 'favourites' | 'recent' | 'sore'>('all');
 	let selectedFocus = $state<Focus | 'all'>('all');
+	let selectedMuscle = $state<Muscle | 'all'>('all');
+	let selectedMode = $state<'all' | 'hold' | 'reps'>('all');
 	let selectedEquipment = $state<Equipment | 'all'>('all');
 	let sortBy = $state<'library' | 'name' | 'shortest'>('library');
 	let showMoreFilters = $state(false);
@@ -72,14 +93,24 @@
 		{ id: 'floor', label: 'Floor 🧎' }
 	];
 
-	const areaFilters: Array<{ id: BodyArea; label: string }> = [
-		{ id: 'all', label: 'All Areas' },
-		{ id: 'upper-body', label: 'Upper Body' },
-		{ id: 'spine', label: 'Spine & Core' },
-		{ id: 'hips', label: 'Hips & Glutes' },
-		{ id: 'legs', label: 'Legs & Calves' },
-		{ id: 'full-body', label: 'Full Body' }
+	const muscleFilters: Array<{ id: Muscle | 'all'; label: string }> = [
+		{ id: 'all', label: 'Any' },
+		...muscleList.map((id) => ({ id, label: muscleLabels[id] }))
 	];
+
+	const modeFilters: Array<{ id: 'all' | 'hold' | 'reps'; label: string }> = [
+		{ id: 'all', label: 'Both' },
+		{ id: 'hold', label: 'Holds' },
+		{ id: 'reps', label: 'Reps' }
+	];
+
+	const listFilters = $derived(
+		[
+			{ id: 'favourites' as const, label: `★ Favourites${favourites.size ? ` (${favourites.size})` : ''}`, show: true },
+			{ id: 'recent' as const, label: 'Recent', show: (settings.recentStretches ?? []).length > 0 },
+			{ id: 'sore' as const, label: 'My sore spots', show: soreFocus.size > 0 }
+		].filter((f) => f.show)
+	);
 
 	const focusFilters: Array<{ id: Focus | 'all'; label: string }> = [
 		{ id: 'all', label: 'Everything' },
@@ -93,18 +124,20 @@
 
 	/** Filters tucked behind "More filters"; counted on its button so hidden ones aren't forgotten. */
 	const hiddenFilterCount = $derived(
-		[selectedType, selectedPosition, selectedArea, selectedEquipment].filter((v) => v !== 'all').length
+		[selectedType, selectedPosition, selectedMuscle, selectedMode, selectedEquipment].filter((v) => v !== 'all').length
 	);
 
 	const hasActiveFilters = $derived(
-		hiddenFilterCount > 0 || selectedFocus !== 'all' || searchQuery.trim().length > 0
+		hiddenFilterCount > 0 || selectedFocus !== 'all' || selectedList !== 'all' || searchQuery.trim().length > 0
 	);
 
 	function resetFilters() {
 		selectedType = 'all';
 		selectedPosition = 'all';
-		selectedArea = 'all';
+		selectedList = 'all';
 		selectedFocus = 'all';
+		selectedMuscle = 'all';
+		selectedMode = 'all';
 		selectedEquipment = 'all';
 		searchQuery = '';
 	}
@@ -112,10 +145,18 @@
 	const filteredStretches = $derived.by(() => {
 		// Every word must appear somewhere, so "wrist band hold" narrows instead of widening.
 		const words = searchQuery.trim().toLowerCase().split(/\s+/).filter(Boolean);
-		const hits = stockStretches.filter((s) => {
+		const recent = settings.recentStretches ?? [];
+		const pool =
+			selectedList === 'recent'
+				? recent.flatMap((id) => stockStretches.find((s) => s.id === id) ?? [])
+				: stockStretches;
+		const hits = pool.filter((s) => {
+			if (selectedList === 'favourites' && !favourites.has(s.id)) return false;
+			if (selectedList === 'sore' && !focusOf(s).some((f) => soreFocus.has(f))) return false;
+			if (selectedMuscle !== 'all' && !musclesFor(s).includes(selectedMuscle)) return false;
+			if (selectedMode !== 'all' && (selectedMode === 'reps') !== !!s.defaultReps) return false;
 			if (selectedType !== 'all' && s.type !== selectedType) return false;
 			if (selectedPosition !== 'all' && s.position !== selectedPosition) return false;
-			if (selectedArea !== 'all' && s.area !== selectedArea && s.category !== selectedArea) return false;
 			if (selectedFocus !== 'all' && !focusOf(s).includes(selectedFocus)) return false;
 			if (selectedEquipment !== 'all' && !equipmentOf(s).includes(selectedEquipment)) return false;
 			if (!words.length) return true;
@@ -186,11 +227,24 @@
 				<div class="filter-row-wrap">
 					<span class="filter-group-label">Focus:</span>
 					<div class="category-pills wrap" role="group" aria-label="Body focus">
+						{#each listFilters as lf (lf.id)}
+							<button
+								class="cat-pill list-pill"
+								class:active={selectedList === lf.id}
+								onclick={() => (selectedList = selectedList === lf.id ? 'all' : lf.id)}
+								aria-pressed={selectedList === lf.id}
+							>
+								{lf.label}
+							</button>
+						{/each}
 						{#each focusFilters as ff (ff.id)}
 							<button
 								class="cat-pill"
-								class:active={selectedFocus === ff.id}
-								onclick={() => (selectedFocus = ff.id)}
+								class:active={ff.id === 'all' ? selectedFocus === 'all' && selectedList === 'all' : selectedFocus === ff.id}
+								onclick={() => {
+									selectedFocus = ff.id;
+									if (ff.id === 'all') selectedList = 'all';
+								}}
 								aria-pressed={selectedFocus === ff.id}
 							>
 								{ff.label}
@@ -235,17 +289,32 @@
 					</div>
 
 					<div class="filter-row-wrap">
-						<span class="filter-group-label">Area:</span>
-						<div class="category-pills" role="group">
-							{#each areaFilters as af}
+						<span class="filter-group-label">Muscle:</span>
+						<div class="category-pills" role="group" aria-label="Muscle">
+							{#each muscleFilters as mf (mf.id)}
 								<button
 									class="cat-pill"
-									class:active={selectedArea === af.id}
-									onclick={() => (selectedArea = af.id)}
-									
-									aria-pressed={selectedArea === af.id}
+									class:active={selectedMuscle === mf.id}
+									onclick={() => (selectedMuscle = mf.id)}
+									aria-pressed={selectedMuscle === mf.id}
 								>
-									{af.label}
+									{mf.label}
+								</button>
+							{/each}
+						</div>
+					</div>
+
+					<div class="filter-row-wrap">
+						<span class="filter-group-label">Style:</span>
+						<div class="category-pills" role="group" aria-label="Holds or reps">
+							{#each modeFilters as mf (mf.id)}
+								<button
+									class="cat-pill"
+									class:active={selectedMode === mf.id}
+									onclick={() => (selectedMode = mf.id)}
+									aria-pressed={selectedMode === mf.id}
+								>
+									{mf.label}
 								</button>
 							{/each}
 						</div>
@@ -329,12 +398,25 @@
 						<div class="stock-stretch-info">
 							<div class="stock-title-row">
 								<span class="stock-stretch-name">{stock.name}</span>
+								<button
+									class="fav-btn"
+									class:on={favourites.has(stock.id)}
+									onclick={(e) => {
+										e.stopPropagation();
+										toggleFavouriteStretch(stock.id);
+									}}
+									aria-pressed={favourites.has(stock.id)}
+									aria-label={favourites.has(stock.id) ? `Unstar ${stock.name}` : `Star ${stock.name}`}
+								>{favourites.has(stock.id) ? '★' : '☆'}</button>
 							</div>
 							<div class="stock-tag-row">
 								<span class="micro-tag time-tag">{amountLabel(stock)}{stock.sides === 'two' ? ' · L → R' : ''}</span>
 								<span class="micro-tag type-tag">{formatLabel(stock.type)}</span>
 								<span class="micro-tag pos-tag">{formatLabel(stock.position)}</span>
-								<span class="micro-tag area-tag">{formatLabel(stock.area)}</span>
+								{#if inRoutine(stock)}<span class="micro-tag in-routine-tag">✓ In routine</span>{/if}
+								{#each focusOf(stock).slice(0, 2) as f (f)}
+									<span class="micro-tag area-tag">{focusLabels[f]}</span>
+								{/each}
 								{#each equipmentOf(stock).filter((e) => e !== 'none') as e (e)}
 									<span class="micro-tag kit-tag">{equipmentLabels[e]}</span>
 								{/each}
@@ -680,6 +762,32 @@
 		line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
+	}
+
+	.micro-tag.in-routine-tag {
+		color: var(--ok);
+		border-color: var(--ok);
+	}
+
+	.fav-btn {
+		flex-shrink: 0;
+		margin: -0.35rem -0.2rem 0 0;
+		padding: 0.2rem 0.3rem;
+		border: 0;
+		background: none;
+		color: var(--muted);
+		font-size: 1.1rem;
+		line-height: 1;
+		cursor: pointer;
+		touch-action: manipulation;
+	}
+
+	.fav-btn.on {
+		color: #e8a317;
+	}
+
+	.cat-pill.list-pill:not(.active) {
+		border-style: dashed;
 	}
 
 	.stock-add-btn {

@@ -16,6 +16,7 @@
 	import { onMount } from 'svelte';
 	import { frequencyLabel, goalProgress, nextDueIn, scheduleLabel } from '$lib/frequency';
 	import MuscleChips from '$lib/components/MuscleChips.svelte';
+	import { muscleLabels, muscleList, routineMuscles, type Muscle } from '$lib/muscles';
 	import StretchDetailModal from '$lib/components/StretchDetailModal.svelte';
 	import { stretchDurationLabel } from '$lib/timeline';
 	import { formatSeconds } from '$lib/time';
@@ -87,10 +88,33 @@
 	let query = $state('');
 	let sort = $state<'played' | 'schedule' | 'recent' | 'name' | 'duration'>('played');
 	let menuFor = $state<string | null>(null);
+	let show = $state<'all' | 'scheduled' | 'unscheduled' | 'short' | 'long'>('all');
+	let muscle = $state<Muscle | 'all'>('all');
+	const SHORT = 5 * 60;
+	const showFilters = [
+		{ id: 'all', label: 'All' },
+		{ id: 'scheduled', label: 'Scheduled' },
+		{ id: 'unscheduled', label: 'Unscheduled' },
+		{ id: 'short', label: '≤ 5 min' },
+		{ id: 'long', label: '> 5 min' }
+	] as const;
+	/** Only muscles some routine actually works. */
+	const muscleOptions = $derived(muscleList.filter((m) => routines.some((r) => routineMuscles(r).some((x) => x.muscle === m))));
+
+	function matchesShow(r: Routine): boolean {
+		if (show === 'all') return true;
+		const planned = !!r.schedule || r.frequency?.per === 'week';
+		if (show === 'scheduled') return planned;
+		if (show === 'unscheduled') return !planned;
+		const short = timelineTotal(buildTimeline(r, settings)) <= SHORT;
+		return show === 'short' ? short : !short;
+	}
 
 	const visibleRoutines = $derived(
 		routines
 			.filter((r) => r.name.toLowerCase().includes(query.trim().toLowerCase()))
+			.filter(matchesShow)
+			.filter((r) => muscle === 'all' || routineMuscles(r).some((x) => x.muscle === muscle))
 			.toSorted((a, b) => {
 				if (sort === 'name') return a.name.localeCompare(b.name);
 				if (sort === 'duration') return timelineTotal(buildTimeline(b, settings)) - timelineTotal(buildTimeline(a, settings));
@@ -172,6 +196,19 @@
 			<option value="duration">Longest</option>
 		</select>
 	</div>
+	<div class="routine-filters">
+		<div class="routine-filter-pills" role="group" aria-label="Show routines">
+			{#each showFilters as f (f.id)}
+				<button class="routine-filter-pill" class:active={show === f.id} aria-pressed={show === f.id} onclick={() => (show = f.id)}>{f.label}</button>
+			{/each}
+		</div>
+		<select bind:value={muscle} aria-label="Filter by muscle">
+			<option value="all">Any muscle</option>
+			{#each muscleOptions as m (m)}
+				<option value={m}>{muscleLabels[m]}</option>
+			{/each}
+		</select>
+	</div>
 {/if}
 
 {#if routines.length === 0}
@@ -199,7 +236,10 @@
 	</section>
 {:else if visibleRoutines.length === 0}
 	<div class="card">
-		<p class="muted" style="margin: 0">No routines match “{query}”.</p>
+		<p class="muted" style="margin: 0">No routines match{query.trim() ? ` “${query.trim()}”` : ' these filters'}.</p>
+		{#if show !== 'all' || muscle !== 'all' || query}
+			<button class="link-btn" style="padding: 0; margin-top: 0.4rem" onclick={() => ((show = 'all'), (muscle = 'all'), (query = ''))}>Clear filters</button>
+		{/if}
 	</div>
 {:else}
 	<div class="routine-list">
