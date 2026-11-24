@@ -122,7 +122,19 @@ export interface PainEntry {
 	areas?: PainArea[];
 }
 
-export type PainArea = 'wrist-hand' | 'thumb' | 'forearm-elbow' | 'neck' | 'shoulder' | 'upper-back';
+export type PainArea =
+	| 'wrist-hand'
+	| 'thumb'
+	| 'fingers'
+	| 'forearm-elbow'
+	| 'neck'
+	| 'shoulder'
+	| 'chest'
+	| 'upper-back'
+	| 'lower-back'
+	| 'hip'
+	| 'knee'
+	| 'ankle-foot';
 
 /**
  * Patient-Specific Functional Scale check-in: up to three activities the user finds hard,

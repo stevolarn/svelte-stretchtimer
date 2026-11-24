@@ -37,7 +37,13 @@
 		'shoulder-rehab': { title: 'Shoulder & upper back', description: 'Rotator cuff and posture work' },
 		'posture-fix': { title: 'Posture fix', description: 'Upper back, chest and neck' },
 		'desk-reset': { title: 'Desk reset', description: 'Neck, shoulders and wrists' },
-		'rsi-upper-body': { title: 'RSI circuit', description: 'Neck to fingertips in one go' }
+		'rsi-upper-body': { title: 'RSI circuit', description: 'Neck to fingertips in one go' },
+		'thoracic-outlet': { title: 'Thoracic outlet', description: 'Open the neck, chest and collarbone' },
+		'lower-back-relief': { title: 'Lower-back relief', description: 'Gentle floor release for the spine' },
+		'core-isometrics': { title: 'Core isometrics', description: 'Two rounds of core holds' },
+		'hip-opener': { title: 'Hip opener', description: 'Deep work for tight hips' },
+		'lower-body-reset': { title: 'Lower-body reset', description: 'Hips, legs and calves' },
+		'runner-recovery': { title: 'Runner’s recovery', description: 'Easy post-run release' }
 	};
 
 	const recommendations: Record<Area, StarterRoutineKind[]> = {
@@ -47,6 +53,12 @@
 		neck: ['neck-shoulder-strength', 'neck-shoulder-release'],
 		shoulder: ['neck-shoulder-strength', 'shoulder-rehab'],
 		'upper-back': ['posture-fix', 'shoulder-rehab'],
+		fingers: ['finger-band', 'wrist-relief'],
+		chest: ['posture-fix', 'thoracic-outlet'],
+		'lower-back': ['lower-back-relief', 'core-isometrics'],
+		hip: ['hip-opener', 'lower-body-reset'],
+		knee: ['lower-body-reset', 'runner-recovery'],
+		'ankle-foot': ['runner-recovery', 'lower-body-reset'],
 		general: ['desk-reset', 'typing-break', 'rsi-upper-body']
 	};
 

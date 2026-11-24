@@ -685,12 +685,18 @@ export function gentleVersion(r: Routine): Routine {
 }
 
 export const PAIN_AREAS: { id: PainArea; label: string }[] = [
-	{ id: 'wrist-hand', label: 'Wrist & hand' },
-	{ id: 'thumb', label: 'Thumb' },
-	{ id: 'forearm-elbow', label: 'Forearm & elbow' },
 	{ id: 'neck', label: 'Neck' },
 	{ id: 'shoulder', label: 'Shoulder' },
-	{ id: 'upper-back', label: 'Upper back' }
+	{ id: 'upper-back', label: 'Upper back' },
+	{ id: 'chest', label: 'Chest' },
+	{ id: 'forearm-elbow', label: 'Forearm & elbow' },
+	{ id: 'wrist-hand', label: 'Wrist & hand' },
+	{ id: 'thumb', label: 'Thumb' },
+	{ id: 'fingers', label: 'Fingers' },
+	{ id: 'lower-back', label: 'Lower back' },
+	{ id: 'hip', label: 'Hip' },
+	{ id: 'knee', label: 'Knee' },
+	{ id: 'ankle-foot', label: 'Ankle & foot' }
 ];
 
 function isPainArea(value: unknown): value is PainArea {
