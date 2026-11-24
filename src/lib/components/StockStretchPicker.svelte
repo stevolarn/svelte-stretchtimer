@@ -3,6 +3,8 @@
 	import { stockStretches } from '$lib/stockStretches';
 	import type { BodyArea, MovementPosition, MovementType, StockStretch } from '$lib/types';
 	import StretchIllustration from './StretchIllustration.svelte';
+	import MuscleChips from './MuscleChips.svelte';
+	import { musclesFor } from '$lib/muscles';
 	import {
 		equipmentLabels,
 		equipmentOf,
@@ -386,6 +388,13 @@
 					<span class="preview-section-title">Posture & Guidance</span>
 					<p class="preview-desc">{previewStock.description}</p>
 				</div>
+
+				{#if musclesFor(previewStock).length > 0}
+					<div class="preview-section">
+						<span class="preview-section-title">Muscles worked</span>
+						<MuscleChips muscles={musclesFor(previewStock)} />
+					</div>
+				{/if}
 			</div>
 
 			<div class="preview-footer-actions">

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import {
+		addDraftRoutine,
 		addRoutine,
 		deleteRoutineWithUndo,
 		duplicateRoutine,
@@ -13,10 +14,13 @@
 	} from '$lib/stores.svelte';
 	import { buildTimeline, timelineTotal } from '$lib/timeline';
 	import { onMount } from 'svelte';
-	import { frequencyLabel, goalProgress, scheduleLabel } from '$lib/frequency';
+	import { frequencyLabel, goalProgress, nextDueIn, scheduleLabel } from '$lib/frequency';
+	import MuscleChips from '$lib/components/MuscleChips.svelte';
+	import StretchDetailModal from '$lib/components/StretchDetailModal.svelte';
+	import { stretchDurationLabel } from '$lib/timeline';
 	import { formatSeconds } from '$lib/time';
 	import { lastPlayedAt, playedAgo } from '$lib/sessions';
-	import { type Routine } from '$lib/types';
+	import { type Routine, type Stretch } from '$lib/types';
 	import StarterArt from '$lib/components/StarterArt.svelte';
 	import Modal from '$lib/components/Modal.svelte';
 	import StretchIllustration from '$lib/components/StretchIllustration.svelte';
@@ -67,7 +71,7 @@
 
 	function createRoutine(): void {
 		const r = newRoutine('New routine', settings.breakSeconds);
-		addRoutine(r);
+		addDraftRoutine(r);
 		showNewModal = false;
 		goto(`/routine/${r.id}`);
 	}
@@ -81,7 +85,7 @@
 	}
 
 	let query = $state('');
-	let sort = $state<'played' | 'recent' | 'name' | 'duration'>('played');
+	let sort = $state<'played' | 'schedule' | 'recent' | 'name' | 'duration'>('played');
 	let menuFor = $state<string | null>(null);
 
 	const visibleRoutines = $derived(
@@ -90,6 +94,11 @@
 			.toSorted((a, b) => {
 				if (sort === 'name') return a.name.localeCompare(b.name);
 				if (sort === 'duration') return timelineTotal(buildTimeline(b, settings)) - timelineTotal(buildTimeline(a, settings));
+				if (sort === 'schedule') {
+					const da = nextDueIn(a, now);
+					const db = nextDueIn(b, now);
+					if (da !== db) return da - db;
+				}
 				if (sort === 'played') {
 					const pa = lastPlayedAt(a, sessions);
 					const pb = lastPlayedAt(b, sessions);
@@ -99,9 +108,19 @@
 			})
 	);
 
-	function addTemplate(kind: StarterRoutineKind): void {
-		const routine = starterRoutine(kind);
+	/** Starter being looked at before adding; built once so its stretches keep stable ids. */
+	let preview = $state<{ option: (typeof starterOptions)[number]; routine: Routine } | null>(null);
+	let previewStretch = $state<Stretch | null>(null);
+
+	function previewTemplate(option: (typeof starterOptions)[number]): void {
+		preview = { option, routine: starterRoutine(option.kind) };
+	}
+
+	function addTemplate(): void {
+		if (!preview) return;
+		const routine = preview.routine;
 		addRoutine(routine);
+		preview = null;
 		showNewModal = false;
 		goto(`/routine/${routine.id}`);
 	}
@@ -147,6 +166,7 @@
 		<input type="search" bind:value={query} placeholder="Search routines" aria-label="Search routines" />
 		<select bind:value={sort} aria-label="Sort routines">
 			<option value="played">Last played</option>
+			<option value="schedule">Next scheduled</option>
 			<option value="recent">Newest</option>
 			<option value="name">A–Z</option>
 			<option value="duration">Longest</option>
@@ -166,7 +186,7 @@
 		<div class="section-label">Starter routines</div>
 		<div class="starter-grid">
 			{#each starterOptions as option (option.kind)}
-				<button class="starter-option" onclick={() => addTemplate(option.kind)}>
+				<button class="starter-option" onclick={() => previewTemplate(option)}>
 					<StarterArt kind={option.kind} />
 					<span class="starter-option-copy">
 						<strong>{option.title}</strong>
@@ -253,13 +273,13 @@
 		{/each}
 	</div>
 {/if}
-{#if showNewModal}
+{#if showNewModal && !preview}
 	<Modal title="New routine" subtitle="Start blank or from a ready-made flow" onclose={() => (showNewModal = false)}>
 		<button class="btn primary new-blank-button" onclick={createRoutine} style="margin-top: 0">＋ Blank routine</button>
 		<div class="section-label">Starter routines</div>
 		<div class="starter-grid modal-starter-grid">
 			{#each starterOptions as option (option.kind)}
-				<button class="starter-option" onclick={() => addTemplate(option.kind)}>
+				<button class="starter-option" onclick={() => previewTemplate(option)}>
 					<StarterArt kind={option.kind} />
 					<span class="starter-option-copy">
 						<strong>{option.title}</strong>
@@ -270,4 +290,33 @@
 			{/each}
 		</div>
 	</Modal>
+{/if}
+{#if preview}
+	{@const pr = preview.routine}
+	<Modal title={preview.option.title} subtitle={`${starterDuration(preview.option.kind)} · ${pr.stretches.length} stretch${pr.stretches.length === 1 ? '' : 'es'}`} onclose={() => (preview = null)}>
+		<p class="muted small" style="margin: 0 0 0.75rem">{preview.option.description}</p>
+		<div class="starter-muscles">
+			<span class="muted small">Muscles worked</span>
+			<MuscleChips routine={pr} limit={8} />
+		</div>
+		<ol class="starter-preview-list">
+			{#each pr.stretches as s, i (s.id)}
+				<li>
+					<button class="starter-preview-row" onclick={() => (previewStretch = s)} aria-label={`Show ${s.name}`}>
+						<span class="muted small starter-preview-num">{i + 1}</span>
+						<StretchIllustration iconKey={s.iconKey} name={s.name} size={44} rounded={8} animated={false} />
+						<span class="starter-preview-name">{s.name}</span>
+						<span class="muted small">{stretchDurationLabel(s)}</span>
+					</button>
+				</li>
+			{/each}
+		</ol>
+		<div class="starter-preview-actions">
+			<button class="btn" onclick={() => (preview = null)}>‹ Back</button>
+			<button class="btn primary" onclick={addTemplate}>Add routine</button>
+		</div>
+	</Modal>
+{/if}
+{#if previewStretch}
+	<StretchDetailModal stretch={previewStretch} onclose={() => (previewStretch = null)} />
 {/if}

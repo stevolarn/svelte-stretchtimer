@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { goto } from '$app/navigation';
+	import { beforeNavigate, goto } from '$app/navigation';
 	import { deletePhotoData, getPhotoData, savePhotoData } from '$lib/storage';
 	import {
 		addRoutineSet,
 		deleteRoutineWithUndo,
+		discardIfEmpty,
 		dismissEase,
 		easeOffRoutine,
 		getRoutine,
@@ -32,6 +33,8 @@
 	import StretchIllustration from '$lib/components/StretchIllustration.svelte';
 	import StockStretchPicker from '$lib/components/StockStretchPicker.svelte';
 	import Modal from '$lib/components/Modal.svelte';
+	import MuscleChips from '$lib/components/MuscleChips.svelte';
+	import { muscleLabels, muscleList, musclesFor, type Muscle } from '$lib/muscles';
 
 	const routine = $derived(getRoutine(page.params.id ?? '') ?? null);
 	const total = $derived(routine ? timelineTotal(buildTimeline(routine, settings)) : 0);
@@ -364,6 +367,32 @@
 		saveAll();
 	}
 
+	/** Up to two muscle names for a stretch row. */
+	function muscleText(s: Stretch): string {
+		const m = musclesFor(s);
+		return m.length ? ` · ${m.slice(0, 2).map((k) => muscleLabels[k]).join(', ')}` : '';
+	}
+
+	function toggleMuscle(s: Stretch, m: Muscle): void {
+		const current = new Set(musclesFor(s));
+		if (current.has(m)) current.delete(m);
+		else current.add(m);
+		s.muscles = muscleList.filter((k) => current.has(k));
+		saveAll();
+	}
+
+	function resetMuscles(s: Stretch): void {
+		delete s.muscles;
+		saveAll();
+	}
+
+	// A routine is only kept once it has a stretch; leaving an empty one drops it.
+	beforeNavigate((nav) => {
+		const id = routine?.id;
+		if (!id || nav.type === 'leave' || (nav.to?.route.id === '/routine/[id]' && nav.to.params?.id === id)) return;
+		if (discardIfEmpty(id)) showToast('Empty routine not saved');
+	});
+
 	function removeRoutine(): void {
 		if (!routine) return;
 		const id = routine.id;
@@ -394,6 +423,12 @@
 	<p class="summary muted">
 		<strong>{formatSeconds(total)}</strong> total · {routine.stretches.length} stretch{routine.stretches.length === 1 ? '' : 'es'}
 	</p>
+	{#if routine.stretches.length > 0}
+		<div class="muscle-summary">
+			<span class="muted small">Muscles worked</span>
+			<MuscleChips {routine} limit={8} />
+		</div>
+	{/if}
 
 	{#if easing && easePlan}
 		<section class="card progress-card ease-card" aria-labelledby="ease-title">
@@ -497,7 +532,7 @@
 						<PhotoThumb photoId={s.photoId} iconKey={s.iconKey} name={s.name} size={56} rounded={10} />
 						<span class="st-copy">
 							<span class="st-name">{s.name || 'Untitled stretch'}</span>
-							<span class="st-meta muted small">{stretchDurationLabel(s)}</span>
+							<span class="st-meta muted small">{stretchDurationLabel(s)}{muscleText(s)}</span>
 						</span>
 						<span class="chevron" aria-hidden="true">›</span>
 					</button>
@@ -784,6 +819,21 @@
 			{/if}
 
 			<div class="field">
+				<span class="flabel">
+					Muscles worked
+					{#if s.muscles}<button type="button" class="link-btn small" style="margin-left: 0.4rem" onclick={() => resetMuscles(s)}>Reset</button>{/if}
+				</span>
+				<div class="muscle-pick" role="group" aria-label="Muscles worked">
+					{#each muscleList as m (m)}
+						{@const on = musclesFor(s).includes(m)}
+						<button type="button" class="muscle-toggle" class:on aria-pressed={on} onclick={() => toggleMuscle(s, m)}>
+							{muscleLabels[m]}
+						</button>
+					{/each}
+				</div>
+			</div>
+
+			<div class="field">
 				<span class="flabel">Photo <span class="muted">(optional, replaces the drawing)</span></span>
 				<PhotoPicker
 					photoId={s.photoId}
@@ -985,6 +1035,32 @@
 		font-weight: 650;
 	}
 
+	.muscle-summary {
+		display: grid;
+		gap: 0.35rem;
+		margin: -0.25rem 0 1rem;
+	}
+	.muscle-pick {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.3rem;
+	}
+	.muscle-toggle {
+		padding: 0.3rem 0.65rem;
+		border: 1px solid var(--border);
+		border-radius: 999px;
+		background: var(--surface);
+		color: var(--text);
+		font: inherit;
+		font-size: 0.8rem;
+		cursor: pointer;
+		touch-action: manipulation;
+	}
+	.muscle-toggle.on {
+		background: var(--accent);
+		border-color: var(--accent);
+		color: #ffffff;
+	}
 	.list-heading {
 		align-items: baseline;
 		margin-bottom: 0.55rem;

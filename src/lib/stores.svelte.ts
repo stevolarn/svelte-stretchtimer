@@ -28,6 +28,7 @@ import { spreadTimes } from './frequency.ts';
 import { easeRoutine, progressRoutine, type DoseChange } from './recovery.ts';
 import { stockStretches } from './stockStretches.ts';
 import { clampMoveSets, clampReps, clampRepSeconds } from './timeline.ts';
+import { isMuscle } from './muscles.ts';
 import { autoSaveToFileHandle, isFileAutoBackupConnected } from './backup.ts';
 import { syncReminderState } from './reminders.ts';
 
@@ -73,12 +74,27 @@ if (typeof window !== 'undefined') {
 	void syncReminderState(settings, streak);
 }
 
+/** Blank routines just created; they're only saved once they get a stretch, and dropped if left empty. */
+const drafts = new Set<string>();
+
+function persistedRoutines(): Routine[] {
+	for (const r of routines) if (drafts.has(r.id) && r.stretches.length > 0) drafts.delete(r.id);
+	return routines.filter((r) => !drafts.has(r.id));
+}
+
+/** Add a blank routine that isn't saved until it has a stretch. */
+export function addDraftRoutine(routine: Routine): void {
+	drafts.add(routine.id);
+	routines.push(routine);
+}
+
 export function saveAll(): void {
-	saveRoutines(routines);
+	const kept = persistedRoutines();
+	saveRoutines(kept);
 	saveSettings(settings);
 	saveStreak(streak);
 	saveSessions(sessions);
-	recordSnapshot(routines, streak);
+	recordSnapshot(kept, streak);
 	void syncReminderState(settings, streak);
 	if (isFileAutoBackupConnected()) {
 		void autoSaveToFileHandle().catch(() => {});
@@ -803,6 +819,15 @@ export function dismissEase(id: string): void {
 	saveAll();
 }
 
+/** Drop a new blank routine that was left without stretches (it was never saved). Returns true if dropped. */
+export function discardIfEmpty(id: string): boolean {
+	const idx = routines.findIndex((r) => r.id === id);
+	if (idx < 0 || !drafts.has(id) || routines[idx].stretches.length > 0) return false;
+	routines.splice(idx, 1);
+	drafts.delete(id);
+	return true;
+}
+
 export function deleteRoutine(id: string): void {
 	removeRoutine(id)?.commit();
 }
@@ -928,7 +953,7 @@ export async function exportBackup(): Promise<string> {
 	const backup: RoutineBackup = {
 		version: 1,
 		exportedAt: new Date().toISOString(),
-		routines: JSON.parse(JSON.stringify(routines)) as Routine[],
+		routines: JSON.parse(JSON.stringify(persistedRoutines())) as Routine[],
 		photos,
 		pain: JSON.parse(JSON.stringify(painLog)) as PainEntry[],
 		morning: JSON.parse(JSON.stringify(morningChecks)) as MorningCheck[],
@@ -1141,6 +1166,7 @@ export async function importBackup(
 			if (item.mode === 'hold' || item.mode === 'reps') stretch.mode = item.mode;
 			if (typeof item.reps === 'number' && Number.isFinite(item.reps)) stretch.reps = clampReps(item.reps);
 			if (typeof item.repSeconds === 'number' && Number.isFinite(item.repSeconds)) stretch.repSeconds = clampRepSeconds(item.repSeconds);
+			if (Array.isArray(item.muscles)) stretch.muscles = item.muscles.filter(isMuscle);
 			if (typeof item.load === 'string' && item.load.trim()) stretch.load = item.load.trim().slice(0, 60).trimEnd();
 			if (typeof item.sets === 'number' && Number.isFinite(item.sets) && item.sets > 1) stretch.sets = clampMoveSets(item.sets);
 			if (originalPhotoId && typeof photos[originalPhotoId] === 'string') {
@@ -1159,7 +1185,7 @@ export async function importBackup(
 		if (typeof candidate.id === 'string') idMap.set(candidate.id, routine.id);
 		added += 1;
 	}
-	saveRoutines(routines);
+	saveRoutines(persistedRoutines());
 	importSessions(source.sessions, idMap);
 	return {
 		added,

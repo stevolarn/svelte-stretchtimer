@@ -38,8 +38,11 @@
 	import StretchIllustration from '$lib/components/StretchIllustration.svelte';
 	import PhotoThumb from '$lib/components/PhotoThumb.svelte';
 	import Modal from '$lib/components/Modal.svelte';
+	import MuscleChips from '$lib/components/MuscleChips.svelte';
+	import StretchDetailModal from '$lib/components/StretchDetailModal.svelte';
+	import { musclesFor } from '$lib/muscles';
 	import PainAreaChips from '$lib/components/PainAreaChips.svelte';
-	import type { PainArea } from '$lib/types';
+	import type { PainArea, Stretch } from '$lib/types';
 
 	const isMicro = $derived(page.params.id === MICRO_BREAK_ID);
 	// Opened directly (reload or shortcut): shuffle one up rather than showing a missing routine.
@@ -111,6 +114,8 @@
 
 	let photoUrl = $state<string | null>(null);
 	let showZoomModal = $state(false);
+	/** Stretch opened from the list before starting. */
+	let previewStretch = $state<Stretch | null>(null);
 
 	$effect(() => {
 		let cancelled = false;
@@ -311,18 +316,25 @@
 						? ` · ${routine.breakSeconds ?? settings.breakSeconds}s rest`
 						: ''}
 				</p>
+				<div class="idle-muscles"><MuscleChips {routine} limit={6} /></div>
 			</div>
 
 			<ol class="idle-list">
 				{#each routine.stretches as s, i (s.id)}
 					<li>
-						<span class="idle-num">{i + 1}</span>
-						<PhotoThumb photoId={s.photoId} iconKey={s.iconKey} name={s.name} size={48} rounded={9} />
-						<span class="idle-name">{s.name || 'Untitled stretch'}{#if s.mode === 'reps' && s.load?.trim()}<span class="idle-load muted small"> · {s.load.trim()}</span>{/if}</span>
-						<span class="idle-dur muted small">{stretchDurationLabel(s)}</span>
+						<button class="idle-row" onclick={() => (previewStretch = s)} aria-label={`Show ${s.name || 'stretch'}`}>
+							<span class="idle-num">{i + 1}</span>
+							<PhotoThumb photoId={s.photoId} iconKey={s.iconKey} name={s.name} size={48} rounded={9} />
+							<span class="idle-name">{s.name || 'Untitled stretch'}{#if s.mode === 'reps' && s.load?.trim()}<span class="idle-load muted small"> · {s.load.trim()}</span>{/if}</span>
+							<span class="idle-dur muted small">{stretchDurationLabel(s)}</span>
+							<span class="idle-chev" aria-hidden="true">›</span>
+						</button>
 					</li>
 				{/each}
 			</ol>
+			{#if previewStretch}
+				<StretchDetailModal stretch={previewStretch} onclose={() => (previewStretch = null)} />
+			{/if}
 
 			<div class="idle-foot">
 				{#if !isMicro}
@@ -517,6 +529,9 @@
 			</div>
 			{#if segment.stretch.description}
 				<p class="zoom-desc">{segment.stretch.description}</p>
+			{/if}
+			{#if musclesFor(segment.stretch).length > 0}
+				<div class="zoom-muscles"><MuscleChips muscles={musclesFor(segment.stretch)} /></div>
 			{/if}
 			<button class="btn primary" style="width: 100%; font-weight: 700" onclick={() => (showZoomModal = false)}>Back to timer</button>
 		</Modal>
@@ -750,11 +765,37 @@
 		border: 1px solid var(--border);
 		border-radius: 16px;
 	}
-	.idle-list li {
+	.idle-row {
 		display: flex;
 		align-items: center;
 		gap: 0.7rem;
+		width: 100%;
 		padding: 0.45rem 0.55rem;
+		border: 0;
+		border-radius: 12px;
+		background: none;
+		color: inherit;
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
+	}
+	.idle-row:active {
+		background: var(--surface-2);
+	}
+	.idle-chev {
+		color: var(--muted);
+		font-size: 1.2rem;
+	}
+	.idle-muscles {
+		display: flex;
+		justify-content: center;
+		margin-top: 0.5rem;
+	}
+	.idle-muscles :global(.muscle-chips) {
+		justify-content: center;
+	}
+	.zoom-muscles {
+		margin: 0 0 0.9rem;
 	}
 	.idle-list li + li {
 		border-top: 1px solid var(--border);

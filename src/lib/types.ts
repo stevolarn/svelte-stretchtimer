@@ -21,6 +21,8 @@ export interface Stretch {
 	photoId: string | null;
 	/** key for stock illustration (e.g. 'cat-cow', 'childs-pose') */
 	iconKey?: string;
+	/** muscle keys from muscles.ts the user picked; undefined = use the library entry's */
+	muscles?: string[];
 }
 
 export type MovementType =

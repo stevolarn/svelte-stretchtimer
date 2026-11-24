@@ -433,6 +433,63 @@ textarea {
 	padding: 0 0.15rem 0.2rem;
 }
 
+/* Starter preview (routines page) */
+.starter-muscles {
+	display: grid;
+	gap: 0.35rem;
+	margin-bottom: 0.9rem;
+}
+
+.starter-preview-list {
+	list-style: none;
+	margin: 0 0 1rem;
+	padding: 0.25rem;
+	border: 1px solid var(--border);
+	border-radius: 14px;
+}
+
+.starter-preview-list li + li {
+	border-top: 1px solid var(--border);
+}
+
+.starter-preview-row {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	width: 100%;
+	padding: 0.4rem 0.5rem;
+	border: 0;
+	border-radius: 10px;
+	background: none;
+	color: inherit;
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+}
+
+.starter-preview-row:active {
+	background: var(--surface-2);
+}
+
+.starter-preview-num {
+	width: 1.3rem;
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+}
+
+.starter-preview-name {
+	flex: 1;
+	min-width: 0;
+	font-weight: 600;
+	line-height: 1.25;
+}
+
+.starter-preview-actions {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 0.6rem;
+}
+
 .starter-option-copy strong {
 	font-size: 0.92rem;
 	font-weight: 700;

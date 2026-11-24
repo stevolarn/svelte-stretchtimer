@@ -190,3 +190,26 @@ export function reviewLastWeek(routines: Routine[], completedDates: string[], no
 	}
 	return { from, scheduled, completed, activeDays, bestDay };
 }
+
+/**
+ * Minutes from the start of today until this routine's next unplayed scheduled slot
+ * (any-time slots count as the end of their day), for sorting by schedule.
+ * Weekly goals still open come after every fixed slot; routines with neither are Infinity.
+ */
+export function nextDueIn(r: Routine, now: Date = new Date()): number {
+	const today = todayKey(now);
+	const s = r.schedule;
+	if (s && s.days.length > 0) {
+		for (let d = 0; d <= 7; d++) {
+			const key = addDays(today, d);
+			if (!s.days.includes(weekdayOf(key))) continue;
+			const done = d === 0 ? playsOn(r, key) : 0;
+			if (done >= dailyTarget(s)) continue;
+			const time = s.times.toSorted()[done];
+			const [h, m] = time ? time.split(':').map(Number) : [23, 59];
+			return d * 1440 + h * 60 + m;
+		}
+	}
+	if (r.frequency?.per === 'week' && playsInWeek(r, today) < r.frequency.times) return 8 * 1440;
+	return Infinity;
+}
