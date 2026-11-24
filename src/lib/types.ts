@@ -7,6 +7,14 @@ export interface Stretch {
 	/** one = single duration, two = left/right sides sharing this duration */
 	sides: 'one' | 'two';
 	durationSeconds: number;
+	/** 'hold' (timed, the default when undefined) or 'reps' (count reps at a tempo) */
+	mode?: 'hold' | 'reps';
+	/** reps mode: number of reps (1-50) */
+	reps?: number;
+	/** reps mode: seconds per rep, i.e. tempo (1-20) */
+	repSeconds?: number;
+	/** reps mode: free-text load, e.g. 'red band' or '1 kg' */
+	load?: string;
 	/** key into the IndexedDB photo store, null when no photo */
 	photoId: string | null;
 	/** key for stock illustration (e.g. 'cat-cow', 'childs-pose') */
@@ -40,6 +48,10 @@ export interface StockStretch {
 	description: string;
 	sides: 'one' | 'two';
 	defaultSeconds: number;
+	/** rep-based move: default rep count (defaultSeconds is kept as a fallback) */
+	defaultReps?: number;
+	/** rep-based move: seconds per rep */
+	repSeconds?: number;
 	iconKey: string;
 }
 
@@ -59,8 +71,22 @@ export interface Routine {
 	completions?: string[];
 	/** if-then habit cue: the existing habit this routine follows, e.g. 'pour my morning coffee' */
 	cue?: string;
+	/** the if-then plan B for a busy or sore day: a 2-minute micro-break (the default) or the gentle version */
+	fallback?: 'micro' | 'gentle';
 	/** 'YYYY-MM-DD' the last "ready to progress?" prompt was answered, so it waits a fortnight */
 	progressAnswered?: string;
+	/** 'YYYY-MM-DD' the last "ease off?" prompt was answered (eased or dismissed), so it waits a week */
+	easeAnswered?: string;
+	/** dose changes made from the progress and ease prompts, oldest first, last ten only */
+	history?: RoutineChange[];
+}
+
+export interface RoutineChange {
+	/** 'YYYY-MM-DD' */
+	date: string;
+	/** 'progress' = longer holds / more reps, 'set' = an extra set, 'ease' = lighter */
+	kind: 'progress' | 'set' | 'ease';
+	note: string;
 }
 
 export interface RoutineSchedule {
@@ -88,6 +114,23 @@ export interface PainEntry {
 	at: number;
 	/** logged after the gentle version, so it doesn't count toward progressing */
 	gentle?: boolean;
+	/** where it hurts; missing on entries logged before areas existed */
+	areas?: PainArea[];
+}
+
+export type PainArea = 'wrist-hand' | 'thumb' | 'forearm-elbow' | 'neck' | 'shoulder' | 'upper-back';
+
+/**
+ * Patient-Specific Functional Scale check-in: up to three activities the user finds hard,
+ * each rated 0 (can't do it) to 10 (as well as before the problem).
+ */
+export interface FunctionCheck {
+	/** 'YYYY-MM-DD' */
+	date: string;
+	at: number;
+	items: { activity: string; score: number }[];
+	/** answered yes to the red-flag question (new or spreading numbness, weakness, dropping things) */
+	flag?: boolean;
 }
 
 /** Next-morning check after a session (pain-monitoring model): how it compares with before. */
@@ -105,7 +148,15 @@ export interface Settings {
 	beepStart: boolean;
 	beepSideSwitch: boolean;
 	beepCountdown: boolean;
+	/** soft tick at each rep boundary on rep-based exercises */
+	beepReps: boolean;
+	/** rep metronome: a click as each rep starts and a lower click at the turnaround (halfway); off by default */
+	metronome: boolean;
 	beepFinish: boolean;
+	/** spoken cues (move name, switch sides, rest, every fifth rep); off by default */
+	voiceCues: boolean;
+	/** short vibration as each move, side or rest starts; off by default */
+	vibrate: boolean;
 	breaksEnabled: boolean;
 	breakSeconds: number;
 	testingMode: boolean;
@@ -121,6 +172,16 @@ export interface Settings {
 	reviewDismissed?: string;
 	/** Monday of the week whose rising-pain card was dismissed */
 	trendDismissed?: string;
+	/** 'YYYY-MM-DD' the "worth getting checked" card was dismissed; it stays quiet for four weeks */
+	notImprovingDismissed?: string;
+	/** 'YYYY-MM-DD' the task check-in card was put off ("Later"); it comes back the next day */
+	functionSnoozed?: string;
+	/** first-run setup finished or skipped */
+	onboarded?: boolean;
+	/** 'YYYY-MM-DD' the fresh-start card was closed (see freshStart in habits.ts) */
+	freshStartDismissed?: string;
+	/** Monday of the week whose tip card was dismissed */
+	tipDismissed?: string;
 	/* Optional features, all on by default; each can be switched off in Settings. */
 	/** 0-10 pain score after routines, pain zones, and the pain chart on Stats */
 	painTracking: boolean;
@@ -132,6 +193,8 @@ export interface Settings {
 	progressPrompts: boolean;
 	/** last week's summary card on Home */
 	weeklyReview: boolean;
+	/** fortnightly "how are everyday tasks?" check-in (PSFS) on Home */
+	functionChecks: boolean;
 }
 
 export interface StorageSnapshot {
@@ -158,6 +221,10 @@ export interface Segment {
 	side: Side | null;
 	seconds: number;
 	label: string;
+	/** reps segments: total reps */
+	reps?: number;
+	/** reps segments: seconds per rep */
+	repSeconds?: number;
 	/** 1-based set number when the routine repeats */
 	set?: number;
 	totalSets?: number;

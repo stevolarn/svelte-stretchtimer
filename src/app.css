@@ -844,13 +844,18 @@ textarea {
 
 .review-card h2,
 .morning-card h2,
-.trend-card h2 {
+.trend-card h2,
+.ease-card h2,
+.stuck-card h2,
+.fn-card h2 {
 	margin: 0;
 	font-size: 1.05rem;
 }
 
 .morning-card p,
-.trend-card p {
+.trend-card p,
+.ease-card p,
+.stuck-card p {
 	margin: 0.3rem 0 0.6rem;
 }
 
@@ -862,6 +867,90 @@ textarea {
 
 .trend-card {
 	border-left: 4px solid var(--danger);
+}
+
+.ease-card,
+.stuck-card {
+	border-left: 4px solid #e3a21a;
+}
+
+.ease-card a {
+	color: var(--accent-strong);
+	font-weight: 600;
+}
+
+/* task check-in */
+.fn-card > .muted {
+	margin: 0.3rem 0 0.7rem;
+}
+
+.fn-row {
+	margin-bottom: 0.8rem;
+}
+
+.fn-row input[type='text'] {
+	margin-bottom: 0.4rem;
+}
+
+.fn-scale {
+	display: grid;
+	grid-template-columns: repeat(11, minmax(0, 1fr));
+	gap: 0.15rem;
+}
+
+.fn-chip {
+	aspect-ratio: 1;
+	min-width: 0;
+	padding: 0;
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	background: var(--surface);
+	color: var(--text);
+	font: inherit;
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1;
+	cursor: pointer;
+	touch-action: manipulation;
+}
+
+.fn-chip.on,
+.fn-yn .btn.on {
+	background: var(--accent);
+	border-color: var(--accent);
+	color: #ffffff;
+}
+
+.fn-flag p {
+	margin: 0 0 0.45rem;
+}
+
+.fn-yn {
+	display: flex;
+	gap: 0.5rem;
+	margin-bottom: 0.8rem;
+}
+
+.fn-yn .btn {
+	min-width: 4rem;
+}
+
+/* before-and-after lines in the progress and ease-off cards */
+.dose-list {
+	margin: 0 0 0.6rem;
+	padding-left: 1.1rem;
+	font-size: 0.85rem;
+}
+
+.dose-list li + li {
+	margin-top: 0.15rem;
+}
+
+.dose-choices {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem;
 }
 
 .today-cue {
@@ -1165,4 +1254,77 @@ textarea {
 :focus-visible {
 	outline: 2px solid var(--accent);
 	outline-offset: 2px;
+}
+
+/* ------------------------ Home nudges and tip ------------------------- */
+.nudge-card {
+	border-left: 4px solid var(--accent);
+	margin-top: 0.75rem;
+}
+
+.nudge-card h2 {
+	margin: 0;
+	font-size: 1.05rem;
+}
+
+.nudge-card p {
+	margin: 0.3rem 0 0.6rem;
+}
+
+.nudge-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.nudge-actions .btn {
+	min-height: 2.1rem;
+	white-space: normal;
+}
+
+.link-btn {
+	border: none;
+	background: transparent;
+	color: var(--accent-strong);
+	font: inherit;
+	font-size: 0.85rem;
+	font-weight: 600;
+	text-decoration: underline;
+	cursor: pointer;
+	min-height: 2.1rem;
+	padding: 0 0.5rem;
+	touch-action: manipulation;
+}
+
+.tip-card {
+	margin-top: 0.75rem;
+}
+
+.tip-card strong {
+	display: block;
+	margin-top: 0.2rem;
+}
+
+.tip-card p {
+	margin: 0.25rem 0 0.4rem;
+}
+
+.tip-link {
+	display: inline-flex;
+	align-items: center;
+	min-height: 2.1rem;
+	color: var(--accent-strong);
+	font-weight: 600;
+}
+
+.learn-link {
+	margin: 0.75rem 0 0;
+	text-align: center;
+}
+
+.learn-link a {
+	color: var(--muted);
+	display: inline-block;
+	padding: 0.5rem;
 }

@@ -1276,7 +1276,9 @@ export const stockStretches: StockStretch[] = [
 		area: 'upper-body',
 		description: 'Open the hand quickly, then let the band close it over a slow count of four. Resist all the way in.',
 		sides: 'two',
-		defaultSeconds: 40,
+		defaultSeconds: 60,
+		defaultReps: 12,
+		repSeconds: 5,
 		iconKey: 'finger-band'
 	},
 	{
@@ -1287,7 +1289,9 @@ export const stockStretches: StockStretch[] = [
 		area: 'upper-body',
 		description: 'Move the thumb out briskly, then let the band pull it back in over a slow count of four.',
 		sides: 'two',
-		defaultSeconds: 30,
+		defaultSeconds: 60,
+		defaultReps: 12,
+		repSeconds: 5,
 		iconKey: 'thumb-band'
 	},
 	{
@@ -1313,7 +1317,9 @@ export const stockStretches: StockStretch[] = [
 		area: 'upper-body',
 		description: 'Forearm supported, palm down. Lift the back of the hand toward you, then lower slowly. Light weight, smooth reps.',
 		sides: 'two',
-		defaultSeconds: 30,
+		defaultSeconds: 60,
+		defaultReps: 15,
+		repSeconds: 4,
 		iconKey: 'db-wrist-extension'
 	},
 	{
@@ -1324,7 +1330,9 @@ export const stockStretches: StockStretch[] = [
 		area: 'upper-body',
 		description: 'Forearm supported, palm up. Curl the weight up with the wrist only, then lower slowly to a comfortable stretch.',
 		sides: 'two',
-		defaultSeconds: 30,
+		defaultSeconds: 60,
+		defaultReps: 15,
+		repSeconds: 4,
 		iconKey: 'db-wrist-flexion'
 	},
 	{
@@ -1335,7 +1343,9 @@ export const stockStretches: StockStretch[] = [
 		area: 'upper-body',
 		description: 'Elbow at 90°, hold the dumbbell upright by one end. Rotate the palm down, then slowly return to upright.',
 		sides: 'two',
-		defaultSeconds: 30,
+		defaultSeconds: 60,
+		defaultReps: 15,
+		repSeconds: 4,
 		iconKey: 'db-forearm-rotation'
 	},
 	{
@@ -1346,7 +1356,9 @@ export const stockStretches: StockStretch[] = [
 		area: 'upper-body',
 		description: 'Elbow at 90°, hold the dumbbell upright by one end. Rotate the palm up, then slowly return to upright.',
 		sides: 'two',
-		defaultSeconds: 30,
+		defaultSeconds: 60,
+		defaultReps: 15,
+		repSeconds: 4,
 		iconKey: 'db-forearm-rotation'
 	},
 	{
@@ -1357,7 +1369,9 @@ export const stockStretches: StockStretch[] = [
 		area: 'upper-body',
 		description: 'Arm by your side, grip one end with the weight behind you. Lift the back end by bending the wrist, then lower.',
 		sides: 'two',
-		defaultSeconds: 30,
+		defaultSeconds: 60,
+		defaultReps: 15,
+		repSeconds: 4,
 		iconKey: 'db-ulnar-deviation'
 	},
 	{
@@ -1368,7 +1382,9 @@ export const stockStretches: StockStretch[] = [
 		area: 'upper-body',
 		description: 'Arm by your side, grip one end with the weight in front. Lift the front end with the thumb side, then lower.',
 		sides: 'two',
-		defaultSeconds: 30,
+		defaultSeconds: 60,
+		defaultReps: 15,
+		repSeconds: 4,
 		iconKey: 'db-radial-deviation'
 	},
 	{
@@ -1449,7 +1465,9 @@ export const stockStretches: StockStretch[] = [
 		area: 'upper-body',
 		description: 'Forearm on your thigh or a table, palm down, light dumbbell. Use the other hand to help the weight up, then lower it on its own over 3–5 seconds. A mild ache is fine; sharp pain means go lighter.',
 		sides: 'two',
-		defaultSeconds: 45,
+		defaultSeconds: 75,
+		defaultReps: 15,
+		repSeconds: 5,
 		iconKey: 'db-wrist-extension'
 	},
 	{
@@ -1460,7 +1478,9 @@ export const stockStretches: StockStretch[] = [
 		area: 'upper-body',
 		description: 'Forearm on your thigh or a table, palm up, light dumbbell. Use the other hand to help the weight up, then lower it on its own over 3–5 seconds. Works the inner-elbow tendons.',
 		sides: 'two',
-		defaultSeconds: 45,
+		defaultSeconds: 75,
+		defaultReps: 15,
+		repSeconds: 5,
 		iconKey: 'db-wrist-flexion'
 	},
 	{
@@ -1484,6 +1504,97 @@ export const stockStretches: StockStretch[] = [
 		sides: 'two',
 		defaultSeconds: 30,
 		iconKey: 'hand-resist-flexion'
+	},
+	{
+		id: 'ecc-tyler-twist',
+		name: 'Tyler Twist',
+		type: 'eccentrics',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Hold a FlexBar (or a tightly rolled hand towel) upright in the sore hand, wrist bent back, arm out in front. Twist the bar with the other hand, then slowly let it untwist against the sore wrist over about 5 seconds. A mild ache is fine; sharp pain means go lighter.',
+		sides: 'two',
+		defaultSeconds: 75,
+		defaultReps: 15,
+		repSeconds: 5,
+		iconKey: 'db-wrist-extension'
+	},
+	{
+		id: 'ecc-reverse-tyler-twist',
+		name: 'Reverse Tyler Twist',
+		type: 'eccentrics',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Hold a FlexBar (or a tightly rolled hand towel) upright in the sore hand, wrist curled in, arm out in front. Twist the bar with the other hand the opposite way to the Tyler Twist, then slowly let it untwist against the sore wrist over about 5 seconds. Works the inner-elbow tendons.',
+		sides: 'two',
+		defaultSeconds: 75,
+		defaultReps: 15,
+		repSeconds: 5,
+		iconKey: 'db-wrist-flexion'
+	},
+	{
+		id: 'dynamic-band-shrugs',
+		name: 'Band Shrugs',
+		type: 'dynamic',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Stand on a light band with an end in each hand at your sides. Lift your shoulders straight up toward your ears, pause, then lower slowly. Keep your arms long and your jaw relaxed.',
+		sides: 'one',
+		defaultSeconds: 36,
+		defaultReps: 12,
+		repSeconds: 3,
+		iconKey: 'band-shrug'
+	},
+	{
+		id: 'dynamic-band-lateral-raise',
+		name: 'Band Lateral Raise',
+		type: 'dynamic',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Stand on a light band with an end in each hand at your sides. Raise both arms out to shoulder height with soft elbows, then lower slowly. Keep your shoulders down away from your ears and stop at shoulder height.',
+		sides: 'one',
+		defaultSeconds: 36,
+		defaultReps: 12,
+		repSeconds: 3,
+		iconKey: 'band-lateral-raise'
+	},
+	{
+		id: 'dynamic-band-row',
+		name: 'Band Row',
+		type: 'dynamic',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Loop a light band round something sturdy at chest height and hold both ends. Pull your elbows back past your ribs, squeezing the shoulder blades together, then return slowly. Keep your neck long.',
+		sides: 'one',
+		defaultSeconds: 36,
+		defaultReps: 12,
+		repSeconds: 3,
+		iconKey: 'band-row'
+	},
+	{
+		id: 'dynamic-band-reverse-fly',
+		name: 'Band Reverse Fly',
+		type: 'dynamic',
+		position: 'standing',
+		area: 'upper-body',
+		description: 'Hold a light band in front of you at chest height, arms nearly straight. Pull your hands apart, leading with the backs of the hands and squeezing the shoulder blades, then return slowly. Keep your shoulders down.',
+		sides: 'one',
+		defaultSeconds: 36,
+		defaultReps: 12,
+		repSeconds: 3,
+		iconKey: 'band-pull-apart'
+	},
+	{
+		id: 'dynamic-band-wrist-extension',
+		name: 'Band Wrist Extension',
+		type: 'dynamic',
+		position: 'seated',
+		area: 'upper-body',
+		description: 'Forearm on your thigh, palm down, with a light band under your foot or held taut by the other hand. Lift the back of the hand against the band, then lower slowly over about 4 seconds. A mild ache is fine; sharp pain means go lighter.',
+		sides: 'two',
+		defaultSeconds: 60,
+		defaultReps: 15,
+		repSeconds: 4,
+		iconKey: 'db-wrist-extension'
 	},
 	{
 		id: 'static-wall-biceps',
@@ -1568,9 +1679,11 @@ export const stockStretches: StockStretch[] = [
 		type: 'dynamic',
 		position: 'floor',
 		area: 'upper-body',
-		description: 'Lie face down, forehead on a towel. Lift your arms a few centimetres into a Y, then a T, then a W, drawing the shoulder blades down and back each time. Small, slow lifts.',
+		description: 'Lie face down, forehead on a towel. Lift your arms a few centimetres into a Y, then a T, then a W, drawing the shoulder blades down and back each time. One small, slow lift per rep, cycling through the three shapes.',
 		sides: 'one',
-		defaultSeconds: 45,
+		defaultSeconds: 40,
+		defaultReps: 10,
+		repSeconds: 4,
 		iconKey: 'prone-ytw'
 	},
 	{

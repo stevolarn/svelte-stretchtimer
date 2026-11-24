@@ -1,5 +1,5 @@
 import type { Routine, Segment, Settings } from './types.ts';
-import { beepFinish, beepSideSwitch, beepStart, beepTick } from './audio.ts';
+import { beepFinish, beepMetronome, beepRep, beepSideSwitch, beepStart, beepTick, speak, stopSpeaking, vibrate } from './audio.ts';
 import { buildTimeline } from './timeline.ts';
 import { creditToday, recordCompletion } from './stores.svelte.ts';
 import { formatSeconds } from './time.ts';
@@ -15,6 +15,8 @@ export interface PlayerUiState {
 	remaining: number;
 	/** seconds elapsed in the current segment */
 	elapsed: number;
+	/** reps segments: the rep currently in progress (1-based); 0 on holds and breaks */
+	rep: number;
 	speed: number;
 }
 
@@ -26,6 +28,7 @@ export const player = $state<PlayerUiState>({
 	index: 0,
 	remaining: 0,
 	elapsed: 0,
+	rep: 0,
 	speed: 1
 });
 
@@ -34,6 +37,10 @@ export const player = $state<PlayerUiState>({
 let timer: ReturnType<typeof setInterval> | null = null;
 let endAt = 0;
 let lastTick = 0;
+/** last rep announced on the current reps segment (0 when not a reps segment) */
+let lastRep = 0;
+/** last half-rep (0 = first lift, 1 = first lower, ...) the metronome clicked on */
+let lastHalf = 0;
 let finished = false;
 let settingsSnapshot: Settings | null = null;
 
@@ -50,7 +57,8 @@ function updateTitle(): void {
 	if (seg && (player.status === 'running' || player.status === 'paused')) {
 		const side = seg.side === 'left' ? 'L' : seg.side === 'right' ? 'R' : '';
 		const paused = player.status === 'paused' ? 'Paused · ' : '';
-		document.title = `${paused}${formatSeconds(player.remaining)} ${side ? side + ' · ' : ''}${seg.label} · ${player.routineName}`;
+		const rep = seg.reps ? `Rep ${player.rep}/${seg.reps} · ` : '';
+		document.title = `${paused}${formatSeconds(player.remaining)} ${side ? side + ' · ' : ''}${rep}${seg.label} · ${player.routineName}`;
 	} else {
 		restoreTitle();
 	}
@@ -68,6 +76,10 @@ function enterSegment(index: number, settings: Settings): void {
 	player.remaining = seg.seconds;
 	player.elapsed = 0;
 	lastTick = 0;
+	// Reps segments open on rep 1 (the start beep already marks it).
+	player.rep = seg.reps ? 1 : 0;
+	lastRep = player.rep;
+	lastHalf = 0;
 	const speed = player.speed || settings.playbackSpeed || 1;
 	endAt = Date.now() + (seg.seconds / speed) * 1000;
 
@@ -77,7 +89,32 @@ function enterSegment(index: number, settings: Settings): void {
 	} else if (seg.kind === 'stretch') {
 		if (settings.beepStart) beepStart();
 	}
+	// Without a start/side beep, the metronome marks rep 1 itself.
+	if (seg.reps && settings.metronome && !(seg.side === 'right' ? settings.beepSideSwitch : settings.beepStart)) beepMetronome(true);
+	if (settings.voiceCues) speak(spokenCue(seg));
+	if (settings.vibrate) vibrate(seg.kind === 'break' ? 60 : [80, 60, 80]);
 	updateTitle();
+}
+
+/** What the voice says as a segment starts. */
+function spokenCue(seg: Segment): string {
+	if (seg.kind === 'break') return 'Rest';
+	if (seg.side === 'right') return 'Switch sides';
+	const name = seg.stretch?.name ?? seg.label;
+	const side = seg.side === 'left' ? ', left side' : '';
+	return seg.reps ? `${name}${side}, ${seg.reps} reps` : `${name}${side}`;
+}
+
+/** The rep in progress (1-based) after `elapsed` seconds of a reps segment. */
+function repAt(seg: Segment, elapsed: number): number {
+	if (!seg.reps || !seg.repSeconds) return 0;
+	return Math.min(seg.reps, Math.floor(elapsed / seg.repSeconds) + 1);
+}
+
+/** Half-reps completed after `elapsed` seconds: even = lifting phase of a rep, odd = lowering. */
+function halfAt(seg: Segment, elapsed: number): number {
+	if (!seg.reps || !seg.repSeconds) return 0;
+	return Math.min(seg.reps * 2 - 1, Math.floor(elapsed / (seg.repSeconds / 2)));
 }
 
 function tick(): void {
@@ -87,9 +124,30 @@ function tick(): void {
 	player.remaining = (remainingRealMs / 1000) * speed;
 	player.elapsed = Math.max(0, player.segments[player.index].seconds - player.remaining);
 
-	// Last-3-seconds countdown ticks (each stretch and break).
+	// Rep counter: tick softly as each new rep begins (rep 1 is covered by the start beep).
+	const seg = player.segments[player.index];
+	if (seg.reps && seg.repSeconds) {
+		const rep = repAt(seg, player.elapsed);
+		if (rep !== lastRep) {
+			const advanced = rep > lastRep;
+			lastRep = rep;
+			player.rep = rep;
+			// With the metronome on, its accented click marks the rep start instead.
+			if (advanced && rep > 1 && settingsSnapshot?.beepReps && !settingsSnapshot?.metronome) beepRep();
+			if (advanced && rep % 5 === 0 && settingsSnapshot?.voiceCues) speak(String(rep));
+		}
+		// Metronome: click at each rep start (rep 1 is covered by the start beep) and a lower click at the turnaround.
+		const half = halfAt(seg, player.elapsed);
+		if (half !== lastHalf) {
+			const advanced = half > lastHalf;
+			lastHalf = half;
+			if (advanced && settingsSnapshot?.metronome) beepMetronome(half % 2 === 0);
+		}
+	}
+
+	// Last-3-seconds countdown ticks (holds and breaks; reps segments have their own rep ticks).
 	const ceil = Math.ceil(player.remaining);
-	if (settingsSnapshot && ceil <= 3 && ceil >= 1 && ceil !== lastTick && player.remaining > 0) {
+	if (!seg.reps && settingsSnapshot && ceil <= 3 && ceil >= 1 && ceil !== lastTick && player.remaining > 0) {
 		lastTick = ceil;
 		if (settingsSnapshot.beepCountdown) beepTick(ceil);
 	}
@@ -117,6 +175,8 @@ function finish(settings: Settings): void {
 	player.remaining = 0;
 	player.elapsed = player.segments[player.index]?.seconds ?? 0;
 	if (settings.beepFinish) beepFinish();
+	if (settings.voiceCues) speak('All done');
+	if (settings.vibrate) vibrate([100, 60, 100, 60, 200]);
 	if (!finished) {
 		finished = true;
 		if (player.routineId) recordCompletion(player.routineId);
@@ -164,6 +224,7 @@ export function togglePause(): void {
 		player.remaining = Math.max(0, ((endAt - Date.now()) / 1000) * speed);
 		player.status = 'paused';
 		clearTimer();
+		stopSpeaking();
 		updateTitle();
 	} else if (player.status === 'paused') {
 		player.status = 'running';
@@ -219,6 +280,14 @@ export function jumpToCountdown(seconds = 3): void {
 	player.remaining = seconds;
 	endAt = Date.now() + (seconds / speed) * 1000;
 	lastTick = 0;
+	// Re-sync the rep counter to the new position silently (no tick for the jump itself).
+	const seg = player.segments[player.index];
+	if (seg?.reps) {
+		player.elapsed = Math.max(0, seg.seconds - seconds);
+		player.rep = repAt(seg, player.elapsed);
+		lastRep = player.rep;
+		lastHalf = halfAt(seg, player.elapsed);
+	}
 	if (player.status === 'paused') {
 		player.status = 'running';
 		startTimer();
@@ -245,6 +314,7 @@ export function restart(): void {
 /** Stop playback and return to idle (also used when leaving the player). */
 export function stopPlayer(): void {
 	clearTimer();
+	stopSpeaking();
 	player.status = 'idle';
 	player.routineId = null;
 	player.routineName = '';
@@ -252,6 +322,9 @@ export function stopPlayer(): void {
 	player.index = 0;
 	player.remaining = 0;
 	player.elapsed = 0;
+	player.rep = 0;
+	lastRep = 0;
+	lastHalf = 0;
 	player.speed = 1;
 	settingsSnapshot = null;
 }

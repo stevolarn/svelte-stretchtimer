@@ -2,6 +2,10 @@
 	import { goto } from '$app/navigation';
 	import {
 		applyFixer,
+		dismissEase,
+		easeOffRoutine,
+		functionChecks,
+		logFunctionCheck,
 		logMorningCheck,
 		morningChecks,
 		painLog,
@@ -17,12 +21,29 @@
 	import { dueToday, formatTime, goalProgress, reviewLastWeek, scheduledOn } from '$lib/frequency';
 	import { scheduleIcs } from '$lib/calendar';
 	import { currentStreak, fixersAvailable, fixerProgress, repairGap } from '$lib/streak';
-	import { daysPractised, morningVerdict, needsMorningCheck, painTrend } from '$lib/recovery';
+	import {
+		MEANINGFUL_CHANGE,
+		daysPractised,
+		easeRoutine,
+		functionChange,
+		functionCheckDue,
+		morningVerdict,
+		needsEasing,
+		needsMorningCheck,
+		notImproving,
+		painTrend
+	} from '$lib/recovery';
+	import { freshStart, missedYesterday } from '$lib/habits';
+	import { lessonOfWeek } from '$lib/lessons';
 	import WarningSigns from '$lib/components/WarningSigns.svelte';
 	import { addDays, todayKey } from '$lib/time';
 	import { type Routine } from '$lib/types';
 	import Modal from '$lib/components/Modal.svelte';
+	import Onboarding from '$lib/components/Onboarding.svelte';
 	import { showToast } from '$lib/toast.svelte';
+
+	// First run only, decided once so the last step stays open after its routines are added.
+	let showOnboarding = $state(!settings.onboarded && routines.length === 0 && streak.completedDates.length === 0);
 
 	function play(r: Routine, gentle = false): void {
 		goto(`/player/${r.id}${gentle ? '?gentle=1' : ''}`);
@@ -146,6 +167,73 @@
 	const showTrend = $derived(settings.painAlerts && trend.rising && settings.trendDismissed !== thisMonday);
 	let showSigns = $state(false);
 
+	/** Six weeks or more without a meaningful gain in pain or function: suggest getting it checked. */
+	const stuck = $derived(
+		settings.painAlerts &&
+			(!settings.notImprovingDismissed || settings.notImprovingDismissed <= addDays(todayKey(now), -28))
+			? notImproving(settings.painTracking ? painLog : [], functionChecks, todayKey(now))
+			: null
+	);
+
+	/* ------------------------ task check-in (PSFS) ------------------------ */
+
+	const showFunction = $derived(
+		settings.functionChecks &&
+			routines.length > 0 &&
+			functionCheckDue(functionChecks, todayKey(now)) &&
+			settings.functionSnoozed !== todayKey(now)
+	);
+	const firstFunction = $derived(functionChecks.length === 0);
+	const fnExamples = ['Typing', 'Opening jars', 'Carrying shopping'];
+	const scaleSteps = Array.from({ length: 11 }, (_, n) => n);
+	const lastFunction = functionChecks.at(-1);
+	let fnNames = $state<string[]>([0, 1, 2].map((i) => lastFunction?.items[i]?.activity ?? ''));
+	let fnScores = $state<(number | null)[]>([null, null, null]);
+	/** Answer to the red-flag question; null until answered. */
+	let fnFlag = $state<boolean | null>(null);
+
+	const fnItems = $derived(
+		fnNames.flatMap((name, i) => {
+			const activity = name.trim();
+			const score = fnScores[i];
+			return activity && score !== null ? [{ activity, score }] : [];
+		})
+	);
+	/** a row with a name but no score (or the reverse) would be dropped silently, so block saving */
+	const fnHalfFilled = $derived(fnNames.some((name, i) => (name.trim() !== '') !== (fnScores[i] !== null)));
+	const canSaveFunction = $derived(fnItems.length > 0 && fnFlag !== null && !fnHalfFilled);
+
+	function saveFunction(): void {
+		if (!canSaveFunction) return;
+		const flag = fnFlag === true;
+		logFunctionCheck(fnItems, flag);
+		if (flag) showSigns = true;
+		const change = functionChange(functionChecks);
+		showToast(
+			change && change.change >= MEANINGFUL_CHANGE
+				? `Saved. Up ${change.change.toFixed(1)} since your first check-in, a real improvement.`
+				: 'Saved. Next check-in in two weeks.'
+		);
+	}
+
+	/** The first routine whose recent pain says do a bit less, with what easing it would change. */
+	const easing = $derived.by(() => {
+		if (!settings.painAlerts) return null;
+		const log = settings.painTracking ? painLog : [];
+		const checks = settings.morningCheck ? morningChecks : [];
+		const today = todayKey(now);
+		for (const r of routines) {
+			const why = needsEasing(r, log, checks, today);
+			if (why) return { routine: r, reason: why.reason, plan: easeRoutine(r) };
+		}
+		return null;
+	});
+
+	function applyEase(r: Routine): void {
+		const result = easeOffRoutine(r.id);
+		if (result?.changes.length) showToast(`Eased off: ${result.changes.length} change${result.changes.length === 1 ? '' : 's'}`);
+	}
+
 	function answerMorning(verdict: 'better' | 'same' | 'worse'): void {
 		logMorningCheck(verdict);
 		if (verdict === 'better') showToast('Good sign — carry on as planned');
@@ -167,12 +255,21 @@
 		goto(`/player/${r.id}`);
 	}
 
+	/* ------------------------- habit nudges ------------------------- */
+
+	const todayStr = $derived(todayKey(now));
+	const habitRoutine = $derived(upNext?.routine ?? routines[0]);
+	let missCardClosed = $state(false);
+	const showMissCard = $derived(!missCardClosed && routines.length > 0 && missedYesterday(streak, routines, todayStr));
+	const fresh = $derived(routines.length > 0 && !showMissCard ? freshStart(streak, todayStr, settings.freshStartDismissed) : null);
+	const lesson = $derived(lessonOfWeek(todayStr));
+
 	function handleRepairStreak(): void {
 		if (gap.length === 0 || fixers < gap.length) return;
 		const [y, m, d] = gap[0].split('-').map(Number);
 		const first = new Date(y, m - 1, d).toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });
 		const dateDesc = gap.length === 1 ? first : `${gap.length} missed days`;
-		const fixerDesc = gap.length === 1 ? '1 streak fixer' : `${gap.length} streak fixers`;
+		const fixerDesc = gap.length === 1 ? '1 reserve day' : `${gap.length} reserve days`;
 		if (confirm(`Use ${fixerDesc} to fill in ${dateDesc} and restore your streak?`)) {
 			applyFixer();
 		}
@@ -196,7 +293,7 @@
 				{:else if !doneToday && !canRepair}
 					Finish a routine today to keep it going
 				{:else}
-					{fixers} fixer{fixers === 1 ? '' : 's'} · {fixerProgress(streak)}/7 days to the next
+					{fixers} reserve day{fixers === 1 ? '' : 's'} · {fixerProgress(streak)}/7 days to the next
 				{/if}
 			</span>
 		</span>
@@ -207,6 +304,47 @@
 		<button class="btn primary small" onclick={handleRepairStreak}>🩹 Fix streak</button>
 	{/if}
 </div>
+
+{#if showMissCard && habitRoutine}
+	{@const r = habitRoutine}
+	<section class="card nudge-card" aria-labelledby="miss-title">
+		<div class="spread">
+			<h2 id="miss-title">Don’t miss twice</h2>
+			<button class="icon-btn" aria-label="Dismiss" onclick={() => (missCardClosed = true)}>✕</button>
+		</div>
+		<p class="small">Yesterday slipped by. That’s fine; one missed day doesn’t undo your progress. Something small today keeps the habit going.</p>
+		{#if r.cue}
+			<p class="today-cue small">↪ After I {r.cue}</p>
+		{/if}
+		<div class="nudge-actions">
+			{#if r.fallback === 'gentle'}
+				<button class="btn small primary" onclick={() => play(r, true)}>Gentle {r.name || 'routine'}</button>
+			{:else}
+				<button class="btn small primary" onclick={startMicroBreak}>2-minute micro-break</button>
+			{/if}
+			<button class="link-btn" onclick={() => play(r)}>Full routine</button>
+		</div>
+	</section>
+{:else if fresh && habitRoutine}
+	{@const r = habitRoutine}
+	<section class="card nudge-card" aria-labelledby="fresh-title">
+		<div class="spread">
+			<h2 id="fresh-title">{fresh.kind === 'comeback' ? 'Welcome back' : 'New month, fresh start'}</h2>
+			<button class="icon-btn" aria-label="Dismiss" onclick={() => updateSettings({ freshStartDismissed: todayStr })}>✕</button>
+		</div>
+		<p class="small">
+			{#if fresh.kind === 'comeback'}
+				It’s been {fresh.daysAway} days. No need to catch up; a fresh start works best with one short session.
+			{:else}
+				A good moment to check your plan still fits: when you’ll do it, and what it follows.
+			{/if}
+		</p>
+		<div class="nudge-actions">
+			<button class="btn small primary" onclick={startMicroBreak}>Start small</button>
+			<button class="btn small" onclick={() => goto('/routine/' + r.id)}>Review my plan</button>
+		</div>
+	</section>
+{/if}
 
 {#if askMorning}
 	<section class="card morning-card" aria-labelledby="morning-title">
@@ -232,6 +370,98 @@
 			climbing, get it looked at.
 		</p>
 		<button class="btn small" onclick={() => (showSigns = true)}>When to get it checked</button>
+	</section>
+{/if}
+
+{#if stuck}
+	<section class="card stuck-card" aria-labelledby="stuck-title">
+		<div class="spread">
+			<h2 id="stuck-title">Worth getting checked</h2>
+			<button class="icon-btn" aria-label="Dismiss for four weeks" onclick={() => updateSettings({ notImprovingDismissed: todayKey(now) })}>✕</button>
+		</div>
+		<p class="small">{stuck.reason}</p>
+		<p class="muted small">
+			Steady practice usually shows some change by now. It doesn’t mean anything is wrong, but a physio or GP can
+			check the diagnosis and the plan.
+		</p>
+		<div class="dose-choices">
+			<button class="btn small" onclick={() => (showSigns = true)}>When to get it checked</button>
+			<a class="btn small" href="/report">Summary for your clinician</a>
+		</div>
+	</section>
+{/if}
+
+{#if easing}
+	<section class="card ease-card" aria-labelledby="ease-title">
+		<h2 id="ease-title">Ease off {easing.routine.name || 'this routine'}?</h2>
+		<p class="small">{easing.reason} Doing a bit less for a week usually helps more than stopping. <a href="/learn#pain-rule">Why</a></p>
+		{#if easing.plan.changes.length > 0}
+			<ul class="dose-list">
+				{#each easing.plan.changes.slice(0, 3) as line}
+					<li>{line}</li>
+				{/each}
+				{#if easing.plan.changes.length > 3}<li class="muted">and {easing.plan.changes.length - 3} more</li>{/if}
+			</ul>
+			<div class="dose-choices">
+				<button class="btn small" onclick={() => applyEase(easing.routine)}>Ease off</button>
+				<button class="btn small ghost" onclick={() => dismissEase(easing.routine.id)}>Not now</button>
+				<a class="small" href="/routine/{easing.routine.id}">Edit routine</a>
+			</div>
+		{:else}
+			<p class="muted small">
+				This routine is already at its lightest. Try the gentle version or a micro-break for a few days.
+			</p>
+			<div class="dose-choices">
+				<button class="btn small" onclick={() => dismissEase(easing.routine.id)}>OK</button>
+				<a class="small" href="/routine/{easing.routine.id}">Edit routine</a>
+			</div>
+		{/if}
+	</section>
+{/if}
+
+{#if showFunction}
+	<section class="card fn-card" aria-labelledby="fn-title">
+		<h2 id="fn-title">{firstFunction ? 'How are everyday tasks?' : 'Two-week check-in'}</h2>
+		<p class="muted small">
+			Pick up to three everyday things your pain makes hard, like typing, opening jars or carrying shopping. Rate
+			each from 0 (can’t do it) to 10 (as well as before it started).
+		</p>
+		{#each [0, 1, 2] as i}
+			<div class="fn-row">
+				<input
+					type="text"
+					maxlength="80"
+					placeholder="e.g. {fnExamples[i]}"
+					aria-label="Everyday task {i + 1}"
+					bind:value={fnNames[i]}
+				/>
+				<div class="fn-scale" role="group" aria-label="Rating for task {i + 1}">
+					{#each scaleSteps as n}
+						<button
+							type="button"
+							class="fn-chip"
+							class:on={fnScores[i] === n}
+							aria-pressed={fnScores[i] === n}
+							aria-label="Rating {n} out of 10"
+							onclick={() => (fnScores[i] = n)}>{n}</button>
+					{/each}
+				</div>
+			</div>
+		{/each}
+		<div class="fn-flag" role="group" aria-labelledby="fn-flag-q">
+			<p class="small" id="fn-flag-q">
+				Since you started, any new or spreading numbness or tingling, weakness, dropping things or clumsy hands?
+			</p>
+			<div class="fn-yn">
+				<button type="button" class="btn small" class:on={fnFlag === true} aria-pressed={fnFlag === true} onclick={() => (fnFlag = true)}>Yes</button>
+				<button type="button" class="btn small" class:on={fnFlag === false} aria-pressed={fnFlag === false} onclick={() => (fnFlag = false)}>No</button>
+			</div>
+		</div>
+		<div class="dose-choices">
+			<button class="btn small primary" disabled={!canSaveFunction} onclick={saveFunction}>Save check-in</button>
+			{#if fnHalfFilled}<span class="muted small">Give each task a name and a score.</span>{/if}
+			<button class="btn small ghost" onclick={() => updateSettings({ functionSnoozed: todayKey(now) })}>Later</button>
+		</div>
 	</section>
 {/if}
 
@@ -342,6 +572,24 @@
 		{/if}
 	</div>
 </section>
+
+{#if settings.tipDismissed !== thisMonday}
+	<section class="card tip-card" aria-label="Tip of the week">
+		<div class="spread">
+			<span class="today-label">Tip of the week</span>
+			<button class="icon-btn" aria-label="Hide until next week" onclick={() => updateSettings({ tipDismissed: thisMonday })}>✕</button>
+		</div>
+		<strong>{lesson.title}</strong>
+		<p class="muted small">{lesson.summary}</p>
+		<a class="tip-link small" href={`/learn#${lesson.id}`}>Read more</a>
+	</section>
+{/if}
+
+<p class="learn-link small"><a href="/learn">Learn: what helps RSI and why ›</a></p>
+
+{#if showOnboarding}
+	<Onboarding onclose={() => (showOnboarding = false)} />
+{/if}
 
 {#if showSigns}
 	<WarningSigns onclose={() => (showSigns = false)} />

@@ -788,6 +788,45 @@ export const poses: Record<string, PoseDef> = {
 		props: [{ type: 'band', from: 'hand', to: 'farHand', w: 1.4 }],
 		glow: [['pelvis', 'neck']]
 	},
+	'band-shrug': {
+		view: 'front',
+		frames: [
+			{ ...FRONT, arm: 8, forearm: 4, farArm: -8, farForearm: -4 },
+			{ arm: 4, forearm: 2, farArm: -4, farForearm: -2, head: 178 }
+		],
+		dur: 2.6,
+		still: 1,
+		props: [
+			{ type: 'band', from: 'hand', to: 'foot', w: 1.4 },
+			{ type: 'band', from: 'farHand', to: 'farFoot', w: 1.4 }
+		],
+		glow: [['neck', 'shoulder'], ['neck', 'farShoulder']],
+		arrows: [{ at: 'shoulder', d: 'M4 -2v-7', gold: true }, { at: 'farShoulder', d: 'M-4 -2v-7', gold: true }]
+	},
+	'band-lateral-raise': {
+		view: 'front',
+		frames: [
+			{ ...FRONT, arm: 10, forearm: 6, farArm: -10, farForearm: -6 },
+			{ arm: 84, forearm: 80, farArm: -84, farForearm: -80 }
+		],
+		dur: 3,
+		still: 1,
+		props: [
+			{ type: 'band', from: 'hand', to: 'foot', w: 1.4 },
+			{ type: 'band', from: 'farHand', to: 'farFoot', w: 1.4 }
+		],
+		glow: [['shoulder', 'farShoulder']]
+	},
+	'band-row': {
+		frames: [
+			{ ...STAND, arm: 88, forearm: 90, farArm: 84, farForearm: 88 },
+			{ arm: -22, forearm: 84, farArm: -26, farForearm: 80 }
+		],
+		dur: 3,
+		still: 1,
+		glow: [['shoulder', 'neck']],
+		arrows: [{ at: 'hand', d: 'M-2 -6h-9', gold: true }]
+	},
 
 	/* -------------------------------------------------- Yoga & full body */
 	'downward-dog': {

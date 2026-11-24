@@ -2,9 +2,23 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { deletePhotoData, getPhotoData, savePhotoData } from '$lib/storage';
-	import { deleteRoutineWithUndo, getRoutine, morningChecks, newStretch, painLog, saveAll, settings } from '$lib/stores.svelte';
-	import { readyToProgress } from '$lib/recovery';
-	import { buildTimeline, durationText, stretchDurationLabel, timelineTotal } from '$lib/timeline';
+	import {
+		addRoutineSet,
+		deleteRoutineWithUndo,
+		dismissEase,
+		easeOffRoutine,
+		getRoutine,
+		morningChecks,
+		newStretch,
+		painLog,
+		saveAll,
+		settings,
+		skipProgress,
+		stepUpRoutine,
+		stretchFromStock
+	} from '$lib/stores.svelte';
+	import { easeRoutine, needsEasing, progressRoutine, readyToProgress } from '$lib/recovery';
+	import { buildTimeline, clampRepSeconds, clampReps, durationText, stretchDurationLabel, stretchSeconds, timelineTotal } from '$lib/timeline';
 	import { formatSeconds, todayKey } from '$lib/time';
 	import { uid } from '$lib/util';
 	import { showToast } from '$lib/toast.svelte';
@@ -55,16 +69,7 @@
 
 	function handleSelectStock(stock: StockStretch): void {
 		if (!routine) return;
-		const s: Stretch = {
-			id: uid(),
-			name: stock.name,
-			description: stock.description,
-			sides: stock.sides,
-			durationSeconds: stock.defaultSeconds,
-			photoId: null,
-			iconKey: stock.iconKey
-		};
-		routine.stretches.push(s);
+		routine.stretches.push(stretchFromStock(stock));
 		saveAll();
 		showPicker = false;
 		showToast(`Added “${stock.name}”`);
@@ -77,6 +82,47 @@
 		saveAll();
 		editingId = s.id;
 		showPicker = false;
+	}
+
+	const modeOptions = [
+		{ value: 'hold', label: 'Hold' },
+		{ value: 'reps', label: 'Reps' }
+	];
+
+	/** Keep durationSeconds equal to reps x tempo so code that only reads durationSeconds stays sensible. */
+	function syncRepDuration(s: Stretch): void {
+		s.durationSeconds = clampReps(s.reps) * clampRepSeconds(s.repSeconds);
+	}
+
+	function setStretchMode(s: Stretch, value: string): void {
+		if (value === 'reps') {
+			s.mode = 'reps';
+			s.reps = clampReps(s.reps);
+			s.repSeconds = clampRepSeconds(s.repSeconds);
+			syncRepDuration(s);
+		} else {
+			// Reps fields stay in place (harmless); the hold keeps the current durationSeconds within the hold range.
+			s.mode = undefined;
+			s.durationSeconds = Math.min(600, Math.max(5, s.durationSeconds));
+		}
+		saveAll();
+	}
+
+	function setReps(s: Stretch, value: number): void {
+		s.reps = value;
+		syncRepDuration(s);
+		saveAll();
+	}
+
+	function setRepSeconds(s: Stretch, value: number): void {
+		s.repSeconds = value;
+		syncRepDuration(s);
+		saveAll();
+	}
+
+	function setLoad(s: Stretch, value: string): void {
+		s.load = value === '' ? undefined : value;
+		saveAll();
 	}
 
 	function deleteStretch(index: number): void {
@@ -243,6 +289,17 @@
 		saveAll();
 	}
 
+	const fallbackOptions = [
+		{ value: 'micro', label: '2-min break' },
+		{ value: 'gentle', label: 'Gentle version' }
+	];
+
+	function setFallback(value: string): void {
+		if (!routine) return;
+		routine.fallback = value === 'gentle' ? 'gentle' : undefined;
+		saveAll();
+	}
+
 	/* ---------------------- ready to progress? ---------------------- */
 
 	// Switched-off tracking doesn't count, so old scores or mornings can't trigger or block it.
@@ -251,16 +308,48 @@
 			? readyToProgress(routine, settings.painTracking ? painLog : [], settings.morningCheck ? morningChecks : [])
 			: null
 	);
-	const canLengthen = $derived(routine?.stretches.some((s) => s.durationSeconds < 600) ?? false);
+	/** What "Step up" would change, shown before it's applied. */
+	const stepPlan = $derived(progress && routine ? progressRoutine(routine) : null);
+	let previewing = $state(false);
 
-	/** Graded loading, one variable at a time: longer holds, an extra set, or neither for now. */
-	function answerProgress(step: 'hold' | 'set' | 'later'): void {
+	function plural(n: number, word: string): string {
+		return `${n} ${word}${n === 1 ? '' : 's'}`;
+	}
+
+	/** Graded loading, one variable at a time: a small step up, an extra set, or neither for now. */
+	function applyStepUp(): void {
 		if (!routine) return;
-		if (step === 'hold') for (const s of routine.stretches) s.durationSeconds = Math.min(600, s.durationSeconds + 5);
-		if (step === 'set') routine.sets = Math.min(20, (routine.sets ?? 1) + 1);
-		routine.progressAnswered = todayKey();
-		saveAll();
-		if (step !== 'later') showToast(step === 'hold' ? 'Every stretch is 5s longer' : `Now ${routine.sets} sets`);
+		const result = stepUpRoutine(routine.id);
+		previewing = false;
+		if (result?.changes.length) showToast(`Stepped up: ${plural(result.changes.length, 'change')}`);
+	}
+
+	function addSet(): void {
+		if (!routine) return;
+		addRoutineSet(routine.id);
+		previewing = false;
+		showToast(`Now ${routine.sets} sets`);
+	}
+
+	function notYet(): void {
+		if (!routine) return;
+		skipProgress(routine.id);
+		previewing = false;
+	}
+
+	/* ---------------------------- ease off? ---------------------------- */
+
+	const easing = $derived(
+		settings.painAlerts && routine
+			? needsEasing(routine, settings.painTracking ? painLog : [], settings.morningCheck ? morningChecks : [])
+			: null
+	);
+	const easePlan = $derived(easing && routine ? easeRoutine(routine) : null);
+
+	function applyEase(): void {
+		if (!routine) return;
+		const result = easeOffRoutine(routine.id);
+		if (result?.changes.length) showToast(`Eased off: ${plural(result.changes.length, 'change')}`);
 	}
 
 	function removeTime(index: number): void {
@@ -301,17 +390,68 @@
 		<strong>{formatSeconds(total)}</strong> total · {routine.stretches.length} stretch{routine.stretches.length === 1 ? '' : 'es'}
 	</p>
 
-	{#if progress}
+	{#if easing && easePlan}
+		<section class="card progress-card ease-card" aria-labelledby="ease-title">
+			<h2 id="ease-title">Ease off for a week?</h2>
+			<p class="small">{easing.reason}</p>
+			<p class="muted small">
+				Pain during exercise up to about 5/10 is fine if it settles by the next morning. When it doesn’t, doing a bit
+				less for a week usually helps more than stopping. <a href="/learn#pain-rule">Why</a>
+			</p>
+			{#if easePlan.changes.length > 0}
+				<ul class="dose-list">
+					{#each easePlan.changes.slice(0, 5) as line}
+						<li>{line}</li>
+					{/each}
+					{#if easePlan.changes.length > 5}<li class="muted">and {easePlan.changes.length - 5} more</li>{/if}
+				</ul>
+				<div class="progress-choices">
+					<button class="btn small" onclick={applyEase}>Ease off</button>
+					<button class="btn small ghost" onclick={() => dismissEase(routine.id)}>Not now</button>
+				</div>
+			{:else}
+				<p class="muted small">
+					This routine is already at its lightest. Try the gentle version or a micro-break for a few days.
+				</p>
+				<div class="progress-choices">
+					<button class="btn small" onclick={() => dismissEase(routine.id)}>OK</button>
+				</div>
+			{/if}
+		</section>
+	{:else if progress && stepPlan}
 		<section class="card progress-card" aria-labelledby="progress-title">
 			<h2 id="progress-title">Ready to progress?</h2>
 			<p class="muted small">
 				Played on {progress.plays} days in the last two weeks, pain no higher than {progress.worst}/10 and no worse mornings.
 				Change one thing at a time, then see how the next morning feels.
 			</p>
+			{#if previewing && stepPlan.changes.length > 0}
+				<ul class="dose-list">
+					{#each stepPlan.changes.slice(0, 5) as line}
+						<li>{line}</li>
+					{/each}
+					{#if stepPlan.changes.length > 5}<li class="muted">and {stepPlan.changes.length - 5} more</li>{/if}
+				</ul>
+			{/if}
+			{#if stepPlan.changes.length === 0 && stepPlan.tips.length === 0}
+				<p class="muted small">Every hold is already a minute or more. Add a set, or swap a move for a harder one.</p>
+			{/if}
+			{#if (previewing || stepPlan.changes.length === 0) && stepPlan.tips.length > 0}
+				<ul class="dose-list muted">
+					{#each stepPlan.tips as tip}
+						<li>{tip}</li>
+					{/each}
+				</ul>
+			{/if}
 			<div class="progress-choices">
-				<button class="btn small" onclick={() => answerProgress('hold')} disabled={!canLengthen}>＋5s each</button>
-				<button class="btn small" onclick={() => answerProgress('set')} disabled={(routine.sets ?? 1) >= 20}>＋1 set</button>
-				<button class="btn small ghost" onclick={() => answerProgress('later')}>Not yet</button>
+				{#if previewing}
+					<button class="btn small" onclick={applyStepUp}>Apply</button>
+					<button class="btn small ghost" onclick={() => (previewing = false)}>Cancel</button>
+				{:else}
+					<button class="btn small" onclick={() => (previewing = true)} disabled={stepPlan.changes.length === 0}>Step up</button>
+					<button class="btn small" onclick={addSet} disabled={(routine.sets ?? 1) >= 20}>＋1 set</button>
+					<button class="btn small ghost" onclick={notYet}>Not yet</button>
+				{/if}
 			</div>
 		</section>
 	{/if}
@@ -422,6 +562,11 @@
 			</span>
 			<span class="muted small">Tie it to something you already do every day — it’s the cue to start.</span>
 		</label>
+		<div class="cue-field">
+			<span class="option-title">If I can’t, I’ll do</span>
+			<Segmented value={routine.fallback ?? 'micro'} options={fallbackOptions} label="If I can’t, I’ll do" onchange={setFallback} />
+			<span class="muted small">Plan B for a busy or sore day. A little still keeps the habit going.</span>
+		</div>
 	</section>
 
 	<div class="spread list-heading">
@@ -468,6 +613,17 @@
 			{/each}
 		</ol>
 		<button class="btn add-btn" onclick={() => (showPicker = true)}>＋ Add stretch</button>
+	{/if}
+
+	{#if routine.history?.length}
+		<details class="dose-history">
+			<summary>Dose history</summary>
+			<ul>
+				{#each [...routine.history].reverse() as change}
+					<li class="muted small"><span class="dose-date">{change.date}</span> {change.note}</li>
+				{/each}
+			</ul>
+		</details>
 	{/if}
 
 	<div class="danger-zone">
@@ -544,13 +700,68 @@
 				</div>
 			</div>
 
-			<div class="option-row sheet-duration">
-				<div class="option-copy">
-					<span class="option-title">{s.sides === 'two' ? 'Time per side' : 'Time'}</span>
-					{#if s.sides === 'two'}<span class="muted small">{durationText(s.durationSeconds * 2)} for both</span>{/if}
-				</div>
-				<Stepper bind:value={s.durationSeconds} min={5} max={600} step={5} label="Time" format={durationText} onchange={saveAll} />
+			<div class="field">
+				<span class="flabel">Type</span>
+				<Segmented
+					value={s.mode ?? 'hold'}
+					options={modeOptions}
+					label="Hold or reps"
+					onchange={(v) => setStretchMode(s, v)}
+				/>
 			</div>
+
+			{#if s.mode === 'reps'}
+				<div class="option-row sheet-duration">
+					<div class="option-copy">
+						<span class="option-title">Reps</span>
+						<span class="muted small">
+							{durationText(stretchSeconds(s))}{s.sides === 'two' ? ' per side' : ' total'}
+						</span>
+					</div>
+					<Stepper
+						bind:value={() => clampReps(s.reps), (v) => setReps(s, v)}
+						min={1}
+						max={50}
+						step={1}
+						label="Reps"
+						suffix=" reps"
+					/>
+				</div>
+
+				<div class="option-row sheet-duration">
+					<div class="option-copy">
+						<span class="option-title">Seconds per rep</span>
+						<span class="muted small">Tempo for each rep</span>
+					</div>
+					<Stepper
+						bind:value={() => clampRepSeconds(s.repSeconds), (v) => setRepSeconds(s, v)}
+						min={1}
+						max={20}
+						step={1}
+						label="Seconds per rep"
+					/>
+				</div>
+
+				<div class="field">
+					<label for="stretch-load">Load <span class="muted">(optional)</span></label>
+					<input
+						id="stretch-load"
+						type="text"
+						value={s.load ?? ''}
+						oninput={(e) => setLoad(s, e.currentTarget.value)}
+						placeholder="e.g. red band, 1 kg"
+						maxlength="60"
+					/>
+				</div>
+			{:else}
+				<div class="option-row sheet-duration">
+					<div class="option-copy">
+						<span class="option-title">{s.sides === 'two' ? 'Time per side' : 'Time'}</span>
+						{#if s.sides === 'two'}<span class="muted small">{durationText(s.durationSeconds * 2)} for both</span>{/if}
+					</div>
+					<Stepper bind:value={s.durationSeconds} min={5} max={600} step={5} label="Time" format={durationText} onchange={saveAll} />
+				</div>
+			{/if}
 
 			<div class="field">
 				<span class="flabel">Photo <span class="muted">(optional, replaces the drawing)</span></span>
@@ -654,10 +865,32 @@
 	.progress-card p {
 		margin: 0.3rem 0 0.6rem;
 	}
+	.progress-card.ease-card {
+		border-left-color: #e3a21a;
+	}
 	.progress-choices {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.5rem;
+	}
+	.dose-history {
+		margin-top: 1.2rem;
+	}
+	.dose-history summary {
+		cursor: pointer;
+		font-weight: 600;
+	}
+	.dose-history ul {
+		margin: 0.4rem 0 0;
+		padding: 0;
+		list-style: none;
+	}
+	.dose-history li + li {
+		margin-top: 0.25rem;
+	}
+	.dose-date {
+		font-variant-numeric: tabular-nums;
+		margin-right: 0.3rem;
 	}
 	.cue-field {
 		display: flex;
@@ -905,6 +1138,7 @@
 	}
 
 	.sheet-duration {
+		flex-wrap: wrap;
 		margin-bottom: 0.6rem;
 	}
 

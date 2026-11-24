@@ -29,7 +29,11 @@
 		'pre-workout-warmup': { from: '#ffa45e', to: '#e4561b', pose: 'jumping-jacks' },
 		'core-isometrics': { from: '#8d9db8', to: '#46546f', pose: 'plank-hold' },
 		'band-isometrics': { from: '#9fd860', to: '#4b9128', pose: 'band-pull-apart' },
-		'isometric-flexibility': { from: '#52d2e2', to: '#1b87a8', pose: 'hamstring-press' }
+		'isometric-flexibility': { from: '#52d2e2', to: '#1b87a8', pose: 'hamstring-press' },
+		'neck-shoulder-strength': { from: '#7bd88f', to: '#2d8f5a', pose: 'band-lateral-raise' },
+		'tennis-elbow-loading': { from: '#ffb15e', to: '#c4571a', pose: 'db-wrist-extension' },
+		'golfers-elbow-loading': { from: '#f08f9c', to: '#b73a55', pose: 'db-wrist-flexion' },
+		'wrist-forearm-strength': { from: '#9aa8ff', to: '#5a4fc9', pose: 'db-forearm-rotation' }
 	};
 
 	const uid = $props.id();

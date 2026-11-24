@@ -1,0 +1,36 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
+      "port": 5173,
+      "env": {
+        "CHOKIDAR_USEPOLLING": "1",
+        "CHOKIDAR_INTERVAL": "300"
+      }
+    },
+    {
+      "name": "built",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8799",
+        "--directory",
+        ".svelte-kit/output/client"
+      ],
+      "port": 8799
+    },
+    {
+      "name": "wrangler",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["wrangler", "dev", "--port", "8787", "--ip", "127.0.0.1"],
+      "port": 8787
+    }
+  ]
+}

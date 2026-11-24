@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { playCue } from '$lib/audio';
+	import { playCue, speak, vibrate } from '$lib/audio';
 	import {
 		addTestFixer,
 		applyFixer,
@@ -13,7 +13,8 @@
 		settings,
 		simulateBrokenStreak,
 		simulateStreak,
-		streak
+		streak,
+		updateSettings
 	} from '$lib/stores.svelte';
 	import {
 		currentStreak,
@@ -146,9 +147,11 @@
 			const result = await importBackup(await file.text());
 			const extras = [
 				result.pain && `${result.pain} pain score${result.pain === 1 ? '' : 's'}`,
-				result.morning && `${result.morning} morning check${result.morning === 1 ? '' : 's'}`
+				result.morning && `${result.morning} morning check${result.morning === 1 ? '' : 's'}`,
+				result.function && `${result.function} task check-in${result.function === 1 ? '' : 's'}`
 			].filter(Boolean);
-			notify(`${result.added} routine${result.added === 1 ? '' : 's'}${extras.length ? `, ${extras.join(' and ')}` : ''} restored.`);
+			const tail = extras.length > 1 ? `${extras.slice(0, -1).join(', ')} and ${extras.at(-1)}` : extras[0];
+			notify(`${result.added} routine${result.added === 1 ? '' : 's'}${tail ? `, ${tail}` : ''} restored.`);
 			refreshSnapshots();
 		} catch (error) {
 			notify(error instanceof Error ? error.message : 'Could not restore backup.');
@@ -163,7 +166,7 @@
 
 	/** Features some people won't want; switching one off hides it everywhere and keeps its data. */
 	const optionalFeatures: Array<{
-		key: 'painTracking' | 'morningCheck' | 'painAlerts' | 'progressPrompts' | 'weeklyReview';
+		key: 'painTracking' | 'morningCheck' | 'painAlerts' | 'progressPrompts' | 'weeklyReview' | 'functionChecks';
 		label: string;
 		hint: string;
 	}> = [
@@ -171,13 +174,16 @@
 		{ key: 'morningCheck', label: 'Morning check', hint: 'Better, same or worse, the day after a routine' },
 		{ key: 'painAlerts', label: 'Rising-pain alerts', hint: 'A card on Home when pain climbs week on week' },
 		{ key: 'progressPrompts', label: 'Ready to progress?', hint: 'Suggest a step up after a calm fortnight on a routine' },
-		{ key: 'weeklyReview', label: 'Weekly review', hint: 'Last week’s summary on Home each Monday' }
+		{ key: 'weeklyReview', label: 'Weekly review', hint: 'Last week’s summary on Home each Monday' },
+		{ key: 'functionChecks', label: 'Task check-ins', hint: 'Every two weeks, rate a few everyday tasks your pain makes hard' }
 	];
 
 	const cues = [
 		{ key: 'beepStart', cue: 'start', label: 'Stretch starts', hint: 'A beep as each stretch begins' },
 		{ key: 'beepSideSwitch', cue: 'side', label: 'Switch sides', hint: 'A double beep when it’s time to swap' },
 		{ key: 'beepCountdown', cue: 'tick', label: 'Countdown', hint: 'Ticks in the last 3 seconds' },
+		{ key: 'beepReps', cue: 'rep', label: 'Reps', hint: 'Soft tick on each rep' },
+		{ key: 'metronome', cue: 'metronome', label: 'Rep metronome', hint: 'A click as each rep starts and a lower click at the turnaround' },
 		{ key: 'beepFinish', cue: 'finish', label: 'Routine complete', hint: 'A short fanfare at the end' }
 	] as const;
 
@@ -187,7 +193,7 @@
 	}
 
 	function handleClearStreak(): void {
-		if (confirm('Clear your streak history? Your streak, completed days and fixers will be reset. This can’t be undone.')) {
+		if (confirm('Clear your streak history? Your streak, completed days and reserve days will be reset. This can’t be undone.')) {
 			clearStreakHistory();
 			refreshSnapshots();
 		}
@@ -205,7 +211,7 @@
 
 	function handleAddFixer(): void {
 		addTestFixer();
-		notify('+1 streak fixer added.');
+		notify('+1 reserve day added.');
 	}
 
 	function handleSeedTestRoutines(): void {
@@ -252,6 +258,28 @@
 				</div>
 			</div>
 		{/each}
+		<div class="set-row cue-row">
+			<div class="cue-toggle">
+				<Toggle
+					bind:checked={settings.voiceCues}
+					onchange={() => updateSettings({ voiceCues: settings.voiceCues })}
+					label="Spoken cues"
+					hint="Says each move, ‘switch sides’, ‘rest’ and counts every fifth rep"
+				/>
+			</div>
+			<button class="btn small cue-test" onclick={() => speak('Switch sides')} aria-label="Test spoken cues">Test</button>
+		</div>
+		<div class="set-row cue-row">
+			<div class="cue-toggle">
+				<Toggle
+					bind:checked={settings.vibrate}
+					onchange={() => updateSettings({ vibrate: settings.vibrate })}
+					label="Vibrate"
+					hint="A short buzz as each move or rest starts (Android; iPhones ignore it)"
+				/>
+			</div>
+			<button class="btn small cue-test" onclick={() => vibrate([80, 60, 80])} aria-label="Test vibration">Test</button>
+		</div>
 	</div>
 </section>
 
@@ -446,6 +474,13 @@
 <section class="set-section">
 	<h2 class="section-label">App</h2>
 	<div class="card set-card">
+		<a class="set-row set-link" href="/learn">
+			<div class="set-text">
+				<span class="set-label">Learn: what helps RSI and why</span>
+				<span class="muted small">Short, plain-English notes on the thinking behind the routines</span>
+			</div>
+			<span class="muted" aria-hidden="true">›</span>
+		</a>
 		<div class="set-row">
 			<div class="set-text">
 				<span class="set-label">
@@ -497,9 +532,9 @@
 				<div class="set-text">
 					<span class="set-label">Streak simulator</span>
 					<span class="muted small">
-						🔥 {currentStreakNum} day{currentStreakNum === 1 ? '' : 's'} · 🩹 {fixersAvailableNum} fixer{fixersAvailableNum === 1 ? '' : 's'} ·
+						🔥 {currentStreakNum} day{currentStreakNum === 1 ? '' : 's'} · 🩹 {fixersAvailableNum} reserve day{fixersAvailableNum === 1 ? '' : 's'} ·
 						{#if activeGap.length > 0}
-							{activeGap.length} missed day{activeGap.length === 1 ? '' : 's'}{canRepair ? '' : ` (needs ${activeGap.length} fixers)`}
+							{activeGap.length} missed day{activeGap.length === 1 ? '' : 's'}{canRepair ? '' : ` (needs ${activeGap.length} reserve days)`}
 						{:else}
 							unbroken
 						{/if}
@@ -508,13 +543,13 @@
 				<div class="set-actions">
 					<button class="btn small" onclick={() => handleSimulateStreak(7)}>7-day streak</button>
 					<button class="btn small" onclick={handleSimulateBreak}>Miss a day</button>
-					<button class="btn small" onclick={handleAddFixer}>+1 fixer</button>
+					<button class="btn small" onclick={handleAddFixer}>+1 reserve day</button>
 					{#if canRepair}
 						<button
 							class="btn small primary"
 							onclick={() => {
 								applyFixer();
-								notify(`Streak repaired with ${activeGap.length} fixer${activeGap.length === 1 ? '' : 's'}.`);
+								notify(`Streak repaired with ${activeGap.length} reserve day${activeGap.length === 1 ? '' : 's'}.`);
 							}}
 						>
 							Repair
@@ -607,6 +642,13 @@
 		border-radius: 50%;
 		background: var(--surface-2);
 		color: var(--accent);
+	}
+	.cue-test {
+		flex-shrink: 0;
+	}
+	.set-link {
+		text-decoration: none;
+		color: inherit;
 	}
 	.cue-toggle {
 		flex: 1;

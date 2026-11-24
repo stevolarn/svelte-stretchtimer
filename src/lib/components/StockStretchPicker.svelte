@@ -128,6 +128,11 @@
 		return [...hits].sort((a, b) => scores.get(b.id)! - scores.get(a.id)!);
 	});
 
+	/** Duration for holds, rep count for rep-based moves. */
+	function amountLabel(s: StockStretch): string {
+		return s.defaultReps ? `${s.defaultReps} reps` : `${s.defaultSeconds}s`;
+	}
+
 	function formatLabel(val: string): string {
 		switch (val) {
 			case 'upper-body':
@@ -316,7 +321,7 @@
 								<span class="stock-stretch-name">{stock.name}</span>
 							</div>
 							<div class="stock-tag-row">
-								<span class="micro-tag time-tag">{stock.defaultSeconds}s{stock.sides === 'two' ? ' · L → R' : ''}</span>
+								<span class="micro-tag time-tag">{amountLabel(stock)}{stock.sides === 'two' ? ' · L → R' : ''}</span>
 								<span class="micro-tag type-tag">{formatLabel(stock.type)}</span>
 								<span class="micro-tag pos-tag">{formatLabel(stock.position)}</span>
 								<span class="micro-tag area-tag">{formatLabel(stock.area)}</span>
@@ -361,7 +366,7 @@
 
 				<div class="preview-meta-row">
 					<span class="badge">
-						⏱ {previewStock.defaultSeconds}s {previewStock.sides === 'two' ? 'per side' : 'duration'}
+						⏱ {amountLabel(previewStock)} {previewStock.sides === 'two' ? 'per side' : previewStock.defaultReps ? '' : 'duration'}
 					</span>
 					<span class="badge">
 						{previewStock.sides === 'two' ? 'Two sides (Left → Right)' : 'Single side'}

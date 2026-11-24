@@ -1,8 +1,21 @@
 <script lang="ts">
-	import { applyFixer, logPain, painLog, settings, streak, undoLastPain } from '$lib/stores.svelte';
+	import {
+		applyFixer,
+		functionChecks,
+		logPain,
+		PAIN_AREAS,
+		painLog,
+		setLastPainAreas,
+		settings,
+		streak,
+		undoLastPain
+	} from '$lib/stores.svelte';
 	import { currentStreak, fixerProgress, fixersAvailable, longestStreak, repairGap } from '$lib/streak';
+	import { HABIT_DAYS, practiceDays } from '$lib/habits';
 	import { addDays, todayKey } from '$lib/time';
-	import { daysPractised } from '$lib/recovery';
+	import { checkScore, daysPractised, functionChange, MEANINGFUL_CHANGE, trackedActivities } from '$lib/recovery';
+	import type { PainArea } from '$lib/types';
+	import PainAreaChips from '$lib/components/PainAreaChips.svelte';
 	import WarningSigns from '$lib/components/WarningSigns.svelte';
 
 	const WEEKS = 6;
@@ -16,6 +29,8 @@
 	const practised = $derived(daysPractised(streak.completedDates, 30, today));
 	let showSigns = $state(false);
 	const doneToday = $derived(streak.completedDates.includes(today));
+	const habitDays = $derived(practiceDays(streak));
+	const habitPct = $derived(Math.min(100, Math.round((habitDays / HABIT_DAYS) * 100)));
 	const fixers = $derived(fixersAvailable(streak));
 	const toNext = $derived(fixerProgress(streak));
 	const gap = $derived(repairGap(streak));
@@ -25,11 +40,22 @@
 	const PAIN_DAYS = 30;
 	const CHART_W = 320;
 	const CHART_H = 120;
+	const windowStart = $derived(addDays(today, -(PAIN_DAYS - 1)));
+	const windowEntries = $derived(painLog.filter((p) => p.date >= windowStart && p.date <= today));
+	/** Only the areas that actually appear in the chart window, in the usual order. */
+	const areasInWindow = $derived(PAIN_AREAS.filter((a) => windowEntries.some((p) => p.areas?.includes(a.id))));
+	let areaFilter = $state<PainArea | 'all'>('all');
+	/** Falls back to "All" if the chosen area has dropped out of the window. */
+	const activeArea = $derived<PainArea | 'all'>(areasInWindow.some((a) => a.id === areaFilter) ? areaFilter : 'all');
+	const shownEntries = $derived.by(() => {
+		const area = activeArea;
+		return area === 'all' ? windowEntries : windowEntries.filter((p) => p.areas?.includes(area));
+	});
 	/** Daily average pain for the last 30 days, oldest first; null where nothing was logged. */
 	const painDays = $derived(
 		Array.from({ length: PAIN_DAYS }, (_, i) => {
 			const key = addDays(today, i - PAIN_DAYS + 1);
-			const scores = painLog.filter((p) => p.date === key).map((p) => p.score);
+			const scores = shownEntries.filter((p) => p.date === key).map((p) => p.score);
 			return { key, avg: scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : null };
 		})
 	);
@@ -40,10 +66,43 @@
 	);
 	const painPath = $derived(painPoints.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '));
 	const loggedToday = $derived(painLog.filter((p) => p.date === today && p.routineId === null).at(-1)?.score ?? null);
+	/** Areas can only be edited while today's quick score is still the latest entry. */
+	const quickEntry = $derived.by(() => {
+		const last = painLog.at(-1);
+		return last && last.routineId === null && last.date === today ? last : null;
+	});
 
 	function logPainNow(score: number): void {
-		if (loggedToday !== null && painLog.at(-1)?.date === today && painLog.at(-1)?.routineId === null) undoLastPain();
-		logPain(score, null);
+		const keep = quickEntry?.areas;
+		if (loggedToday !== null && quickEntry) undoLastPain();
+		logPain(score, null, false, score > 0 ? keep : []);
+	}
+
+	function setQuickAreas(areas: PainArea[]): void {
+		if (quickEntry) setLastPainAreas(areas);
+	}
+
+	/* --------------------------- everyday tasks (PSFS) --------------------------- */
+	const FN_H = 100;
+	const fnChange = $derived(functionChange(functionChecks));
+	const fnFlagDates = $derived(functionChecks.filter((c) => c.flag).map((c) => shortDate(c.date)));
+	const fnPoints = $derived.by(() => {
+		// same activities as the headline change, so the line and the numbers agree
+		const tracked = trackedActivities(functionChecks);
+		const avgs = functionChecks.flatMap((c) => {
+			const avg = checkScore(c, tracked);
+			return avg === null ? [] : [{ key: c.date, avg }];
+		});
+		return avgs.map((p, i) => ({ ...p, x: avgs.length > 1 ? (i / (avgs.length - 1)) * CHART_W : CHART_W / 2, y: FN_H - (p.avg / 10) * FN_H }));
+	});
+	const fnPath = $derived(fnPoints.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '));
+
+	function shortDate(key: string): string {
+		return new Date(key + 'T00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+	}
+
+	function signed(n: number): string {
+		return `${n > 0 ? '+' : n < 0 ? '−' : ''}${Math.abs(n).toFixed(1)}`;
 	}
 
 	function dayOfWeek(key: string): number {
@@ -77,7 +136,7 @@
 	function repairStreak(): void {
 		if (!canRepair) return;
 		const days = gap.length === 1 ? formatDay(gap[0]) : `${gap.length} missed days`;
-		if (confirm(`Use ${gap.length} fixer${gap.length === 1 ? '' : 's'} to fill in ${days} and restore your streak?`)) {
+		if (confirm(`Use ${gap.length} reserve day${gap.length === 1 ? '' : 's'} to fill in ${days} and restore your streak?`)) {
 			applyFixer();
 		}
 	}
@@ -117,11 +176,11 @@
 	<div class="fixer-head">
 		<span class="fixer-icon" aria-hidden="true">🩹</span>
 		<div class="fixer-text">
-			<strong>{fixers} streak fixer{fixers === 1 ? '' : 's'}</strong>
-			<span class="muted small">Earn one every 7 days you stretch · {7 - toNext} day{7 - toNext === 1 ? '' : 's'} to the next</span>
+			<strong>{fixers} reserve day{fixers === 1 ? '' : 's'}</strong>
+			<span class="muted small">Earn one for every 7 days you stretch · {7 - toNext} day{7 - toNext === 1 ? '' : 's'} to the next</span>
 		</div>
 	</div>
-	<div class="fixer-track" role="progressbar" aria-label="Progress to next fixer" aria-valuemin={0} aria-valuemax={7} aria-valuenow={toNext}>
+	<div class="fixer-track" role="progressbar" aria-label="Progress to next reserve day" aria-valuemin={0} aria-valuemax={7} aria-valuenow={toNext}>
 		{#each Array(7) as _, i (i)}
 			<span class:filled={i < toNext}></span>
 		{/each}
@@ -131,13 +190,39 @@
 			<p class="small">
 				{gap.length === 1 ? `You missed ${formatDay(gap[0])}.` : `You missed ${gap.length} days.`}
 				{canRepair
-					? `Use ${gap.length} fixer${gap.length === 1 ? '' : 's'} to fill the gap.`
-					: `You need ${gap.length} fixer${gap.length === 1 ? '' : 's'} to fill the gap.`}
+					? `Use ${gap.length} reserve day${gap.length === 1 ? '' : 's'} to fill the gap.`
+					: `You need ${gap.length} reserve day${gap.length === 1 ? '' : 's'} to fill the gap.`}
 			</p>
 			<button class="btn primary small" onclick={repairStreak} disabled={!canRepair}>Repair streak</button>
 		</div>
 	{/if}
 </section>
+
+{#if habitDays > 0}
+	<section class="card habit-card">
+		<div class="habit-head">
+			<h2 class="habit-title">Habit building</h2>
+			<strong class="habit-count">{habitDays} practice day{habitDays === 1 ? '' : 's'}</strong>
+		</div>
+		<div
+			class="habit-track"
+			role="progressbar"
+			aria-label="Practice days toward a habit"
+			aria-valuemin={0}
+			aria-valuemax={HABIT_DAYS}
+			aria-valuenow={Math.min(habitDays, HABIT_DAYS)}
+		>
+			<span style:width="{habitPct}%"></span>
+		</div>
+		<p class="muted small habit-note">
+			{#if habitDays < HABIT_DAYS}
+				Most people find a new habit feels automatic after about two months of regular practice (anywhere from three weeks to eight months). Missed days don’t reset this count.
+			{:else}
+				About the point most habits start to feel automatic. Keep going; it’s yours now.
+			{/if}
+		</p>
+	</section>
+{/if}
 
 <section class="card">
 	<h2 class="cal-title">Last {WEEKS} weeks</h2>
@@ -170,6 +255,14 @@
 {#if settings.painTracking}
 	<section class="card">
 		<h2 class="cal-title">Pain, last {PAIN_DAYS} days</h2>
+		{#if areasInWindow.length > 0}
+			<div class="area-filter" role="group" aria-label="Show pain for">
+				<button type="button" class="filter-chip" class:on={activeArea === 'all'} aria-pressed={activeArea === 'all'} onclick={() => (areaFilter = 'all')}>All</button>
+				{#each areasInWindow as area (area.id)}
+					<button type="button" class="filter-chip" class:on={activeArea === area.id} aria-pressed={activeArea === area.id} onclick={() => (areaFilter = area.id)}>{area.label}</button>
+				{/each}
+			</div>
+		{/if}
 		{#if painPoints.length === 0}
 			<p class="muted small" style="margin: 0 0 0.6rem">
 				Rate your pain after a routine (or below) and the trend shows up here.
@@ -196,6 +289,10 @@
 					<button class="pain-btn" class:on={loggedToday === n} aria-label="Pain {n} out of 10" onclick={() => logPainNow(n)}>{n}</button>
 				{/each}
 			</div>
+			{#if quickEntry && quickEntry.score > 0}
+				<span class="small where-label">Where? (optional)</span>
+				<PainAreaChips selected={quickEntry.areas ?? []} label="Where does it hurt?" onchange={setQuickAreas} />
+			{/if}
 		</div>
 		<p class="muted small pain-guide">
 			Up to 5/10 during or after a session is usually fine if it’s settled by the next morning.
@@ -203,6 +300,57 @@
 		</p>
 	</section>
 {/if}
+
+{#if settings.functionChecks && functionChecks.length > 0}
+	<section class="card">
+		<h2 class="cal-title">Everyday tasks</h2>
+		{#if functionChecks.length === 1}
+			{@const first = functionChecks[0]}
+			<p class="small fn-lead">First check-in on {shortDate(first.date)}. The next one is due two weeks later.</p>
+			<ul class="fn-list">
+				{#each first.items as item, i (i)}
+					<li><span>{item.activity}</span><strong>{item.score}/10</strong></li>
+				{/each}
+			</ul>
+		{:else if fnChange}
+			<p class="fn-lead">
+				First <strong>{fnChange.baseline.toFixed(1)}</strong> → latest <strong>{fnChange.latest.toFixed(1)}</strong>
+				<span class="fn-change" class:up={fnChange.change > 0} class:down={fnChange.change < 0}>({signed(fnChange.change)})</span>
+			</p>
+			{#if fnChange.change >= MEANINGFUL_CHANGE}
+				<p class="small fn-verdict up">That’s a real improvement.</p>
+			{:else if fnChange.change <= -MEANINGFUL_CHANGE}
+				<p class="small fn-verdict down">That’s a real drop. Worth mentioning to a physio or GP.</p>
+			{/if}
+		{/if}
+		{#if fnPoints.length > 1}
+			<svg class="fn-chart" viewBox="-24 -8 {CHART_W + 32} {FN_H + 28}" role="img" aria-label="Average everyday task score at each check-in, 0 to 10, higher is better">
+				{#each [0, 5, 10] as v (v)}
+					{@const y = FN_H - (v / 10) * FN_H}
+					<line class="grid" x1="0" x2={CHART_W} y1={y} y2={y} />
+					<text class="axis" x="-8" y={y + 4} text-anchor="end">{v}</text>
+				{/each}
+				<text class="axis" x="0" y={FN_H + 18}>{shortDate(fnPoints[0].key)}</text>
+				<text class="axis" x={CHART_W} y={FN_H + 18} text-anchor="end">{shortDate(fnPoints[fnPoints.length - 1].key)}</text>
+				<path class="line" d={fnPath} />
+				{#each fnPoints as p (p.key)}
+					<circle class="dot" cx={p.x} cy={p.y} r="3.5"><title>{shortDate(p.key)}: {p.avg.toFixed(1)}</title></circle>
+				{/each}
+			</svg>
+			<p class="muted small fn-note">Average score at each check-in. Higher is better: 10 means as well as before.</p>
+		{/if}
+		{#if fnFlagDates.length > 0}
+			<p class="small fn-flag">
+				You reported new numbness, weakness or clumsiness on {fnFlagDates.join(', ')}.
+				<button class="link-btn" onclick={() => (showSigns = true)}>When to get it checked</button>
+			</p>
+		{/if}
+	</section>
+{/if}
+
+<div class="report-link">
+	<a class="btn" href="/report">Summary for your clinician</a>
+</div>
 
 {#if showSigns}
 	<WarningSigns onclose={() => (showSigns = false)} />
@@ -221,21 +369,25 @@
 		text-decoration: underline;
 		cursor: pointer;
 	}
-	.pain-chart {
+	.pain-chart,
+	.fn-chart {
 		width: 100%;
 		max-width: 26rem;
 		display: block;
 		margin: 0 auto;
 	}
-	.pain-chart .grid {
+	.pain-chart .grid,
+	.fn-chart .grid {
 		stroke: var(--border);
 		stroke-width: 1;
 	}
-	.pain-chart .axis {
+	.pain-chart .axis,
+	.fn-chart .axis {
 		fill: var(--muted);
 		font-size: 10px;
 	}
-	.pain-chart .line {
+	.pain-chart .line,
+	.fn-chart .line {
 		fill: none;
 		stroke: var(--accent);
 		stroke-width: 2;
@@ -243,6 +395,103 @@
 	}
 	.pain-chart .dot {
 		fill: var(--accent);
+	}
+	/* higher is better here, so green rather than the pain chart's red */
+	.fn-chart .line {
+		stroke: var(--ok);
+	}
+	.fn-chart .dot {
+		fill: var(--ok);
+	}
+	.area-filter {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+		margin-bottom: 0.7rem;
+	}
+	.filter-chip {
+		min-height: 2rem;
+		padding: 0.2rem 0.65rem;
+		border-radius: 999px;
+		border: 1px solid var(--border);
+		background: var(--surface);
+		color: var(--text);
+		font: inherit;
+		font-size: 0.8rem;
+		font-weight: 600;
+		cursor: pointer;
+	}
+	.filter-chip.on {
+		background: var(--accent);
+		border-color: var(--accent);
+		color: #fff;
+	}
+	.where-label {
+		margin-top: 0.3rem;
+	}
+	.fn-lead {
+		margin: 0 0 0.4rem;
+	}
+	.fn-lead strong {
+		font-variant-numeric: tabular-nums;
+	}
+	.fn-change {
+		color: var(--muted);
+		font-variant-numeric: tabular-nums;
+	}
+	.fn-change.up,
+	.fn-verdict.up {
+		color: var(--ok);
+		font-weight: 700;
+	}
+	.fn-change.down,
+	.fn-verdict.down {
+		color: var(--danger);
+		font-weight: 700;
+	}
+	.fn-verdict {
+		margin: 0 0 0.6rem;
+	}
+	.fn-list {
+		list-style: none;
+		margin: 0.2rem 0 0;
+		padding: 0;
+		display: grid;
+		gap: 0.3rem;
+	}
+	.fn-list li {
+		display: flex;
+		justify-content: space-between;
+		gap: 0.8rem;
+		padding: 0.4rem 0.6rem;
+		border-radius: 10px;
+		background: var(--surface-2);
+		font-size: 0.9rem;
+	}
+	.fn-list li span {
+		min-width: 0;
+		overflow-wrap: anywhere;
+	}
+	.fn-list strong {
+		flex-shrink: 0;
+		font-variant-numeric: tabular-nums;
+	}
+	.fn-chart {
+		margin-top: 0.4rem;
+	}
+	.fn-note {
+		margin: 0.4rem 0 0;
+	}
+	.fn-flag {
+		margin: 0.8rem 0 0;
+		padding: 0.6rem 0.75rem;
+		border-radius: 12px;
+		background: color-mix(in srgb, var(--danger) 10%, transparent);
+	}
+	.report-link {
+		display: flex;
+		justify-content: center;
+		margin-top: 1rem;
 	}
 	.pain-now {
 		display: flex;
@@ -376,6 +625,37 @@
 	}
 	.fixer-track span.filled {
 		background: var(--accent);
+	}
+	.habit-head {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 0.75rem;
+		flex-wrap: wrap;
+	}
+	.habit-title {
+		font-size: 1rem;
+		margin: 0;
+	}
+	.habit-count {
+		font-variant-numeric: tabular-nums;
+	}
+	.habit-track {
+		height: 8px;
+		margin-top: 0.7rem;
+		border-radius: 999px;
+		background: var(--surface-2);
+		overflow: hidden;
+	}
+	.habit-track span {
+		display: block;
+		height: 100%;
+		border-radius: 999px;
+		background: var(--accent);
+	}
+	.habit-note {
+		margin: 0.7rem 0 0;
+		line-height: 1.45;
 	}
 	.repair {
 		display: flex;

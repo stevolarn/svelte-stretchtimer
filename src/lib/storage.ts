@@ -1,4 +1,4 @@
-import type { MorningCheck, PainEntry, Routine, Settings, StreakState, StorageSnapshot } from './types.ts';
+import type { FunctionCheck, MorningCheck, PainEntry, Routine, Settings, StreakState, StorageSnapshot } from './types.ts';
 
 const ROUTINES_KEY = 'stretchTimer.routines';
 const SETTINGS_KEY = 'stretchTimer.settings';
@@ -6,6 +6,7 @@ const STREAK_KEY = 'stretchTimer.streak';
 const SNAPSHOTS_KEY = 'stretchTimer.snapshots';
 const PAIN_KEY = 'stretchTimer.pain';
 const MORNING_KEY = 'stretchTimer.morning';
+const FUNCTION_KEY = 'stretchTimer.function';
 const PHOTO_DB = 'stretch-timer';
 const PHOTO_STORE = 'photos';
 
@@ -14,7 +15,11 @@ export const defaultSettings: Settings = {
 	beepStart: true,
 	beepSideSwitch: true,
 	beepCountdown: true,
+	beepReps: true,
+	metronome: false,
 	beepFinish: true,
+	voiceCues: false,
+	vibrate: false,
 	breaksEnabled: true,
 	breakSeconds: 5,
 	testingMode: false,
@@ -26,7 +31,8 @@ export const defaultSettings: Settings = {
 	morningCheck: true,
 	painAlerts: true,
 	progressPrompts: true,
-	weeklyReview: true
+	weeklyReview: true,
+	functionChecks: true
 };
 
 export const defaultStreak: StreakState = { completedDates: [], fixersUsed: 0 };
@@ -74,6 +80,13 @@ export function loadMorningChecks(): MorningCheck[] {
 }
 export function saveMorningChecks(checks: MorningCheck[]): void {
 	saveJSON(MORNING_KEY, checks);
+}
+
+export function loadFunctionChecks(): FunctionCheck[] {
+	return loadJSON<FunctionCheck[]>(FUNCTION_KEY, []);
+}
+export function saveFunctionChecks(checks: FunctionCheck[]): void {
+	saveJSON(FUNCTION_KEY, checks);
 }
 
 export function loadStreak(): StreakState {

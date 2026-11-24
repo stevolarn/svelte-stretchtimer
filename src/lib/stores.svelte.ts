@@ -1,8 +1,9 @@
-import type { MorningCheck, PainEntry, Routine, Settings, Stretch, StreakState, StorageSnapshot } from './types.ts';
+import type { FunctionCheck, MorningCheck, PainArea, PainEntry, Routine, RoutineChange, Settings, StockStretch, Stretch, StreakState, StorageSnapshot } from './types.ts';
 import { showToast } from './toast.svelte.ts';
 import {
 	deletePhotoData,
 	getPhotoData,
+	loadFunctionChecks,
 	loadMorningChecks,
 	loadPain,
 	loadRoutines,
@@ -10,6 +11,7 @@ import {
 	loadStreak,
 	recordSnapshot,
 	requestPersistentStorage,
+	saveFunctionChecks,
 	saveMorningChecks,
 	savePain,
 	savePhotoData,
@@ -21,7 +23,9 @@ import { addDays, todayKey } from './time.ts';
 import { fixersAvailable, repairGap, canRepairStreak } from './streak.ts';
 import { uid } from './util.ts';
 import { spreadTimes } from './frequency.ts';
+import { easeRoutine, progressRoutine, type DoseChange } from './recovery.ts';
 import { stockStretches } from './stockStretches.ts';
+import { clampReps, clampRepSeconds } from './timeline.ts';
 import { autoSaveToFileHandle, isFileAutoBackupConnected } from './backup.ts';
 import { syncReminderState } from './reminders.ts';
 
@@ -30,6 +34,7 @@ export const settings = $state<Settings>(loadSettings());
 export const streak = $state<StreakState>(loadStreak());
 export const painLog = $state<PainEntry[]>(loadPain());
 export const morningChecks = $state<MorningCheck[]>(loadMorningChecks());
+export const functionChecks = $state<FunctionCheck[]>(loadFunctionChecks());
 
 /**
  * Older data kept 'N× a day' goals and a one-routine-per-weekday plan; both
@@ -87,6 +92,25 @@ export function newStretch(): Stretch {
 	};
 }
 
+/** A routine stretch built from a library entry; rep-based moves keep their reps and tempo. */
+export function stretchFromStock(s: StockStretch): Stretch {
+	const stretch: Stretch = {
+		...newStretch(),
+		name: s.name,
+		description: s.description,
+		sides: s.sides,
+		durationSeconds: s.defaultSeconds,
+		iconKey: s.iconKey
+	};
+	if (s.defaultReps !== undefined) {
+		stretch.mode = 'reps';
+		stretch.reps = clampReps(s.defaultReps);
+		stretch.repSeconds = clampRepSeconds(s.repSeconds);
+		stretch.durationSeconds = stretch.reps * stretch.repSeconds;
+	}
+	return stretch;
+}
+
 export function newRoutine(name = 'New routine', breakSeconds = 5): Routine {
 	return { id: uid(), name, stretches: [], createdAt: Date.now(), breakSeconds };
 }
@@ -115,26 +139,34 @@ export type StarterRoutineKind =
 	| 'wrist-dumbbell-holds'
 	| 'elbow-relief'
 	| 'shoulder-rehab'
-	| 'rsi-upper-body';
+	| 'rsi-upper-body'
+	| 'neck-shoulder-strength'
+	| 'tennis-elbow-loading'
+	| 'golfers-elbow-loading'
+	| 'wrist-forearm-strength';
 
 type StarterStretch = Partial<Stretch> & Pick<Stretch, 'name' | 'description' | 'sides'>;
 
-/** Starter stretch copied from the stock library, optionally overriding its duration. */
-function stock(id: string, durationSeconds?: number): StarterStretch {
+/**
+ * Starter stretch copied from the stock library, optionally overriding its duration.
+ * Rep-based stock moves come across as reps at their tempo; `reps` overrides the count
+ * (and `durationSeconds` is ignored for them, since the duration follows from the reps).
+ */
+function stock(id: string, durationSeconds?: number, reps?: number): StarterStretch {
 	const s = stockStretches.find((item) => item.id === id);
 	if (!s) throw new Error(`Unknown stock stretch: ${id}`);
-	return {
-		name: s.name,
-		description: s.description,
-		sides: s.sides,
-		durationSeconds: durationSeconds ?? s.defaultSeconds,
-		iconKey: s.iconKey
-	};
+	const base = { name: s.name, description: s.description, sides: s.sides, iconKey: s.iconKey };
+	if (s.defaultReps !== undefined) {
+		const count = clampReps(reps ?? s.defaultReps);
+		const tempo = clampRepSeconds(s.repSeconds);
+		return { ...base, mode: 'reps', reps: count, repSeconds: tempo, durationSeconds: count * tempo };
+	}
+	return { ...base, durationSeconds: durationSeconds ?? s.defaultSeconds };
 }
 
 const starterDefinitions: Record<
 	StarterRoutineKind,
-	{ name: string; stretches: StarterStretch[]; breakSeconds?: number; sets?: number }
+	{ name: string; stretches: StarterStretch[]; breakSeconds?: number; sets?: number; weeklyGoal?: number }
 > = {
 	'desk-reset': {
 		name: 'Desk reset',
@@ -347,12 +379,13 @@ const starterDefinitions: Record<
 		breakSeconds: 0,
 		sets: 3,
 		stretches: [
-			stock('dynamic-db-wrist-extension'),
-			stock('dynamic-db-wrist-flexion'),
-			stock('dynamic-db-pronation'),
-			stock('dynamic-db-supination'),
-			stock('dynamic-db-ulnar-deviation'),
-			stock('dynamic-db-radial-deviation')
+			// 8 reps a side keeps three rounds near the old 18 minutes
+			stock('dynamic-db-wrist-extension', undefined, 8),
+			stock('dynamic-db-wrist-flexion', undefined, 8),
+			stock('dynamic-db-pronation', undefined, 8),
+			stock('dynamic-db-supination', undefined, 8),
+			stock('dynamic-db-ulnar-deviation', undefined, 8),
+			stock('dynamic-db-radial-deviation', undefined, 8)
 		]
 	},
 	'elbow-relief': {
@@ -398,6 +431,42 @@ const starterDefinitions: Record<
 			stock('mob-median-nerve-glide')
 		]
 	},
+	'neck-shoulder-strength': {
+		name: 'Neck & shoulder strength',
+		breakSeconds: 5,
+		weeklyGoal: 5,
+		stretches: [
+			// 8 reps each keeps the whole circuit to about 3 minutes
+			stock('dynamic-band-shrugs', undefined, 8),
+			stock('dynamic-band-lateral-raise', undefined, 8),
+			stock('dynamic-band-row', undefined, 8),
+			stock('dynamic-band-reverse-fly', undefined, 8),
+			stock('dynamic-band-wrist-extension', undefined, 8)
+		]
+	},
+	'tennis-elbow-loading': {
+		name: 'Tennis elbow loading',
+		breakSeconds: 10,
+		sets: 3,
+		// Tyler twist 3 x 15 (see docs/research.md); the dumbbell slow lowers are in Elbow relief
+		stretches: [stock('iso-hand-wrist-extension'), stock('ecc-tyler-twist')]
+	},
+	'golfers-elbow-loading': {
+		name: 'Golfer’s elbow loading',
+		breakSeconds: 10,
+		sets: 3,
+		stretches: [stock('iso-hand-wrist-flexion'), stock('ecc-reverse-tyler-twist')]
+	},
+	'wrist-forearm-strength': {
+		name: 'Wrist & forearm strength',
+		breakSeconds: 10,
+		stretches: [
+			stock('dynamic-db-wrist-extension'),
+			stock('dynamic-db-wrist-flexion'),
+			stock('dynamic-db-pronation'),
+			stock('dynamic-db-supination')
+		]
+	},
 	'wrist-dumbbell-holds': {
 		name: 'Wrist dumbbell holds',
 		breakSeconds: 10,
@@ -418,6 +487,7 @@ export function starterRoutine(kind: StarterRoutineKind): Routine {
 	const definition = starterDefinitions[kind];
 	const routine = newRoutine(definition.name, definition.breakSeconds);
 	if (definition.sets) routine.sets = definition.sets;
+	if (definition.weeklyGoal) routine.frequency = { per: 'week', times: definition.weeklyGoal, since: todayKey() };
 	const stretches = definition.stretches;
 
 	routine.stretches = stretches.map((stretch) => ({
@@ -489,16 +559,57 @@ export function gentleVersion(r: Routine): Routine {
 	const kept = r.stretches.filter((s) => {
 		const known = stockStretches.find((item) => item.name === s.name);
 		if (known && hard.has(known.type)) return false;
-		return !/dumbbell|\bband\b|weight|push-?up|plank/i.test(s.name);
+		if (s.mode === 'reps') return false;
+		return !/dumbbell|\bband\b|weight|push-?up|plank|flexbar|tyler/i.test(s.name);
 	});
 	const stretches = kept.length > 0 ? kept : microStretches();
 	return { ...r, name: `${r.name || 'Routine'} · gentle`, stretches, sets: 1 };
 }
 
-/** Record how the pain is right now (0-10). */
-export function logPain(score: number, routineId: string | null, gentle = false): void {
-	painLog.push({ date: todayKey(), score, routineId, at: Date.now(), ...(gentle && { gentle }) });
+export const PAIN_AREAS: { id: PainArea; label: string }[] = [
+	{ id: 'wrist-hand', label: 'Wrist & hand' },
+	{ id: 'thumb', label: 'Thumb' },
+	{ id: 'forearm-elbow', label: 'Forearm & elbow' },
+	{ id: 'neck', label: 'Neck' },
+	{ id: 'shoulder', label: 'Shoulder' },
+	{ id: 'upper-back', label: 'Upper back' }
+];
+
+function isPainArea(value: unknown): value is PainArea {
+	return PAIN_AREAS.some((a) => a.id === value);
+}
+
+/** Record how the pain is right now (0-10), and optionally where. */
+export function logPain(score: number, routineId: string | null, gentle = false, areas: PainArea[] = []): void {
+	const where = [...new Set(areas.filter(isPainArea))];
+	painLog.push({ date: todayKey(), score, routineId, at: Date.now(), ...(gentle && { gentle }), ...(where.length && { areas: where }) });
 	savePain(painLog);
+}
+
+/** Set where the latest pain entry hurts (the area chips come after the score tap). */
+export function setLastPainAreas(areas: PainArea[]): void {
+	const last = painLog.at(-1);
+	if (!last) return;
+	const where = [...new Set(areas.filter(isPainArea))];
+	if (where.length) last.areas = where;
+	else delete last.areas;
+	savePain(painLog);
+}
+
+/**
+ * Save a "how are everyday tasks?" check-in (PSFS): up to three activities rated 0-10.
+ * A second check-in on the same day replaces the first.
+ */
+export function logFunctionCheck(items: FunctionCheck['items'], flag = false): void {
+	const clean = items
+		.map((i) => ({ activity: i.activity.trim().slice(0, 80), score: Math.min(10, Math.max(0, Math.round(i.score))) }))
+		.filter((i) => i.activity)
+		.slice(0, 3);
+	if (clean.length === 0) return;
+	const today = todayKey();
+	const kept = functionChecks.filter((c) => c.date !== today);
+	functionChecks.splice(0, functionChecks.length, ...kept, { date: today, at: Date.now(), items: clean, ...(flag && { flag }) });
+	saveFunctionChecks(functionChecks);
 }
 
 /** Remove the latest pain entry (undo for an accidental tap). */
@@ -527,6 +638,67 @@ export function updateRoutine(id: string, patch: Partial<Routine>): void {
 		Object.assign(r, patch);
 		saveAll();
 	}
+}
+
+/** Record a dose change on a routine, keeping the last ten. */
+function logChange(r: Routine, kind: RoutineChange['kind'], note: string): void {
+	r.history = [...(r.history ?? []), { date: todayKey(), kind, note: note.slice(0, 200) }].slice(-10);
+}
+
+/** Apply the next small step up (longer holds, more reps) and note it in the routine's history. */
+export function stepUpRoutine(id: string): DoseChange | null {
+	const r = getRoutine(id);
+	if (!r) return null;
+	const result = progressRoutine(r);
+	if (result.changes.length === 0) return result;
+	r.stretches = result.routine.stretches;
+	r.progressAnswered = todayKey();
+	logChange(r, 'progress', result.changes.join('; '));
+	saveAll();
+	return result;
+}
+
+/** Add one set (up to 20) as the progression step. */
+export function addRoutineSet(id: string): void {
+	const r = getRoutine(id);
+	if (!r) return;
+	const before = r.sets ?? 1;
+	const after = Math.min(20, before + 1);
+	r.sets = after;
+	r.progressAnswered = todayKey();
+	if (after !== before) logChange(r, 'set', `Sets ${before} → ${after}`);
+	saveAll();
+}
+
+/** Answer "ready to progress?" with "not yet". */
+export function skipProgress(id: string): void {
+	const r = getRoutine(id);
+	if (!r) return;
+	r.progressAnswered = todayKey();
+	saveAll();
+}
+
+/** Do about a quarter less (a set, or shorter holds and fewer reps) and note it in the history. */
+export function easeOffRoutine(id: string): DoseChange | null {
+	const r = getRoutine(id);
+	if (!r) return null;
+	const result = easeRoutine(r);
+	if (result.changes.length > 0) {
+		r.stretches = result.routine.stretches;
+		r.sets = result.routine.sets;
+		logChange(r, 'ease', result.changes.join('; '));
+	}
+	r.easeAnswered = todayKey();
+	saveAll();
+	return result;
+}
+
+/** Answer "ease off?" with "not now". */
+export function dismissEase(id: string): void {
+	const r = getRoutine(id);
+	if (!r) return;
+	r.easeAnswered = todayKey();
+	saveAll();
 }
 
 export function deleteRoutine(id: string): void {
@@ -580,6 +752,10 @@ export async function duplicateRoutine(id: string): Promise<Routine> {
 		breakSeconds: src.breakSeconds,
 		stretches: [],
 		completions: [],
+		// a copy starts its own dose history and prompts
+		history: undefined,
+		easeAnswered: undefined,
+		progressAnswered: undefined,
 		createdAt: Date.now()
 	};
 	for (const s of src.stretches) {
@@ -624,6 +800,8 @@ export interface RoutineBackup {
 	/** absent in backups made before pain and morning checks were included */
 	pain?: PainEntry[];
 	morning?: MorningCheck[];
+	/** absent in backups made before function check-ins existed */
+	function?: FunctionCheck[];
 }
 
 /** Serialize routines and their local photos into a portable JSON backup. */
@@ -642,7 +820,8 @@ export async function exportBackup(): Promise<string> {
 		routines: JSON.parse(JSON.stringify(routines)) as Routine[],
 		photos,
 		pain: JSON.parse(JSON.stringify(painLog)) as PainEntry[],
-		morning: JSON.parse(JSON.stringify(morningChecks)) as MorningCheck[]
+		morning: JSON.parse(JSON.stringify(morningChecks)) as MorningCheck[],
+		function: JSON.parse(JSON.stringify(functionChecks)) as FunctionCheck[]
 	};
 	return JSON.stringify(backup, null, 2);
 }
@@ -676,9 +855,9 @@ function importGoal(candidate: Record<string, unknown>): Pick<Routine, 'schedule
 
 const DATE_KEY = /^\d{4}-\d{2}-\d{2}$/;
 
-/** A YYYY-MM-DD key no later than tomorrow (allowing for time zones), so bad dates can't jump the queue. */
+/** A YYYY-MM-DD key from 2000 to tomorrow (allowing for time zones), so bad dates can't jump the queue. */
 function validDay(value: unknown): value is string {
-	return typeof value === 'string' && DATE_KEY.test(value) && !Number.isNaN(Date.parse(value)) && value <= addDays(todayKey(), 1);
+	return typeof value === 'string' && DATE_KEY.test(value) && value >= '2000-01-01' && !Number.isNaN(Date.parse(value)) && value <= addDays(todayKey(), 1);
 }
 
 /**
@@ -698,7 +877,15 @@ function importPain(value: unknown, idMap: Map<string, string>): number {
 			oldId === null || oldId === MICRO_BREAK_ID
 				? oldId
 				: (idMap.get(oldId) ?? (routines.some((r) => r.id === oldId) ? oldId : null));
-		painLog.push({ date: p.date, score: Math.round(p.score), routineId, at: p.at, ...(p.gentle === true && { gentle: true }) });
+		const areas = Array.isArray(p.areas) ? [...new Set(p.areas.filter(isPainArea))] : [];
+		painLog.push({
+			date: p.date,
+			score: Math.round(p.score),
+			routineId,
+			at: p.at,
+			...(p.gentle === true && { gentle: true }),
+			...(areas.length && { areas })
+		});
 		seen.add(p.at);
 		added += 1;
 	}
@@ -728,9 +915,51 @@ function importMorning(value: unknown): number {
 	return added;
 }
 
+/** Merge backed-up function check-ins for days that don't have one yet. */
+function importFunction(value: unknown): number {
+	if (!Array.isArray(value)) return 0;
+	const days = new Set(functionChecks.map((c) => c.date));
+	let added = 0;
+	for (const c of value) {
+		if (!isRecord(c) || !validDay(c.date) || days.has(c.date) || !Array.isArray(c.items)) continue;
+		const items = c.items
+			.filter((i): i is { activity: string; score: number } => isRecord(i) && typeof i.activity === 'string' && typeof i.score === 'number')
+			.map((i) => ({ activity: i.activity.trim().slice(0, 80), score: Math.min(10, Math.max(0, Math.round(i.score))) }))
+			.filter((i) => i.activity)
+			.slice(0, 3);
+		if (items.length === 0) continue;
+		functionChecks.push({ date: c.date, at: typeof c.at === 'number' ? c.at : Date.now(), items, ...(c.flag === true && { flag: true }) });
+		days.add(c.date);
+		added += 1;
+	}
+	if (added) {
+		functionChecks.sort((a, b) => a.date.localeCompare(b.date));
+		saveFunctionChecks(functionChecks);
+	}
+	return added;
+}
+
+/** Keep the well-formed dose-history entries (last ten) and prompt answers from a backup. */
+function importHistory(candidate: Record<string, unknown>): Pick<Routine, 'history' | 'easeAnswered' | 'progressAnswered'> {
+	// Without these, a restore would bring back an ease-off or progress prompt that was already answered.
+	const answered = {
+		...(validDay(candidate.easeAnswered) && { easeAnswered: candidate.easeAnswered }),
+		...(validDay(candidate.progressAnswered) && { progressAnswered: candidate.progressAnswered })
+	};
+	if (!Array.isArray(candidate.history)) return answered;
+	const kept: RoutineChange[] = [];
+	for (const item of candidate.history) {
+		if (!isRecord(item) || !validDay(item.date)) continue;
+		if (item.kind !== 'progress' && item.kind !== 'set' && item.kind !== 'ease') continue;
+		if (typeof item.note !== 'string') continue;
+		kept.push({ date: item.date, kind: item.kind, note: item.note.trim().slice(0, 200) });
+	}
+	return kept.length ? { ...answered, history: kept.slice(-10) } : answered;
+}
+
 export async function importBackup(
 	raw: string
-): Promise<{ added: number; skipped: number; pain: number; morning: number }> {
+): Promise<{ added: number; skipped: number; pain: number; morning: number; function: number }> {
 	const parsed: unknown = JSON.parse(raw);
 	const source = Array.isArray(parsed) ? { routines: parsed, photos: {} } : parsed;
 	if (!isRecord(source) || !Array.isArray(source.routines)) throw new Error('This file is not a valid Stretch Timer backup.');
@@ -752,7 +981,9 @@ export async function importBackup(
 			breakSeconds: typeof candidate.breakSeconds === 'number' ? candidate.breakSeconds : undefined,
 			sets: typeof candidate.sets === 'number' ? candidate.sets : undefined,
 			cue: typeof candidate.cue === 'string' && candidate.cue.trim() ? candidate.cue.trim() : undefined,
+			fallback: candidate.fallback === 'gentle' ? 'gentle' : undefined,
 			...importGoal(candidate),
+			...importHistory(candidate),
 			stretches: []
 		};
 
@@ -768,6 +999,10 @@ export async function importBackup(
 				photoId: null,
 				iconKey: typeof item.iconKey === 'string' ? item.iconKey : undefined
 			};
+			if (item.mode === 'hold' || item.mode === 'reps') stretch.mode = item.mode;
+			if (typeof item.reps === 'number' && Number.isFinite(item.reps)) stretch.reps = clampReps(item.reps);
+			if (typeof item.repSeconds === 'number' && Number.isFinite(item.repSeconds)) stretch.repSeconds = clampRepSeconds(item.repSeconds);
+			if (typeof item.load === 'string' && item.load.trim()) stretch.load = item.load.trim().slice(0, 60).trimEnd();
 			if (originalPhotoId && typeof photos[originalPhotoId] === 'string') {
 				stretch.photoId = uid();
 				await savePhotoData(stretch.photoId, photos[originalPhotoId] as string).catch(() => {
@@ -785,7 +1020,13 @@ export async function importBackup(
 		added += 1;
 	}
 	saveRoutines(routines);
-	return { added, skipped, pain: importPain(source.pain, idMap), morning: importMorning(source.morning) };
+	return {
+		added,
+		skipped,
+		pain: importPain(source.pain, idMap),
+		morning: importMorning(source.morning),
+		function: importFunction(source.function)
+	};
 }
 
 /* ----------------------------- Streak actions ----------------------------- */

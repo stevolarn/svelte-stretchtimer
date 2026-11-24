@@ -57,6 +57,16 @@ export function beepTick(secondsLeft: number): void {
 	beep({ freq: secondsLeft <= 1 ? 1245 : 880, duration: 0.07, type: 'square', gain: 0.07 });
 }
 
+/** Quiet rep-boundary tick: softer and lower than the countdown tick. */
+export function beepRep(): void {
+	beep({ freq: 520, duration: 0.05, type: 'sine', gain: 0.05 });
+}
+
+/** Metronome click: an accented click as a rep starts, a lower one at the turnaround. */
+export function beepMetronome(accent: boolean): void {
+	beep({ freq: accent ? 1320 : 740, duration: 0.03, type: 'triangle', gain: accent ? 0.09 : 0.07 });
+}
+
 /** Routine finish fanfare. */
 export function beepFinish(): void {
 	beep({ freq: 523.25, duration: 0.16, type: 'sine' });
@@ -65,10 +75,33 @@ export function beepFinish(): void {
 	beep({ freq: 1046.5, duration: 0.5, type: 'sine', delay: 0.54 });
 }
 
+/** Say a short cue aloud, cutting off anything still being said. */
+export function speak(text: string): void {
+	if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+	window.speechSynthesis.cancel();
+	const utterance = new SpeechSynthesisUtterance(text);
+	utterance.rate = 1.05;
+	window.speechSynthesis.speak(utterance);
+}
+
+export function stopSpeaking(): void {
+	if (typeof window !== 'undefined' && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+}
+
+/** Buzz on phones that support it (ignored elsewhere, including iOS Safari). */
+export function vibrate(pattern: number | number[]): void {
+	if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') navigator.vibrate(pattern);
+}
+
 /** Play a named cue directly (used by Settings "test" buttons). */
-export function playCue(kind: 'start' | 'side' | 'tick' | 'finish'): void {
+export function playCue(kind: 'start' | 'side' | 'tick' | 'rep' | 'metronome' | 'finish'): void {
 	if (kind === 'start') beepStart();
 	else if (kind === 'side') beepSideSwitch();
 	else if (kind === 'tick') beepTick(3);
+	else if (kind === 'rep') beepRep();
+	else if (kind === 'metronome') {
+		beepMetronome(true);
+		setTimeout(() => beepMetronome(false), 600);
+	}
 	else beepFinish();
 }

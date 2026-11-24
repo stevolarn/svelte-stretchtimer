@@ -2,7 +2,7 @@ import type { StockStretch } from './types';
 
 /** Finer-grained tags than area, worked out from each movement's name and cues. */
 export type Focus = 'neck' | 'shoulders' | 'elbow' | 'wrist-hand' | 'back' | 'core' | 'hips' | 'legs';
-export type Equipment = 'none' | 'band' | 'finger-band' | 'dumbbell' | 'wall' | 'chair';
+export type Equipment = 'none' | 'band' | 'finger-band' | 'dumbbell' | 'flexbar' | 'wall' | 'chair';
 
 export const focusLabels: Record<Focus, string> = {
 	neck: 'Neck',
@@ -20,6 +20,7 @@ export const equipmentLabels: Record<Equipment, string> = {
 	band: 'Resistance band',
 	'finger-band': 'Finger band',
 	dumbbell: 'Dumbbell',
+	flexbar: 'FlexBar or towel',
 	wall: 'Wall or door',
 	chair: 'Chair or desk'
 };
@@ -72,6 +73,13 @@ const focusOverrides: Record<string, Focus[]> = {
 	'iso-hand-wrist-flexion': ['elbow', 'wrist-hand'],
 	'ecc-tennis-elbow': ['elbow', 'wrist-hand'],
 	'ecc-golfers-elbow': ['elbow', 'wrist-hand'],
+	'ecc-tyler-twist': ['elbow', 'wrist-hand'],
+	'ecc-reverse-tyler-twist': ['elbow', 'wrist-hand'],
+	'dynamic-band-shrugs': ['neck', 'shoulders'],
+	'dynamic-band-lateral-raise': ['shoulders'],
+	'dynamic-band-row': ['shoulders', 'back'],
+	'dynamic-band-reverse-fly': ['shoulders', 'back'],
+	'dynamic-band-wrist-extension': ['elbow', 'wrist-hand'],
 	'mob-pendulum-swings': ['shoulders'],
 	'iso-doorframe-external-rotation': ['shoulders'],
 	'dynamic-forearm-wall-slides': ['shoulders', 'back'],
@@ -105,6 +113,7 @@ export function equipmentOf(s: StockStretch): Equipment[] {
 		const t = `${s.id} ${text(s)}`;
 		const found: Equipment[] = [];
 		if (/dumbbell/.test(t)) found.push('dumbbell');
+		if (/flexbar|tyler/.test(t)) found.push('flexbar');
 		if (/finger-band|thumb-band|finger band|thumb band/.test(t)) found.push('finger-band');
 		else if (/\bband\b|band-/.test(t)) found.push('band');
 		if (/\bwall\b|doorway|door ?frame/.test(t)) found.push('wall');

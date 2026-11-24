@@ -40,27 +40,44 @@ export function buildTimeline(routine: Routine, settings: Settings): Segment[] {
 	return segments;
 }
 
+/** Seconds one side of a stretch lasts: holds use durationSeconds, reps use reps x seconds-per-rep. */
+export function stretchSeconds(stretch: Routine['stretches'][number]): number {
+	if (stretch.mode !== 'reps') return clampSeconds(stretch.durationSeconds);
+	return clampReps(stretch.reps) * clampRepSeconds(stretch.repSeconds);
+}
+
+export function clampReps(value: number | undefined): number {
+	return clampSeconds(value ?? 10, 1, 50);
+}
+
+export function clampRepSeconds(value: number | undefined): number {
+	return clampSeconds(value ?? 3, 1, 20);
+}
+
+function stretchSegment(stretch: Routine['stretches'][number], side: Segment['side']): Segment {
+	const seg: Segment = {
+		kind: 'stretch',
+		stretch,
+		side,
+		seconds: stretchSeconds(stretch),
+		label: stretch.name || 'Stretch'
+	};
+	if (stretch.mode === 'reps') {
+		seg.reps = clampReps(stretch.reps);
+		seg.repSeconds = clampRepSeconds(stretch.repSeconds);
+	}
+	return seg;
+}
+
 function buildSet(routine: Routine, settings: Settings, breakSecs: number): Segment[] {
 	const segments: Segment[] = [];
 	const last = routine.stretches.length - 1;
 
 	routine.stretches.forEach((stretch, i) => {
 		if (stretch.sides === 'one') {
-			segments.push({
-				kind: 'stretch',
-				stretch,
-				side: null,
-				seconds: clampSeconds(stretch.durationSeconds),
-				label: stretch.name || 'Stretch'
-			});
+			segments.push(stretchSegment(stretch, null));
 		} else {
-			segments.push({
-				kind: 'stretch',
-				stretch,
-				side: 'left',
-				seconds: clampSeconds(stretch.durationSeconds),
-				label: stretch.name || 'Stretch'
-			});
+			segments.push(stretchSegment(stretch, 'left'));
 			if (settings.breaksEnabled && breakSecs > 0) {
 				segments.push({
 					kind: 'break',
@@ -70,13 +87,7 @@ function buildSet(routine: Routine, settings: Settings, breakSecs: number): Segm
 					label: 'Break'
 				});
 			}
-			segments.push({
-				kind: 'stretch',
-				stretch,
-				side: 'right',
-				seconds: clampSeconds(stretch.durationSeconds),
-				label: stretch.name || 'Stretch'
-			});
+			segments.push(stretchSegment(stretch, 'right'));
 		}
 		if (settings.breaksEnabled && i < last && breakSecs > 0) {
 			segments.push({
@@ -97,7 +108,10 @@ export function timelineTotal(segments: Segment[]): number {
 
 /** Short summary of a stretch's duration, e.g. "45s" or "L/R 30s". */
 export function stretchDurationLabel(stretch: Routine['stretches'][number]): string {
-	const time = durationText(stretch.durationSeconds);
+	const time =
+		stretch.mode === 'reps'
+			? `${clampReps(stretch.reps)} reps · ${clampRepSeconds(stretch.repSeconds)}s`
+			: durationText(stretch.durationSeconds);
 	return stretch.sides === 'one' ? time : `${time} each side`;
 }
 

@@ -20,6 +20,7 @@
 		logPain,
 		MICRO_BREAK_ID,
 		microBreak,
+		setLastPainAreas,
 		settings,
 		shuffleMicroBreak,
 		streak,
@@ -34,6 +35,8 @@
 	import StretchIllustration from '$lib/components/StretchIllustration.svelte';
 	import PhotoThumb from '$lib/components/PhotoThumb.svelte';
 	import Modal from '$lib/components/Modal.svelte';
+	import PainAreaChips from '$lib/components/PainAreaChips.svelte';
+	import type { PainArea } from '$lib/types';
 
 	const isMicro = $derived(page.params.id === MICRO_BREAK_ID);
 	// Opened directly (reload or shortcut): shuffle one up rather than showing a missing routine.
@@ -51,19 +54,27 @@
 
 	/** Pain check-in on the finish screen: the score logged this time, if any. */
 	let painScore = $state<number | null>(null);
+	/** Where it hurts, picked after the score; kept so re-scoring doesn't lose it. */
+	let painAreas = $state<PainArea[]>([]);
 	function checkIn(score: number): void {
 		if (painScore !== null) undoLastPain();
-		logPain(score, player.routineId, gentle);
+		logPain(score, player.routineId, gentle, score > 0 ? painAreas : []);
 		painScore = score;
 	}
 	function undoCheckIn(): void {
 		undoLastPain();
 		painScore = null;
+		painAreas = [];
 	}
 
 	const segment = $derived(player.segments[player.index] ?? null);
 	const nextSegment = $derived(player.segments[player.index + 1] ?? null);
 	const fraction = $derived(segment && segment.seconds > 0 ? player.remaining / segment.seconds : 0);
+	/** Equipment/load for the stretch on screen (or the one coming up, during a rest). */
+	const loadLabel = $derived.by(() => {
+		const s = segment?.kind === 'break' ? nextSegment?.stretch : segment?.stretch;
+		return s?.mode === 'reps' ? (s.load ?? '').trim() : '';
+	});
 	const streakNow = $derived(currentStreak(streak));
 	/** A stretch "starts" on its first side; the right side continues the same stretch. */
 	const isStart = (s: (typeof player.segments)[number]) => s.kind === 'stretch' && s.side !== 'right';
@@ -148,6 +159,7 @@
 	/* --------------------------- controls -------------------------- */
 	function begin(): void {
 		painScore = null;
+		painAreas = [];
 		if (routine) startPlayer(routine, settings);
 	}
 
@@ -220,7 +232,7 @@
 					<li>
 						<span class="idle-num">{i + 1}</span>
 						<PhotoThumb photoId={s.photoId} iconKey={s.iconKey} name={s.name} size={48} rounded={9} />
-						<span class="idle-name">{s.name || 'Untitled stretch'}</span>
+						<span class="idle-name">{s.name || 'Untitled stretch'}{#if s.mode === 'reps' && s.load?.trim()}<span class="idle-load muted small"> · {s.load.trim()}</span>{/if}</span>
 						<span class="idle-dur muted small">{stretchDurationLabel(s)}</span>
 					</li>
 				{/each}
@@ -304,6 +316,9 @@
 					{#if segment.totalSets && segment.totalSets > 1}
 						<span class="pill">Set {segment.set} of {segment.totalSets}</span>
 					{/if}
+					{#if loadLabel}
+						<span class="pill pill-load" title={loadLabel}>{loadLabel}</span>
+					{/if}
 				</div>
 
 				<h2 class="stage-title">
@@ -333,8 +348,14 @@
 				<div class="stage-timer" aria-live="off">
 					<ProgressRing progress={fraction} size={150} stroke={10}>
 						<div class="ring-center">
-							<span class="ring-num">{secondsLeft >= 60 ? formatSeconds(secondsLeft) : secondsLeft}</span>
-							<span class="ring-unit">{player.status === 'paused' ? 'Paused' : secondsLeft >= 60 ? 'min' : 'sec'}</span>
+							{#if segment.reps}
+								<span class="ring-kicker">Rep</span>
+								<span class="ring-num ring-rep">{player.rep}<span class="ring-rep-total"> / {segment.reps}</span></span>
+								<span class="ring-unit">{player.status === 'paused' ? 'Paused' : `${secondsLeft >= 60 ? formatSeconds(secondsLeft) : secondsLeft + 's'} left`}</span>
+							{:else}
+								<span class="ring-num">{secondsLeft >= 60 ? formatSeconds(secondsLeft) : secondsLeft}</span>
+								<span class="ring-unit">{player.status === 'paused' ? 'Paused' : secondsLeft >= 60 ? 'min' : 'sec'}</span>
+							{/if}
 						</div>
 					</ProgressRing>
 				</div>
@@ -439,6 +460,10 @@
 							<span><strong>{painScore}/10.</strong> {zoneAdvice[painZone(painScore)]}</span>
 						</span>
 						<button class="btn small ghost" onclick={undoCheckIn}>Undo</button>
+						{#if painScore > 0}
+							<span class="small muted">Where? (optional)</span>
+							<PainAreaChips bind:selected={painAreas} label="Where does it hurt?" onchange={setLastPainAreas} />
+						{/if}
 					{/if}
 				</div>
 			{/if}
@@ -685,6 +710,8 @@
 	}
 	.stage-badges {
 		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
 		gap: 0.35rem;
 		min-height: 1.6rem;
 		align-items: center;
@@ -708,6 +735,15 @@
 	.pill-break {
 		background: var(--ok);
 		color: #fff;
+	}
+	.pill-load {
+		max-width: 8rem;
+		display: inline-block;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		background: color-mix(in srgb, var(--accent) 16%, var(--surface-2));
+		color: var(--accent-strong);
 	}
 	.stage-title {
 		font-size: 1.45rem;
@@ -777,6 +813,22 @@
 		font-weight: 800;
 		letter-spacing: -0.04em;
 		font-variant-numeric: tabular-nums;
+	}
+	.ring-kicker {
+		margin-bottom: 0.25rem;
+		font-size: 0.72rem;
+		font-weight: 800;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--muted);
+	}
+	.ring-rep {
+		font-size: 2.9rem;
+	}
+	.ring-rep-total {
+		font-size: 1.3rem;
+		letter-spacing: 0;
+		color: var(--muted);
 	}
 	.ring-unit {
 		margin-top: 0.2rem;
@@ -897,6 +949,8 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
+		justify-content: safe center;
+		overflow-y: auto;
 		gap: 0.6rem;
 		padding: 2rem 1.5rem;
 		text-align: center;
@@ -942,6 +996,26 @@
 	.finish-actions .btn {
 		padding: 0.8rem;
 		font-weight: 700;
+	}
+	/* short phones (375x667): tighten the finish screen so the pain check, area chips and buttons all fit */
+	@media (max-height: 760px) {
+		.finish {
+			gap: 0.4rem;
+			padding-top: 1rem;
+			padding-bottom: 1rem;
+		}
+		.finish-burst {
+			font-size: 3rem;
+		}
+		.finish h2 {
+			font-size: 1.7rem;
+		}
+		.finish-actions {
+			margin-top: 0.6rem;
+		}
+		.pain-check {
+			margin-bottom: 0.4rem;
+		}
 	}
 	@keyframes finishIn {
 		from {
