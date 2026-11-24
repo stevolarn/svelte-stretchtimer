@@ -667,6 +667,36 @@ textarea {
 	font-size: 1.05rem;
 }
 
+.due-list {
+	list-style: none;
+	margin: 0.7rem 0 0;
+	padding: 0.6rem 0 0;
+	border-top: 1px solid var(--border);
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.due-row {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+}
+
+.due-copy {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+}
+
+.due-name {
+	font-weight: 600;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
 .week-strip {
 	display: grid;
 	grid-template-columns: repeat(7, 1fr);
@@ -1062,6 +1092,17 @@ textarea {
 
 .play-fab svg {
 	margin-left: 3px;
+}
+
+.play-fab.small {
+	width: 2.25rem;
+	height: 2.25rem;
+	flex-shrink: 0;
+	box-shadow: none;
+}
+
+.play-fab.small svg {
+	margin-left: 2px;
 }
 
 .play-fab:hover {

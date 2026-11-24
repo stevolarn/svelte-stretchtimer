@@ -516,7 +516,7 @@
 					<span class="today-cue small">🌧 Worse this morning — gentle version today</span>
 				{/if}
 				<span class="muted small">
-					{upNext.why}{upNext.time && upNext.target > 1 ? ` · ${upNext.done + 1} of ${upNext.target} today` : ''} · {routineLength(upNext.routine)}{due.length > 1 ? ` · ${due.length - 1} more after this` : ''}
+					{upNext.why}{upNext.time && upNext.target > 1 ? ` · ${upNext.done + 1} of ${upNext.target} today` : ''} · {routineLength(upNext.routine)}
 				</span>
 			{:else if scheduledToday}
 				<strong>All done for today ✓</strong>
@@ -544,6 +544,27 @@
 			</button>
 		{/if}
 	</div>
+	{#if due.length > 1}
+		<ul class="due-list" aria-label="Also due today">
+			{#each due.slice(1) as item (item.routine.id)}
+				<li class="due-row">
+					<div class="due-copy">
+						<span class="due-name">{item.routine.name || 'Untitled routine'}</span>
+						<span class="muted small">{item.why} · {routineLength(item.routine)}</span>
+					</div>
+					<button
+						class="play-fab small"
+						onclick={() => play(item.routine, easeOff)}
+						disabled={item.routine.stretches.length === 0}
+						aria-label={`Play ${item.routine.name || 'routine'}`}
+						title="Play"
+					>
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" /></svg>
+					</button>
+				</li>
+			{/each}
+		</ul>
+	{/if}
 	{#if hasSchedule}
 		<button class="week-strip" aria-label="Open this week’s schedule" onclick={() => (showWeekModal = true)}>
 			{#each weekDays as d (d.key)}
