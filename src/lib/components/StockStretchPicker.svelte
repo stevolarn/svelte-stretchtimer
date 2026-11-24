@@ -23,6 +23,14 @@
 		onclose: () => void;
 	} = $props();
 
+	/** how many times each stock stretch was added while the picker has been open */
+	let addedCounts = $state<Record<string, number>>({});
+
+	function add(stock: StockStretch): void {
+		addedCounts[stock.id] = (addedCounts[stock.id] ?? 0) + 1;
+		onselect(stock);
+	}
+
 	let selectedType = $state<MovementType>('all');
 	let selectedPosition = $state<MovementPosition>('all');
 	let selectedArea = $state<BodyArea>('all');
@@ -335,11 +343,12 @@
 							class="btn small stock-add-btn"
 							onclick={(e) => {
 								e.stopPropagation();
-								onselect(stock);
+								add(stock);
 							}}
-							aria-label={`Add ${stock.name}`}
+							class:added={addedCounts[stock.id]}
+							aria-label={addedCounts[stock.id] ? `Add ${stock.name} again (added ${addedCounts[stock.id]})` : `Add ${stock.name}`}
 						>
-							＋ Add
+							{#if addedCounts[stock.id]}✓ Added{addedCounts[stock.id] > 1 ? ` ×${addedCounts[stock.id]}` : ''}{:else}＋ Add{/if}
 						</button>
 					</div>
 				{/each}
@@ -384,7 +393,7 @@
 					class="btn primary preview-add-btn"
 					onclick={() => {
 						if (previewStock) {
-							onselect(previewStock);
+							add(previewStock);
 							previewStock = null;
 						}
 					}}
@@ -649,6 +658,11 @@
 		font-weight: 700;
 		padding-inline: 0.65rem;
 		flex-shrink: 0;
+	}
+
+	.stock-add-btn.added {
+		color: var(--accent);
+		border-color: var(--accent);
 	}
 
 	.no-results-box {

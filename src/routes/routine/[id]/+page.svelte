@@ -71,7 +71,7 @@
 		if (!routine) return;
 		routine.stretches.push(stretchFromStock(stock));
 		saveAll();
-		showPicker = false;
+		// The picker stays open (filters intact) so several stretches can be added in a row.
 		showToast(`Added “${stock.name}”`);
 	}
 
