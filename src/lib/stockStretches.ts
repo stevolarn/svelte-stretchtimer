@@ -1516,7 +1516,7 @@ export const stockStretches: StockStretch[] = [
 		defaultSeconds: 75,
 		defaultReps: 15,
 		repSeconds: 5,
-		iconKey: 'db-wrist-extension'
+		iconKey: 'tyler-twist'
 	},
 	{
 		id: 'ecc-reverse-tyler-twist',
@@ -1529,7 +1529,7 @@ export const stockStretches: StockStretch[] = [
 		defaultSeconds: 75,
 		defaultReps: 15,
 		repSeconds: 5,
-		iconKey: 'db-wrist-flexion'
+		iconKey: 'reverse-tyler-twist'
 	},
 	{
 		id: 'dynamic-band-shrugs',
@@ -1594,7 +1594,7 @@ export const stockStretches: StockStretch[] = [
 		defaultSeconds: 60,
 		defaultReps: 15,
 		repSeconds: 4,
-		iconKey: 'db-wrist-extension'
+		iconKey: 'band-wrist-extension'
 	},
 	{
 		id: 'static-wall-biceps',
@@ -1877,7 +1877,7 @@ export const stockStretches: StockStretch[] = [
 		defaultSeconds: 50,
 		defaultReps: 25,
 		repSeconds: 2,
-		iconKey: 'hand-resist-flexion'
+		iconKey: 'ball-squeeze'
 	},
 	{
 		id: 'dynamic-prone-scapular-retraction',
@@ -1890,7 +1890,7 @@ export const stockStretches: StockStretch[] = [
 		defaultSeconds: 36,
 		defaultReps: 12,
 		repSeconds: 3,
-		iconKey: 'prone-ytw'
+		iconKey: 'prone-retraction'
 	},
 	{
 		id: 'dynamic-plank-scapular-protraction',
@@ -1929,7 +1929,7 @@ export const stockStretches: StockStretch[] = [
 		defaultSeconds: 48,
 		defaultReps: 12,
 		repSeconds: 4,
-		iconKey: 'thoracic-rotation'
+		iconKey: 'sidelying-external-rotation'
 	},
 	{
 		id: 'dynamic-prone-ytw',

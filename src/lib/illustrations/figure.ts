@@ -46,8 +46,17 @@ export interface Angles {
 export type Prop =
 	| { type: 'wall'; at: JointName; dx: number }
 	| { type: 'block'; at: JointName; w?: number; dx?: number }
-	/** over: drawn on top of the near leg, e.g. a loop round both knees seen side on */
-	| { type: 'band'; from: JointName; to: JointName; w?: number; over?: boolean }
+	/**
+	 * over: drawn on top of the near leg, e.g. a loop round both knees seen side on.
+	 * fixed: the `to` end stays put at that joint's still-frame position plus an offset (a band anchored to a wall).
+	 */
+	| { type: 'band'; from: JointName; to: JointName; w?: number; over?: boolean; fixed?: { dx: number; dy?: number } }
+	/** a towel or strap held between two joints */
+	| { type: 'strap'; from: JointName; to: JointName }
+	/** FlexBar or rolled towel held in the hand; angle per frame like a dumbbell */
+	| { type: 'bar'; at: JointName; angle: number[] }
+	/** soft ball squeezed in the hand */
+	| { type: 'ball'; at: JointName }
 	/** handle direction per frame (same angle convention as limbs) */
 	| { type: 'dumbbell'; at: JointName; angle: number[] };
 
@@ -121,7 +130,10 @@ const C = {
 	mat: 'var(--ill-mat)',
 	wall: 'var(--ill-wall)',
 	band: 'var(--ill-band)',
-	weight: 'var(--ill-weight)'
+	weight: 'var(--ill-weight)',
+	strap: 'var(--ill-strap, #c9a46b)',
+	bar: 'var(--ill-bar, #2f9e6a)',
+	ball: 'var(--ill-ball, #f59e0b)'
 };
 
 const rad = (deg: number) => (deg * Math.PI) / 180;
@@ -302,7 +314,10 @@ export function renderPose(def: PoseDef): Rendered {
 
 	const band = (prop: Extract<Prop, { type: 'band' }>): Layer => ({
 		tag: 'path',
-		d: P((s) => bandPath(s.joints[prop.from], s.joints[prop.to], prop.w ?? 2.4)),
+		d: P((s) => {
+			const end: Pt = prop.fixed ? [rest.joints[prop.to][0] + prop.fixed.dx, rest.joints[prop.to][1] + (prop.fixed.dy ?? 0)] : s.joints[prop.to];
+			return bandPath(s.joints[prop.from], end, prop.w ?? 2.4);
+		}),
 		stroke: C.band,
 		width: 1.8,
 		fill: 'none'
@@ -370,7 +385,26 @@ export function renderPose(def: PoseDef): Rendered {
 			width: 2.6
 		});
 	}
+	for (const prop of def.props ?? []) {
+		if (prop.type !== 'bar') continue;
+		const d = sk.map((s, i) => {
+			const a = prop.angle[Math.min(i, prop.angle.length - 1)] * (Math.PI / 180);
+			const u: Pt = [Math.sin(a), Math.cos(a)];
+			const p = s.joints[prop.at];
+			return `M${pt(add(p, u, -3))}L${pt(add(p, u, 10))}`;
+		});
+		layers.push({ tag: 'path', d, stroke: C.bar, width: 3.2 });
+	}
+	// Straps sit on top so the towel reads even when it runs behind the body
+	for (const prop of def.props ?? []) {
+		if (prop.type === 'strap') layers.push({ tag: 'path', d: P((s) => `M${pt(s.joints[prop.from])}L${pt(s.joints[prop.to])}`), stroke: C.strap, width: 2.4 });
+	}
 	layers.push(hand('hand'));
+	for (const prop of def.props ?? []) {
+		if (prop.type !== 'ball') continue;
+		const pts = J(prop.at);
+		layers.push({ tag: 'circle', cx: pts.map((p) => n2(p[0] + 1.6)), cy: pts.map((p) => n2(p[1] - 0.6)), r: 2.8, fill: C.ball });
+	}
 
 	for (const a of def.arrows ?? []) {
 		const p = rest.joints[a.at];

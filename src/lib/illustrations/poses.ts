@@ -401,18 +401,15 @@ export const poses: Record<string, PoseDef> = {
 		]
 	},
 	frog: {
-		view: 'front',
 		frames: [
-			{ torso: 180, head: 180, arm: 34, forearm: 70, farArm: -34, farForearm: -70, thigh: 70, shin: 92, farThigh: -70, farShin: -92, foot: 180, farFoot: 180 },
-			{ thigh: 76, farThigh: -76 }
+			{ ...FOURS, torso: 100, head: 100, arm: -16, forearm: 90, farArm: -20, farForearm: 88, thigh: 10, shin: -90, farThigh: 6, farShin: -90 },
+			{ torso: 96, head: 96, thigh: -24, farThigh: -28 }
 		],
-		anchor: 'pelvis',
 		mat: true,
+		anchor: 'knee',
 		dur: 4,
-		glow: [
-			['pelvis', 'knee'],
-			['pelvis', 'farKnee']
-		]
+		glow: [['pelvis', 'knee']],
+		arrows: [{ at: 'pelvis', d: 'M-2 -6h-8', gold: true }]
 	},
 	'ninety-ninety': {
 		frames: [
@@ -904,6 +901,62 @@ export const poses: Record<string, PoseDef> = {
 		props: [{ type: 'band', from: 'foot', to: 'farFoot', w: 1.6 }],
 		glow: [['pelvis', 'neck']]
 	},
+	'band-wrist-extension': {
+		frames: [{ ...STAND, arm: 22, forearm: 98 }, { forearm: 82 }],
+		dur: 2.4,
+		props: [{ type: 'band', from: 'hand', to: 'foot', w: 0.8 }],
+		glow: [['elbow', 'hand']],
+		arrows: [{ at: 'hand', d: 'M6 2v-8', gold: true }]
+	},
+	'tyler-twist': {
+		frames: [
+			{ ...STAND, arm: 22, forearm: 90, farArm: 30, farForearm: 120 },
+			{ forearm: 90 }
+		],
+		dur: 3,
+		props: [{ type: 'bar', at: 'hand', angle: [180, 100] }],
+		glow: [['elbow', 'hand']],
+		arrows: [{ at: 'hand', d: 'M2 -10q8 2 9 9', gold: true }]
+	},
+	'reverse-tyler-twist': {
+		frames: [
+			{ ...STAND, arm: 22, forearm: 90, farArm: 30, farForearm: 120 },
+			{ forearm: 90 }
+		],
+		dur: 3,
+		props: [{ type: 'bar', at: 'hand', angle: [0, 80] }],
+		glow: [['elbow', 'hand']],
+		arrows: [{ at: 'hand', d: 'M2 10q8 -2 9 -9', gold: true }]
+	},
+	'ball-squeeze': {
+		frames: [{ ...STAND, arm: 22, forearm: 90 }, { forearm: 91 }],
+		dur: 2,
+		props: [{ type: 'ball', at: 'hand' }],
+		glow: [['elbow', 'hand']]
+	},
+	'prone-retraction': {
+		frames: [
+			{ ...PRONE, arm: -84, forearm: -86, farArm: -86, farForearm: -88 },
+			{ arm: -74, forearm: -78, farArm: -76, farForearm: -80 }
+		],
+		mat: true,
+		dur: 3,
+		glow: [['shoulder', 'neck']],
+		arrows: [{ at: 'shoulder', d: 'M2 -5h-7', gold: true }]
+	},
+	'sidelying-external-rotation': {
+		frames: [
+			{ ...SUPINE, torso: -90, head: -96, arm: 92, forearm: 70, farArm: 100, farForearm: 92, thigh: 140, shin: 50, farThigh: 136, farShin: 46, foot: 140, farFoot: 136 },
+			{ forearm: 170 }
+		],
+		mat: true,
+		anchor: 'pelvis',
+		dur: 3,
+		still: 1,
+		props: [{ type: 'dumbbell', at: 'hand', angle: [90, 90] }],
+		glow: ['shoulder'],
+		arrows: [{ at: 'elbow', d: 'M8 2q2 -8 -4 -12' }]
+	},
 	'band-plank': {
 		frames: [
 			{ ...HIGH_PLANK, arm: 6, forearm: 6, farArm: -10, farForearm: -10 },
@@ -949,7 +1002,10 @@ export const poses: Record<string, PoseDef> = {
 			{ arm: -22, forearm: 84, farArm: -26, farForearm: 80 }
 		],
 		dur: 3,
-		still: 1,
+		props: [
+			{ type: 'wall', at: 'hand', dx: 6 },
+			{ type: 'band', from: 'hand', to: 'hand', fixed: { dx: 6 }, w: 1.4 }
+		],
 		glow: [['shoulder', 'neck']],
 		arrows: [{ at: 'hand', d: 'M-2 -6h-9', gold: true }]
 	},
@@ -1298,14 +1354,14 @@ export const poses: Record<string, PoseDef> = {
 		arrows: [{ at: 'neck', d: 'M4 -4h6', gold: true }]
 	},
 	'towel-stretch': {
-		view: 'front',
 		frames: [
-			{ ...FRONT, arm: 14, forearm: -48, farArm: -164, farForearm: 26 },
-			{ arm: 12, forearm: -40, farArm: -170, farForearm: 20 }
+			{ ...STAND, arm: -176, forearm: -100, farArm: -24, farForearm: -150 },
+			{ arm: -178, forearm: -92, farArm: -30, farForearm: -160 }
 		],
-		props: [{ type: 'band', from: 'hand', to: 'farHand' }],
-		glow: ['shoulder'],
-		arrows: [{ at: 'farHand', d: 'M3 2v-6', gold: true }]
+		dur: 3,
+		props: [{ type: 'strap', from: 'hand', to: 'farHand' }],
+		glow: ['shoulder', 'farShoulder'],
+		arrows: [{ at: 'hand', d: 'M-4 0v-6', gold: true }]
 	},
 	pendulum: {
 		frames: [
@@ -1375,7 +1431,11 @@ export const poses: Record<string, PoseDef> = {
 		glow: [['shoulder', 'neck']]
 	},
 	'supine-chin-nod': {
-		frames: [{ ...SUPINE }, { head: -78 }],
+		frames: [
+			{ ...SUPINE, thigh: 140, shin: 18, farThigh: 138, farShin: 16, foot: 108, farFoot: 106 },
+			{ head: -78 }
+		],
+		mat: true,
 		dur: 2.4,
 		glow: ['neck'],
 		arrows: [{ at: 'head', d: 'M-2 -8q-6 3 -5 9', gold: true }]
