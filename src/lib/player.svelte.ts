@@ -1,7 +1,7 @@
 import type { Routine, Segment, Settings } from './types.ts';
 import { beepFinish, beepMetronome, beepRep, beepSideSwitch, beepStart, beepTick, speak, stopSpeaking, vibrate } from './audio.ts';
 import { buildTimeline } from './timeline.ts';
-import { creditToday, recordCompletion } from './stores.svelte.ts';
+import { creditToday, logSession, recordCompletion } from './stores.svelte.ts';
 import { formatSeconds } from './time.ts';
 import { autoSaveToFileHandle, isFileAutoBackupConnected } from './backup.ts';
 
@@ -48,9 +48,12 @@ let lastRep = 0;
 /** last half-rep (0 = first lift, 1 = first lower, ...) the metronome clicked on */
 let lastHalf = 0;
 let finished = false;
+let gentleRun = false;
 /** wall-clock time of the last tick while running, for counting played time */
 let lastNow = 0;
 let settingsSnapshot: Settings | null = null;
+/** Planned segment lengths, so restart drops any +15s extensions. */
+let baseSeconds: number[] = [];
 
 function clearTimer(): void {
 	if (timer !== null) {
@@ -192,6 +195,15 @@ function finish(settings: Settings, partial = false): void {
 	if (settings.vibrate) vibrate([100, 60, 100, 60, 200]);
 	if (!finished) {
 		finished = true;
+		if (player.routineId && Math.round(player.played) > 0) {
+			logSession({
+				routineId: player.routineId,
+				name: player.routineName || 'Routine',
+				seconds: Math.round(player.played),
+				gentle: gentleRun || undefined,
+				partial: partial || undefined
+			});
+		}
 		if (player.routineId) recordCompletion(player.routineId);
 		creditToday();
 		if (settings.autoBackupOnFinish && isFileAutoBackupConnected()) {
@@ -210,7 +222,8 @@ function startTimer(): void {
 
 /** Begin playback of a routine (call from a user-gesture handler so the
  *  AudioContext is allowed to run). */
-export function startPlayer(routine: Routine, currentSettings: Settings): void {
+export function startPlayer(routine: Routine, currentSettings: Settings, gentle = false): void {
+	gentleRun = gentle;
 	clearTimer();
 	settingsSnapshot = { ...currentSettings };
 	player.speed = currentSettings.playbackSpeed || 1;
@@ -222,6 +235,7 @@ export function startPlayer(routine: Routine, currentSettings: Settings): void {
 	player.routineId = routine.id;
 	player.routineName = routine.name;
 	player.segments = segments;
+	baseSeconds = segments.map((seg) => seg.seconds);
 	if (segments.length === 0) return;
 	enterSegment(0, currentSettings);
 	startTimer();
@@ -341,6 +355,7 @@ export function restart(): void {
 	finished = false;
 	player.played = 0;
 	player.partial = false;
+	player.segments.forEach((seg, i) => (seg.seconds = baseSeconds[i] ?? seg.seconds));
 	enterSegment(0, settings);
 	player.status = 'running';
 	startTimer();

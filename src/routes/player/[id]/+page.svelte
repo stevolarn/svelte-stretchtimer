@@ -167,7 +167,7 @@
 	function begin(): void {
 		painScore = null;
 		painAreas = [];
-		if (routine) startPlayer(routine, settings);
+		if (routine) startPlayer(routine, settings, gentle);
 	}
 
 	function done(): void {
@@ -182,10 +182,13 @@
 	let resumeOnKeep = false;
 	/** Where the user was heading when the sheet interrupted them. */
 	let pendingUrl: URL | null = null;
+	/** For a cancelled back/forward gesture, how far to move once ended. */
+	let pendingDelta = 0;
 	const inProgress = () => (player.status === 'running' || player.status === 'paused') && player.played >= CONFIRM_AFTER;
 
-	function askEnd(url: URL | null = null): void {
+	function askEnd(url: URL | null = null, delta = 0): void {
 		pendingUrl = url;
+		pendingDelta = delta;
 		resumeOnKeep = player.status === 'running';
 		if (player.status === 'running') togglePause();
 		showEndSheet = true;
@@ -205,7 +208,8 @@
 		showEndSheet = false;
 		const url = pendingUrl;
 		stopPlayer();
-		goto(url ? url.pathname + url.search : '/');
+		if (pendingDelta) history.go(pendingDelta);
+		else goto(url ? url.pathname + url.search + url.hash : '/');
 	}
 
 	function endAndCount(): void {
@@ -217,7 +221,7 @@
 		if (!inProgress() || showEndSheet) return;
 		nav.cancel();
 		// Closing the tab gets the browser's own prompt; everything else gets the sheet.
-		if (nav.type !== 'leave') askEnd(nav.to?.url ?? null);
+		if (nav.type !== 'leave') askEnd(nav.to?.url ?? null, nav.type === 'popstate' ? (nav.delta ?? 0) : 0);
 	});
 
 	function confirmRestart(): void {
@@ -241,7 +245,13 @@
 	let cueClamped = $state(false);
 	$effect(() => {
 		void segment?.stretch?.description;
-		if (cueEl) cueClamped = cueEl.scrollHeight > cueEl.clientHeight + 1;
+		const el = cueEl;
+		if (!el) return;
+		const measure = () => (cueClamped = el.scrollHeight > el.clientHeight + 1);
+		measure();
+		const ro = new ResizeObserver(measure);
+		ro.observe(el);
+		return () => ro.disconnect();
 	});
 
 	function onKey(e: KeyboardEvent): void {

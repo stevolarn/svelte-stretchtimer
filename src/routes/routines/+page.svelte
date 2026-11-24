@@ -6,6 +6,7 @@
 		duplicateRoutine,
 		newRoutine,
 		routines,
+		sessions,
 		settings,
 		starterRoutine,
 		type StarterRoutineKind
@@ -14,6 +15,7 @@
 	import { onMount } from 'svelte';
 	import { frequencyLabel, goalProgress, scheduleLabel } from '$lib/frequency';
 	import { formatSeconds } from '$lib/time';
+	import { lastPlayedAt, playedAgo } from '$lib/sessions';
 	import { type Routine } from '$lib/types';
 	import StarterArt from '$lib/components/StarterArt.svelte';
 	import Modal from '$lib/components/Modal.svelte';
@@ -79,7 +81,7 @@
 	}
 
 	let query = $state('');
-	let sort = $state<'recent' | 'name' | 'duration'>('recent');
+	let sort = $state<'played' | 'recent' | 'name' | 'duration'>('played');
 	let menuFor = $state<string | null>(null);
 
 	const visibleRoutines = $derived(
@@ -88,6 +90,11 @@
 			.toSorted((a, b) => {
 				if (sort === 'name') return a.name.localeCompare(b.name);
 				if (sort === 'duration') return timelineTotal(buildTimeline(b, settings)) - timelineTotal(buildTimeline(a, settings));
+				if (sort === 'played') {
+					const pa = lastPlayedAt(a, sessions);
+					const pb = lastPlayedAt(b, sessions);
+					if (pa !== pb) return pb - pa;
+				}
 				return b.createdAt - a.createdAt;
 			})
 	);
@@ -139,6 +146,7 @@
 	<div class="routine-tools">
 		<input type="search" bind:value={query} placeholder="Search routines" aria-label="Search routines" />
 		<select bind:value={sort} aria-label="Sort routines">
+			<option value="played">Last played</option>
 			<option value="recent">Newest</option>
 			<option value="name">A–Z</option>
 			<option value="duration">Longest</option>
@@ -180,7 +188,7 @@
 				<a class="routine-card-main" href={`/routine/${r.id}`} aria-label={`Edit ${r.name || 'Untitled routine'}`}>
 					<span class="routine-title">{r.name || 'Untitled routine'}</span>
 					<span class="routine-meta muted small">
-						{r.stretches.length} stretch{r.stretches.length === 1 ? '' : 'es'} · {routineMinutes(r)}{(r.sets ?? 1) > 1 ? ` · ${r.sets} sets` : ''}
+						{r.stretches.length} stretch{r.stretches.length === 1 ? '' : 'es'} · {routineMinutes(r)}{(r.sets ?? 1) > 1 ? ` · ${r.sets} sets` : ''}{playedAgo(lastPlayedAt(r, sessions)) ? ` · ${playedAgo(lastPlayedAt(r, sessions))}` : ''}
 					</span>
 					{#if r.schedule || r.frequency?.per === 'week'}
 						{@const progress = goalProgress(r, now)}

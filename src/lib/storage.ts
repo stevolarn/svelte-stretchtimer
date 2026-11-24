@@ -1,10 +1,11 @@
-import type { FunctionCheck, MorningCheck, PainEntry, Routine, Settings, StreakState, StorageSnapshot } from './types.ts';
+import type { FunctionCheck, MorningCheck, PainEntry, SessionEntry, Routine, Settings, StreakState, StorageSnapshot } from './types.ts';
 
 const ROUTINES_KEY = 'stretchTimer.routines';
 const SETTINGS_KEY = 'stretchTimer.settings';
 const STREAK_KEY = 'stretchTimer.streak';
 const SNAPSHOTS_KEY = 'stretchTimer.snapshots';
 const PAIN_KEY = 'stretchTimer.pain';
+const SESSIONS_KEY = 'stretchTimer.sessions';
 const MORNING_KEY = 'stretchTimer.morning';
 const FUNCTION_KEY = 'stretchTimer.function';
 const PHOTO_DB = 'stretch-timer';
@@ -73,6 +74,14 @@ export function loadPain(): PainEntry[] {
 }
 export function savePain(entries: PainEntry[]): void {
 	saveJSON(PAIN_KEY, entries);
+}
+
+export function loadSessions(): SessionEntry[] {
+	return loadJSON<SessionEntry[]>(SESSIONS_KEY, []);
+}
+/** Keeps only the newest 1000. */
+export function saveSessions(entries: SessionEntry[]): void {
+	saveJSON(SESSIONS_KEY, entries.slice(-1000));
 }
 
 export function loadMorningChecks(): MorningCheck[] {

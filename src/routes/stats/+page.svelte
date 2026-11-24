@@ -6,6 +6,7 @@
 		PAIN_AREAS,
 		painLog,
 		setLastPainAreas,
+		sessions,
 		settings,
 		streak,
 		undoLastPain
@@ -13,6 +14,7 @@
 	import { currentStreak, fixerProgress, fixersAvailable, longestStreak, repairGap } from '$lib/streak';
 	import { HABIT_DAYS, practiceDays } from '$lib/habits';
 	import { addDays, todayKey } from '$lib/time';
+	import { formatDuration, sessionTotals, sessionWhen } from '$lib/sessions';
 	import { checkScore, daysPractised, functionChange, MEANINGFUL_CHANGE, trackedActivities } from '$lib/recovery';
 	import type { PainArea } from '$lib/types';
 	import PainAreaChips from '$lib/components/PainAreaChips.svelte';
@@ -28,6 +30,8 @@
 	/** Unlike the streak, this doesn't reset after one miss — closer to how habits actually form. */
 	const practised = $derived(daysPractised(streak.completedDates, 30, today));
 	let showSigns = $state(false);
+	const totals = $derived(sessionTotals(sessions));
+	const recent = $derived(sessions.slice(-10).reverse());
 	const doneToday = $derived(streak.completedDates.includes(today));
 	const habitDays = $derived(practiceDays(streak));
 	const habitPct = $derived(Math.min(100, Math.round((habitDays / HABIT_DAYS) * 100)));
@@ -251,6 +255,31 @@
 		<span><i class="sw today"></i>Today</span>
 	</div>
 </section>
+
+<section class="card">
+	<h2 class="cal-title">Time stretched</h2>
+	{#if sessions.length === 0}
+		<p class="muted small">Session history starts from this update.</p>
+	{:else}
+		<p class="small">This week <strong>{formatDuration(totals.week)}</strong> · This month <strong>{formatDuration(totals.month)}</strong> · All time <strong>{formatDuration(totals.all)}</strong></p>
+	{/if}
+</section>
+
+{#if sessions.length > 0}
+	<section class="card">
+		<h2 class="cal-title">Recent sessions</h2>
+		<ul class="session-list">
+			{#each recent as s (s.at)}
+				<li>
+					<strong>{s.name}</strong>
+					{#if s.gentle}<span class="session-tag">gentle</span>{/if}
+					{#if s.partial}<span class="session-tag">ended early</span>{/if}
+					<span class="muted small">{sessionWhen(s.at)} · {formatDuration(s.seconds)}</span>
+				</li>
+			{/each}
+		</ul>
+	</section>
+{/if}
 
 {#if settings.painTracking}
 	<section class="card">
@@ -674,6 +703,25 @@
 		flex-shrink: 0;
 	}
 
+	.session-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		gap: 0.6rem;
+	}
+	.session-list li {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0.2rem 0.5rem;
+	}
+	.session-tag {
+		font-size: 0.7rem;
+		padding: 0.05rem 0.45rem;
+		border-radius: 999px;
+		background: var(--surface-2, rgba(128, 128, 128, 0.18));
+	}
 	.cal-title {
 		font-size: 1rem;
 		margin-bottom: 0.7rem;

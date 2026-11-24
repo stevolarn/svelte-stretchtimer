@@ -199,6 +199,20 @@ export interface Settings {
 	functionChecks: boolean;
 }
 
+/** One played session, kept for the history on Stats. */
+export interface SessionEntry {
+	/** YYYY-MM-DD */
+	date: string;
+	/** ms timestamp */
+	at: number;
+	routineId: string;
+	name: string;
+	/** seconds actually played */
+	seconds: number;
+	gentle?: boolean;
+	partial?: boolean;
+}
+
 export interface StorageSnapshot {
 	id: string;
 	timestamp: number;

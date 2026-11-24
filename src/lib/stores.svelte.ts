@@ -1,4 +1,4 @@
-import type { FunctionCheck, MorningCheck, PainArea, PainEntry, Routine, RoutineChange, Settings, StockStretch, Stretch, StreakState, StorageSnapshot } from './types.ts';
+import type { FunctionCheck, MorningCheck, PainArea, PainEntry, Routine, SessionEntry, RoutineChange, Settings, StockStretch, Stretch, StreakState, StorageSnapshot } from './types.ts';
 import { showToast } from './toast.svelte.ts';
 import {
 	deletePhotoData,
@@ -6,6 +6,8 @@ import {
 	loadFunctionChecks,
 	loadMorningChecks,
 	loadPain,
+	loadSessions,
+	saveSessions,
 	loadRoutines,
 	loadSettings,
 	loadStreak,
@@ -33,6 +35,7 @@ export const routines = $state<Routine[]>(loadRoutines());
 export const settings = $state<Settings>(loadSettings());
 export const streak = $state<StreakState>(loadStreak());
 export const painLog = $state<PainEntry[]>(loadPain());
+export const sessions = $state<SessionEntry[]>(loadSessions());
 export const morningChecks = $state<MorningCheck[]>(loadMorningChecks());
 export const functionChecks = $state<FunctionCheck[]>(loadFunctionChecks());
 
@@ -74,6 +77,7 @@ export function saveAll(): void {
 	saveRoutines(routines);
 	saveSettings(settings);
 	saveStreak(streak);
+	saveSessions(sessions);
 	recordSnapshot(routines, streak);
 	void syncReminderState(settings, streak);
 	if (isFileAutoBackupConnected()) {
@@ -877,6 +881,13 @@ export function updateSettings(patch: Partial<Settings>): void {
 	saveAll();
 }
 
+/** Log a played session (finished or ended early) for the history on Stats. */
+export function logSession(entry: Omit<SessionEntry, 'date' | 'at'>, now: Date = new Date()): void {
+	sessions.push({ ...entry, date: todayKey(now), at: now.getTime() });
+	if (sessions.length > 1000) sessions.splice(0, sessions.length - 1000);
+	saveSessions(sessions);
+}
+
 /* ---------------------------- snapshot restoration ----------------------- */
 
 /** Restore data from an automatic local snapshot point. */
@@ -898,6 +909,8 @@ export interface RoutineBackup {
 	/** absent in backups made before pain and morning checks were included */
 	pain?: PainEntry[];
 	morning?: MorningCheck[];
+	/** absent in backups made before the session history existed */
+	sessions?: SessionEntry[];
 	/** absent in backups made before function check-ins existed */
 	function?: FunctionCheck[];
 }
@@ -919,6 +932,7 @@ export async function exportBackup(): Promise<string> {
 		photos,
 		pain: JSON.parse(JSON.stringify(painLog)) as PainEntry[],
 		morning: JSON.parse(JSON.stringify(morningChecks)) as MorningCheck[],
+		sessions: JSON.parse(JSON.stringify(sessions)) as SessionEntry[],
 		function: JSON.parse(JSON.stringify(functionChecks)) as FunctionCheck[]
 	};
 	return JSON.stringify(backup, null, 2);
@@ -992,6 +1006,33 @@ function importPain(value: unknown, idMap: Map<string, string>): number {
 		savePain(painLog);
 	}
 	return added;
+}
+
+/** Merge backed-up sessions, skipping ones already here (same timestamp) and mapping routine ids. */
+function importSessions(value: unknown, idMap: Map<string, string>): void {
+	if (!Array.isArray(value)) return;
+	const seen = new Set(sessions.map((s) => s.at));
+	let added = 0;
+	for (const s of value) {
+		if (!isRecord(s) || !validDay(s.date) || typeof s.at !== 'number' || s.at > Date.now() + 86_400_000 || seen.has(s.at)) continue;
+		if (typeof s.routineId !== 'string' || typeof s.name !== 'string' || typeof s.seconds !== 'number' || !(s.seconds >= 0)) continue;
+		sessions.push({
+			date: s.date,
+			at: s.at,
+			routineId: idMap.get(s.routineId) ?? s.routineId,
+			name: s.name.slice(0, 80),
+			seconds: Math.round(s.seconds),
+			...(s.gentle === true && { gentle: true }),
+			...(s.partial === true && { partial: true })
+		});
+		seen.add(s.at);
+		added += 1;
+	}
+	if (added) {
+		sessions.sort((a, b) => a.at - b.at);
+		if (sessions.length > 1000) sessions.splice(0, sessions.length - 1000);
+		saveSessions(sessions);
+	}
 }
 
 /** Merge backed-up morning checks for days that don't have one yet. */
@@ -1119,6 +1160,7 @@ export async function importBackup(
 		added += 1;
 	}
 	saveRoutines(routines);
+	importSessions(source.sessions, idMap);
 	return {
 		added,
 		skipped,
