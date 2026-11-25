@@ -26,6 +26,8 @@ const LUNGE: Angles = { torso: 178, arm: 20, forearm: 70, farArm: 10, farForearm
 const SPLIT: Angles = { torso: 180, arm: -25, forearm: 55, farArm: -30, farForearm: 50, thigh: 90, shin: 0, farThigh: -12, farShin: -78, farFoot: 0 };
 /** sitting upright on a chair, facing right */
 const CHAIR: Angles = { torso: 180, head: 180, arm: 4, forearm: 40, farArm: -2, farForearm: 36, thigh: 90, shin: 0, farThigh: 88, farShin: -2 };
+/** Wide front-view stance. */
+const WIDE = { thigh: 22, shin: 22, farThigh: -22, farShin: -22 };
 const SEAT = [{ type: 'block' as const, at: 'pelvis' as const, w: 18, dx: -2 }];
 const DOWN_DOG: Angles = { torso: 50, head: 40, arm: 50, forearm: 50, farArm: 48, farForearm: 48, thigh: -20, shin: -20, farThigh: -22, farShin: -22, foot: 90, farFoot: 90 };
 
@@ -720,6 +722,570 @@ export const poses: Record<string, PoseDef> = {
 		mat: true,
 		dur: 3,
 		glow: [['pelvis', 'neck']]
+	},
+
+	// Bodyweight holds
+	'airplane-hold': {
+		frames: [
+			{ torso: 90, head: 92, arm: -20, forearm: -20, farArm: -30, farForearm: -30, thigh: 0, shin: 0, farThigh: -90, farShin: -90, foot: 90, farFoot: 180 },
+			{ torso: 88, farThigh: -92, farShin: -92 }
+		],
+		anchor: 'foot',
+		dur: 3,
+		glow: [['pelvis', 'neck']]
+	},
+	'aquaman-hold': {
+		frames: [
+			{ ...PRONE, arm: 108, forearm: 108, farArm: 70, farForearm: 70, farThigh: -104, farShin: -104 },
+			{ arm: 112, forearm: 112, farThigh: -108, farShin: -108 }
+		],
+		mat: true,
+		dur: 3,
+		glow: ['pelvis']
+	},
+	'back-leg-raise-hold': {
+		frames: [
+			{ ...STAND, arm: -30, forearm: 60, farArm: -35, farForearm: 55, farThigh: -30, farShin: -30 },
+			{ farThigh: -33, farShin: -33 }
+		],
+		dur: 3,
+		glow: ['pelvis']
+	},
+	'bent-arm-pike-hold': {
+		frames: [
+			{ ...DOWN_DOG, torso: 62, head: 60, arm: -30, forearm: 40, farArm: -32, farForearm: 38, thigh: -25, shin: -25, farThigh: -27, farShin: -27 },
+			{ torso: 60, head: 58 }
+		],
+		anchor: 'hand',
+		mat: true,
+		dur: 3,
+		glow: [['shoulder', 'elbow']]
+	},
+	'bicycle-crunch-hold': {
+		frames: [
+			{ ...SUPINE, torso: -112, head: -125, arm: 130, forearm: 120, farArm: -150, farForearm: -90, thigh: 140, shin: 35, farThigh: 100, farShin: 100 },
+			{ torso: -116, head: -128 }
+		],
+		mat: true,
+		dur: 3,
+		glow: [['pelvis', 'neck']]
+	},
+	'bird-dog-plank': {
+		frames: [
+			{ ...HIGH_PLANK, arm: 105, forearm: 105, farThigh: -88, farShin: -88 },
+			{ arm: 108, forearm: 108, farThigh: -91, farShin: -91 }
+		],
+		anchor: 'farHand',
+		mat: true,
+		dur: 3,
+		glow: [['pelvis', 'neck']]
+	},
+	'chair-cactus-arms': {
+		view: 'front',
+		frames: [
+			{ ...FRONT, arm: 90, forearm: 180, farArm: -90, farForearm: 180, thigh: 22, shin: 0, farThigh: -22, farShin: 0 },
+			{ arm: 98, forearm: 176, farArm: -98, farForearm: -176 }
+		],
+		anchor: 'pelvis',
+		props: SEAT,
+		dur: 3,
+		glow: [['shoulder', 'farShoulder']]
+	},
+	'chin-retraction-hold': {
+		frames: [
+			{ ...STAND, head: 186 },
+			{ head: 190 }
+		],
+		dur: 3,
+		glow: ['neck'],
+		arrows: [{ at: 'head', d: 'M8 -2h-6', gold: true }]
+	},
+	'crunch-hold': {
+		frames: [
+			{ ...SUPINE, torso: -118, head: -128, arm: 100, forearm: 100, farArm: 98, farForearm: 98, thigh: 140, shin: 35, farThigh: 138, farShin: 33 },
+			{ torso: -121, head: -131 }
+		],
+		mat: true,
+		dur: 3,
+		glow: [['pelvis', 'neck']]
+	},
+	'dead-bug-hold': {
+		frames: [
+			{ ...SUPINE, arm: 180, forearm: 180, farArm: 178, farForearm: 178, thigh: 180, shin: 90, farThigh: 178, farShin: 92 },
+			{ arm: 176, forearm: 176, farArm: 174, farForearm: 174 }
+		],
+		mat: true,
+		dur: 3,
+		glow: [['pelvis', 'neck']]
+	},
+	'dead-hang': {
+		frames: [
+			{ ...STAND, arm: 172, forearm: 178, farArm: 176, farForearm: 178, thigh: 28, shin: -40, farThigh: 22, farShin: -46 },
+			{ thigh: 24, shin: -36 }
+		],
+		lift: [2, 2],
+		props: [{ type: 'bar', at: 'hand', angle: [90, 90] }],
+		dur: 3,
+		glow: [['shoulder', 'elbow']]
+	},
+	'dip-hold': {
+		frames: [
+			{ ...SUPINE, torso: -125, head: -135, arm: -75, forearm: 5, farArm: -78, farForearm: 3, thigh: 120, shin: 10, farThigh: 118, farShin: 8, foot: 90, farFoot: 90 },
+			{ torso: -123, arm: -72 }
+		],
+		mat: true,
+		dur: 3,
+		glow: [['shoulder', 'elbow']]
+	},
+	'elbow-pike-hold': {
+		frames: [
+			{ ...FOREARM_PLANK, torso: 55, head: 52, thigh: -35, shin: -35, farThigh: -37, farShin: -37 },
+			{ torso: 53, head: 50 }
+		],
+		anchor: 'hand',
+		mat: true,
+		dur: 3,
+		glow: [['pelvis', 'neck']]
+	},
+	'elbow-plank-leg-lift': {
+		frames: [
+			{ ...FOREARM_PLANK, farThigh: -98, farShin: -98 },
+			{ torso: 103, farThigh: -101, farShin: -101 }
+		],
+		mat: true,
+		dur: 3,
+		glow: ['pelvis']
+	},
+	'side-plank-leg-lift': {
+		view: 'front',
+		frames: [
+			{ torso: 104, head: 104, arm: 0, forearm: 90, farArm: 180, farForearm: 180, thigh: -76, shin: -76, farThigh: -104, farShin: -104, foot: -40, farFoot: -40 },
+			{ torso: 106, farThigh: -108, farShin: -108, farArm: 176, farForearm: 176 }
+		],
+		mat: true,
+		dur: 3,
+		glow: ['pelvis']
+	},
+	'front-leg-raise-hold': {
+		frames: [
+			{ ...STAND, arm: 30, forearm: 30, farArm: -30, farForearm: -30, farThigh: 60, farShin: 60 },
+			{ farThigh: 63, farShin: 63 }
+		],
+		anchor: 'foot',
+		dur: 3,
+		glow: [['pelvis', 'knee']]
+	},
+	'high-plank-leg-lift': {
+		frames: [
+			{ ...HIGH_PLANK, farThigh: -88, farShin: -88 },
+			{ torso: 116, farThigh: -91, farShin: -91 }
+		],
+		mat: true,
+		dur: 3,
+		glow: [['pelvis', 'neck']]
+	},
+	'high-side-plank': {
+		view: 'front',
+		frames: [
+			{ torso: 114, head: 114, arm: 0, forearm: 0, farArm: 180, farForearm: 180, thigh: -66, shin: -66, farThigh: -66, farShin: -66, foot: -40, farFoot: -40 },
+			{ torso: 116, thigh: -64, shin: -64, farThigh: -64, farShin: -64, farArm: 176, farForearm: 176 }
+		],
+		mat: true,
+		dur: 3,
+		glow: ['pelvis']
+	},
+	'high-side-plank-leg-lift': {
+		view: 'front',
+		frames: [
+			{ torso: 114, head: 114, arm: 0, forearm: 0, farArm: 180, farForearm: 180, thigh: -66, shin: -66, farThigh: -96, farShin: -96, foot: -40, farFoot: -40 },
+			{ torso: 116, farThigh: -100, farShin: -100, farArm: 176, farForearm: 176 }
+		],
+		mat: true,
+		dur: 3,
+		glow: ['pelvis']
+	},
+	'hollow-hold': {
+		frames: [
+			{ ...SUPINE, torso: -115, head: -122, arm: -112, forearm: -112, farArm: -108, farForearm: -108, thigh: 115, shin: 115, farThigh: 115, farShin: 115 },
+			{ torso: -113, thigh: 113, shin: 113, farThigh: 113, farShin: 113 }
+		],
+		mat: true,
+		anchor: 'pelvis',
+		dur: 3,
+		glow: ['pelvis']
+	},
+	'leg-lift-hold': {
+		frames: [
+			{ ...SUPINE, thigh: 135, shin: 135, farThigh: 135, farShin: 135 },
+			{ thigh: 132, shin: 132, farThigh: 132, farShin: 132 }
+		],
+		mat: true,
+		anchor: 'pelvis',
+		dur: 3,
+		glow: ['pelvis']
+	},
+	'lying-side-leg-raise': {
+		view: 'front',
+		frames: [
+			{ ...FRONT, torso: 92, head: 95, arm: 92, forearm: 92, farArm: 84, farForearm: 84, thigh: -88, shin: -88, farThigh: -125, farShin: -125, foot: -90, farFoot: -125 },
+			{ farThigh: -129, farShin: -129 }
+		],
+		mat: true,
+		anchor: 'pelvis',
+		dur: 3,
+		glow: [['pelvis', 'farKnee']]
+	},
+	'lying-toe-touch': {
+		frames: [
+			{ ...SUPINE, torso: -120, head: -125, arm: 178, forearm: 178, farArm: 176, farForearm: 176, thigh: 180, shin: 180, farThigh: 180, farShin: 180, foot: 90, farFoot: 90 },
+			{ torso: -124, arm: 174, forearm: 174, farArm: 172, farForearm: 172 }
+		],
+		mat: true,
+		anchor: 'pelvis',
+		dur: 3,
+		glow: ['pelvis']
+	},
+	'narrow-push-up-hold': {
+		frames: [
+			{ ...HIGH_PLANK, torso: 104, head: 102, arm: -78, forearm: 0, farArm: -80, farForearm: -2, thigh: -76, shin: -76, farThigh: -76, farShin: -76 },
+			{ torso: 103, thigh: -77, shin: -77, farThigh: -77, farShin: -77 }
+		],
+		mat: true,
+		dur: 3,
+		glow: [['shoulder', 'elbow']]
+	},
+	'pelvic-tilt-press': {
+		frames: [
+			{ ...SUPINE, thigh: 120, shin: 55, farThigh: 120, farShin: 55, foot: 90, farFoot: 90 },
+			{ torso: -89, thigh: 122, shin: 52, farThigh: 122, farShin: 52 }
+		],
+		mat: true,
+		anchor: 'foot',
+		dur: 3,
+		glow: ['pelvis']
+	},
+	'pike-hold': {
+		frames: [
+			{ ...DOWN_DOG, torso: 75, head: 40, arm: 0, forearm: 0, farArm: 2, farForearm: 2, thigh: -16, shin: -16, farThigh: -18, farShin: -18, foot: 90, farFoot: 90 },
+			{ torso: 74, thigh: -15, shin: -15, farThigh: -17, farShin: -17 }
+		],
+		mat: true,
+		anchor: 'hand',
+		dur: 3,
+		glow: [['shoulder', 'elbow']]
+	},
+	'reverse-plank': {
+		frames: [
+			{ ...SUPINE, torso: -117, head: -120, arm: 8, forearm: 8, farArm: 6, farForearm: 6, thigh: 63, shin: 63, farThigh: 63, farShin: 63, foot: 150, farFoot: 150 },
+			{ torso: -116, thigh: 64, shin: 64, farThigh: 64, farShin: 64 }
+		],
+		mat: true,
+		dur: 3,
+		glow: ['pelvis']
+	},
+	'reverse-plank-leg-lift': {
+		frames: [
+			{ ...SUPINE, torso: -117, head: -120, arm: 8, forearm: 8, farArm: 6, farForearm: 6, thigh: 63, shin: 63, farThigh: 100, farShin: 100, foot: 150, farFoot: 100 },
+			{ farThigh: 105, farShin: 105 }
+		],
+		mat: true,
+		anchor: 'foot',
+		dur: 3,
+		glow: ['pelvis']
+	},
+	'reverse-table-top': {
+		frames: [
+			{ ...SUPINE, torso: -113, head: -118, arm: 0, forearm: 0, farArm: 2, farForearm: 2, thigh: 88, shin: 0, farThigh: 88, farShin: 0, foot: 90, farFoot: 90 },
+			{ torso: -112, thigh: 87, farThigh: 87 }
+		],
+		mat: true,
+		dur: 3,
+		glow: ['pelvis']
+	},
+	'side-leg-raise-hold': {
+		view: 'front',
+		frames: [
+			{ ...FRONT, arm: 40, forearm: 80, farArm: -40, farForearm: -80, thigh: 4, shin: 4, farThigh: -4, farShin: -2 },
+			{ thigh: 36, shin: 36, foot: 94 },
+			{ thigh: 38, shin: 38 }
+		],
+		anchor: 'farFoot',
+		dur: 3,
+		still: 1,
+		glow: ['pelvis']
+	},
+	'single-arm-plank': {
+		frames: [
+			{ ...HIGH_PLANK, farArm: 100, farForearm: 100 },
+			{ torso: 116, farArm: 104, farForearm: 104, thigh: -64, shin: -64, farThigh: -64, farShin: -64 }
+		],
+		mat: true,
+		dur: 3,
+		glow: [['pelvis', 'neck']]
+	},
+	'single-leg-deadlift': {
+		frames: [
+			{ torso: 92, head: 75, arm: 8, forearm: 4, farArm: 6, farForearm: 2, thigh: 4, shin: -2, farThigh: -88, farShin: -90 },
+			{ torso: 94, head: 78, arm: 12, forearm: 6, farArm: 10, farForearm: 4, farThigh: -90, farShin: -92 }
+		],
+		dur: 3,
+		glow: [['pelvis', 'knee']]
+	},
+	'spiderman-push-up-hold': {
+		frames: [
+			{ ...HIGH_PLANK, torso: 104, head: 102, arm: -70, forearm: 0, farArm: -72, farForearm: -2, thigh: 100, shin: -50, farThigh: -76, farShin: -76, foot: 40 },
+			{ torso: 103, thigh: 104, shin: -48 }
+		],
+		mat: true,
+		dur: 3,
+		glow: [['pelvis', 'knee']]
+	},
+	'v-sit-hold': {
+		frames: [
+			{ ...SEATED, torso: -135, head: -140, arm: 92, forearm: 92, farArm: 98, farForearm: 98, thigh: 135, shin: 135, farThigh: 135, farShin: 135 },
+			{ torso: -137, thigh: 137, shin: 137, farThigh: 137, farShin: 137 }
+		],
+		mat: true,
+		anchor: 'pelvis',
+		dur: 3,
+		glow: ['pelvis']
+	},
+	'wall-handstand': {
+		frames: [
+			{ ...HIGH_PLANK, torso: -6, head: 0, arm: 0, forearm: 0, farArm: 2, farForearm: 2, thigh: 165, shin: 130, farThigh: 165, farShin: 130, foot: -90, farFoot: -90 },
+			{ torso: -5, thigh: 166, shin: 132, farThigh: 166, farShin: 132 }
+		],
+		mat: true,
+		anchor: 'hand',
+		dur: 3,
+		props: [{ type: 'wall', at: 'foot', dx: 4 }],
+		glow: [['shoulder', 'elbow']]
+	},
+	'wall-pike-hold': {
+		frames: [
+			{ ...HIGH_PLANK, torso: 0, head: 0, arm: 0, forearm: 0, farArm: 2, farForearm: 2, thigh: 90, shin: 90, farThigh: 90, farShin: 90, foot: 180, farFoot: 180 },
+			{ torso: 2, thigh: 92, shin: 92, farThigh: 92, farShin: 92 }
+		],
+		mat: true,
+		anchor: 'hand',
+		dur: 3,
+		props: [{ type: 'wall', at: 'foot', dx: 3 }],
+		glow: [['shoulder', 'elbow']]
+	},
+	'wall-plank': {
+		frames: [
+			{ ...HIGH_PLANK, torso: 66, head: 60, arm: 0, forearm: 0, farArm: 2, farForearm: 2, thigh: -114, shin: -114, farThigh: -114, farShin: -114, foot: 0, farFoot: 0 },
+			{ torso: 65, thigh: -115, shin: -115, farThigh: -115, farShin: -115 }
+		],
+		mat: true,
+		anchor: 'hand',
+		dur: 3,
+		props: [{ type: 'wall', at: 'foot', dx: -3 }],
+		glow: [['pelvis', 'neck']]
+	},
+
+	// Dynamic warm-ups
+	'controlled-butt-kicks': {
+		frames: [
+			{ ...STAND, arm: 40, forearm: 90, farArm: -30, farForearm: 40, thigh: -2, shin: -150, farThigh: -4, farShin: -2 },
+			{ arm: -30, forearm: 40, farArm: 40, farForearm: 90, thigh: 4, shin: 0, farThigh: -2, farShin: -150 }
+		],
+		anchor: 'pelvis',
+		dur: 2.4,
+		still: 0,
+		glow: [['pelvis', 'knee']]
+	},
+
+	'dynamic-chest-flys': {
+		view: 'front',
+		frames: [
+			{ ...FRONT, arm: 90, forearm: 90, farArm: -90, farForearm: -90 },
+			{ arm: 110, forearm: -70, farArm: -110, farForearm: 70 }
+		],
+		dur: 2.6,
+		still: 0,
+		glow: [['shoulder', 'farShoulder']],
+		arrows: [{ at: 'hand', d: 'M6 0h8m-3 -3l3 3l-3 3', gold: true }]
+	},
+
+	'dynamic-quad-stretch': {
+		frames: [
+			{ ...STAND, arm: -15, forearm: -20, farArm: 140, farForearm: 150, thigh: -2, shin: -150, farThigh: -2, farShin: 0 },
+			{ ...STAND, farArm: 6, farForearm: 10, arm: 0, forearm: 10, thigh: 2, shin: 0, farThigh: -2, farShin: 0 }
+		],
+		anchor: 'farFoot',
+		dur: 3.5,
+		still: 0,
+		glow: [['pelvis', 'knee']]
+	},
+
+	'dynamic-side-bend': {
+		view: 'front',
+		frames: [
+			{ ...FRONT, torso: 195, head: 195, arm: 40, forearm: -50, farArm: 215, farForearm: 240 },
+			{ ...FRONT, torso: 165, head: 165, farArm: -40, farForearm: 50, arm: 145, forearm: 120 }
+		],
+		dur: 3,
+		still: 0,
+		glow: [['pelvis', 'neck']]
+	},
+
+	'dynamic-wide-leg-fold': {
+		view: 'front',
+		frames: [
+			{ ...FRONT, ...WIDE, arm: 30, forearm: -40, farArm: -30, farForearm: 40 },
+			{ ...FRONT, ...WIDE, thigh: 30, shin: 30, farThigh: -30, farShin: -30, torso: 0, head: 0, arm: 8, forearm: 0, farArm: -8, farForearm: 0 }
+		],
+		dur: 3.5,
+		still: 1,
+		glow: [['pelvis', 'knee']]
+	},
+
+	'gate-openers': {
+		view: 'front',
+		frames: [
+			{ ...FRONT, arm: 30, forearm: -40, farArm: -30, farForearm: 40, thigh: 40, shin: -10, farThigh: -2, farShin: 0 },
+			{ thigh: 85, shin: -15 }
+		],
+		anchor: 'farFoot',
+		dur: 2.8,
+		still: 1,
+		glow: ['pelvis'],
+		arrows: [{ at: 'knee', d: 'M5 0h8m-3 -3l3 3l-3 3', gold: true }]
+	},
+
+	'hamstring-scoops': {
+		frames: [
+			{ ...STAND, torso: 180, arm: 25, forearm: 35, farArm: 20, farForearm: 30, thigh: 24, shin: 24, foot: 150, farThigh: -4, farShin: -4 },
+			{ torso: 125, head: 140, arm: 40, forearm: 30, farArm: 35, farForearm: 28 }
+		],
+		anchor: 'farFoot',
+		dur: 3.2,
+		still: 1,
+		glow: [['pelvis', 'knee']]
+	},
+
+	'heel-toe-rocks': {
+		frames: [
+			{ ...STAND, torso: 176, thigh: 2, shin: 4, farThigh: -2, farShin: 2, foot: 140, farFoot: 140 },
+			{ torso: 180, thigh: 4, shin: -2, farThigh: 0, farShin: -4, foot: 40, farFoot: 40 }
+		],
+		lift: [0, 2.5],
+		anchor: 'pelvis',
+		dur: 2.4,
+		still: 1,
+		glow: [['knee', 'foot']]
+	},
+
+	'knee-circles': {
+		frames: [
+			{ ...STAND, torso: 160, head: 165, arm: 35, forearm: 25, farArm: 30, farForearm: 25, thigh: 38, shin: -12, farThigh: 36, farShin: -14 },
+			{ torso: 170, head: 172, thigh: 24, shin: -6, farThigh: 22, farShin: -8, arm: 20, forearm: 15, farArm: 18, farForearm: 12 },
+			{ torso: 176, head: 176, thigh: 8, shin: 0, farThigh: 6, farShin: -2, arm: 8, forearm: 4, farArm: 6, farForearm: 2 }
+		],
+		loop: true,
+		anchor: 'foot',
+		dur: 4,
+		still: 0,
+		glow: ['knee']
+	},
+
+	'knee-hugs': {
+		frames: [
+			{ ...STAND, arm: 50, forearm: 160, farArm: 40, farForearm: 150, thigh: 105, shin: 5, farThigh: -2, farShin: 0 },
+			{ arm: 4, forearm: 12, farArm: -6, farForearm: 2, thigh: 4, shin: 0, farThigh: 105, farShin: 5 }
+		],
+		anchor: 'foot',
+		dur: 3,
+		still: 0,
+		glow: [['pelvis', 'knee']]
+	},
+
+	'lying-ankle-circles': {
+		frames: [
+			{ ...SUPINE, thigh: 180, shin: 180, farThigh: 90, farShin: 90, farFoot: 180, foot: 70, arm: 92, forearm: 90 },
+			{ foot: 125 },
+			{ foot: 170 }
+		],
+		loop: true,
+		mat: true,
+		anchor: 'pelvis',
+		dur: 3,
+		still: 1,
+		glow: ['foot']
+	},
+
+	'side-foot-rocks': {
+		view: 'front',
+		frames: [
+			{ ...FRONT, thigh: 2, shin: 8, farThigh: -2, farShin: -8, arm: 14, forearm: 10, farArm: -14, farForearm: -10 },
+			{ thigh: 6, shin: -4, farThigh: -6, farShin: 4 }
+		],
+		anchor: 'pelvis',
+		dur: 2.8,
+		still: 0,
+		glow: [['knee', 'foot']]
+	},
+
+	'dynamic-side-lunge': {
+		view: 'front',
+		frames: [
+			{ ...FRONT, arm: 40, forearm: 130, farArm: -40, farForearm: -130, thigh: 70, shin: 0, farThigh: -48, farShin: -48 },
+			{ thigh: 48, shin: 48, farThigh: -70, farShin: 0 }
+		],
+		anchor: 'pelvis',
+		dur: 3.4,
+		still: 0,
+		glow: [['pelvis', 'knee']]
+	},
+
+	'toe-touch-twist': {
+		view: 'front',
+		frames: [
+			{ ...FRONT, ...WIDE, torso: 135, head: 130, arm: 175, forearm: 175, farArm: 55, farForearm: 45 },
+			{ torso: 225, head: 230, arm: -55, forearm: -45, farArm: 185, farForearm: 185 }
+		],
+		anchor: 'pelvis',
+		dur: 3.4,
+		still: 0,
+		glow: [['pelvis', 'neck']]
+	},
+
+	'wide-leg-toe-touches': {
+		view: 'front',
+		frames: [
+			{ ...FRONT, ...WIDE, torso: 120, head: 115, arm: 35, forearm: 20, farArm: 30, farForearm: 20 },
+			{ torso: 240, head: 245, arm: -30, forearm: -20, farArm: -35, farForearm: -20 }
+		],
+		anchor: 'pelvis',
+		dur: 3.6,
+		still: 0,
+		glow: [['pelvis', 'knee']]
+	},
+
+	'wide-leg-trunk-circles': {
+		view: 'front',
+		frames: [
+			{ ...FRONT, ...WIDE, torso: 205, head: 205, arm: 45, forearm: -50, farArm: -45, farForearm: 50 },
+			{ torso: 180, head: 180, bend: 28 },
+			{ torso: 155, head: 155, bend: 0 }
+		],
+		loop: true,
+		anchor: 'pelvis',
+		dur: 4,
+		still: 0,
+		glow: [['pelvis', 'neck']]
+	},
+
+	'zombie-walks': {
+		frames: [
+			{ ...STAND, arm: 90, forearm: 90, farArm: 90, farForearm: 90, thigh: 80, shin: 80, farThigh: -2, farShin: -2, foot: 170 },
+			{ thigh: 4, shin: 0, farThigh: 80, farShin: 80, farFoot: 170 }
+		],
+		anchor: 'pelvis',
+		dur: 2.6,
+		still: 0,
+		glow: [['pelvis', 'knee']]
 	},
 
 	/* ---------------------------------------------------------- Mini band */
