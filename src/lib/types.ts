@@ -198,6 +198,8 @@ export interface Settings {
 	functionSnoozed?: string;
 	/** first-run setup finished or skipped */
 	onboarded?: boolean;
+	/** equipment ticked in the routine builder, remembered for next time (Equipment ids) */
+	wizardEquipment?: string[];
 	/** 'YYYY-MM-DD' the fresh-start card was closed (see freshStart in habits.ts) */
 	freshStartDismissed?: string;
 	/** Monday of the week whose tip card was dismissed */

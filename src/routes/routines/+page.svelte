@@ -24,6 +24,7 @@
 	import { lastPlayedAt, playedAgo } from '$lib/sessions';
 	import { type Routine, type Stretch } from '$lib/types';
 	import StarterList from '$lib/components/StarterList.svelte';
+	import RoutineWizard from '$lib/components/RoutineWizard.svelte';
 	import { painAreaFocus, routineFocus } from '$lib/stockTags';
 	import Modal from '$lib/components/Modal.svelte';
 	import StretchIllustration from '$lib/components/StretchIllustration.svelte';
@@ -71,6 +72,17 @@
 	}
 
 	let showNewModal = $state(false);
+	let showWizard = $state(false);
+
+	function openWizard(): void {
+		showNewModal = false;
+		showWizard = true;
+	}
+
+	function wizardSaved(r: Routine): void {
+		showWizard = false;
+		goto(`/routine/${r.id}`);
+	}
 
 	function createRoutine(): void {
 		const r = newRoutine('New routine', settings.breakSeconds);
@@ -224,7 +236,8 @@
 				Pick a ready-made flow below, or start from scratch.
 			</p>
 		</div>
-		<button class="btn primary new-blank-button" onclick={createRoutine}>＋ Blank routine</button>
+		<button class="btn primary new-blank-button" onclick={openWizard}>✨ Build a routine for me</button>
+		<button class="btn new-blank-button" onclick={createRoutine}>＋ Blank routine</button>
 		<div class="section-label">Starter routines</div>
 		<StarterList options={starterOptions} onpick={previewTemplate} />
 	</section>
@@ -307,9 +320,13 @@
 		{/each}
 	</div>
 {/if}
+{#if showWizard}
+	<RoutineWizard onclose={() => (showWizard = false)} onsave={wizardSaved} />
+{/if}
 {#if showNewModal && !preview}
 	<Modal title="New routine" subtitle="Start blank or from a ready-made flow" onclose={() => (showNewModal = false)}>
-		<button class="btn primary new-blank-button" onclick={createRoutine} style="margin-top: 0">＋ Blank routine</button>
+		<button class="btn primary new-blank-button" onclick={openWizard} style="margin-top: 0">✨ Build a routine for me</button>
+		<button class="btn new-blank-button" onclick={createRoutine}>＋ Blank routine</button>
 		<div class="section-label">Starter routines</div>
 		<StarterList options={starterOptions} onpick={previewTemplate} />
 	</Modal>

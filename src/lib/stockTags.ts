@@ -3,7 +3,7 @@ import { muscleLabels, musclesFor, stockFor } from './muscles.ts';
 
 /** Finer-grained tags than area, worked out from each movement's name and cues. */
 export type Focus = 'neck' | 'shoulders' | 'elbow' | 'wrist-hand' | 'back' | 'core' | 'hips' | 'legs';
-export type Equipment = 'none' | 'band' | 'finger-band' | 'dumbbell' | 'flexbar' | 'wall' | 'chair' | 'ball';
+export type Equipment = 'none' | 'band' | 'finger-band' | 'dumbbell' | 'flexbar' | 'wall' | 'chair' | 'ball' | 'bar';
 
 export const focusLabels: Record<Focus, string> = {
 	neck: 'Neck',
@@ -24,7 +24,8 @@ export const equipmentLabels: Record<Equipment, string> = {
 	flexbar: 'FlexBar or towel',
 	wall: 'Wall or door',
 	chair: 'Chair or desk',
-	ball: 'Soft ball'
+	ball: 'Soft ball',
+	bar: 'Pull-up bar'
 };
 
 const focusRules: Array<[Focus, RegExp]> = [
@@ -177,6 +178,7 @@ export function equipmentOf(s: StockStretch): Equipment[] {
 		else if (/\bband\b|band-/.test(t)) found.push('band');
 		if (/\bwall\b|doorway|door ?frame/.test(t)) found.push('wall');
 		if (/\bball\b/.test(t)) found.push('ball');
+		if (/pull-up bar|dead-hang/.test(t)) found.push('bar');
 		if (s.id !== 'yoga-chair-pose' && /chair|\bdesk\b/.test(t)) found.push('chair');
 		hit = found.length ? found : ['none'];
 		equipmentCache.set(s.id, hit);
