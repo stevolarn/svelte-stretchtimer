@@ -146,9 +146,7 @@ button {
 	left: 0;
 	right: 0;
 	z-index: 30;
-	background: color-mix(in srgb, var(--surface) 60%, transparent);
-	backdrop-filter: blur(14px) saturate(1.6);
-	-webkit-backdrop-filter: blur(14px) saturate(1.6);
+	background: var(--surface);
 	border-top: 1px solid var(--border);
 	padding: 0.35rem 0.5rem max(0.45rem, env(safe-area-inset-bottom));
 	justify-content: space-around;
