@@ -1344,6 +1344,120 @@ export const poses: Record<string, PoseDef> = {
 		props: [{ type: 'band', from: 'hand', to: 'farHand', w: 1.6 }],
 		glow: [['shoulder', 'elbow']]
 	},
+	/* ------------------------------------------- Standing upper-body holds */
+	'band-bicep-tricep': {
+		frames: [{ ...STAND, arm: 4, forearm: 70, farArm: 6, farForearm: 40 }, { forearm: 96, farForearm: 4 }],
+		dur: 2.6, still: 1,
+		props: [{ type: 'band', from: 'hand', to: 'farHand', w: 1.6 }],
+		glow: [['shoulder', 'elbow']]
+	},
+	'loop-band-overhead': {
+		view: 'front',
+		frames: [{ ...FRONT, arm: 144, forearm: 150, farArm: -144, farForearm: -150 }, { arm: 138, forearm: 140, farArm: -138, farForearm: -140 }],
+		dur: 2.6, still: 1,
+		props: [{ type: 'band', from: 'hand', to: 'farHand', w: 2 }],
+		glow: [['shoulder', 'farShoulder']]
+	},
+	'loop-band-behind-back': {
+		frames: [{ ...STAND, head: 182, arm: -18, forearm: -18, farArm: -14, farForearm: -14 }, { arm: -30, forearm: -30, farArm: -24, farForearm: -24 }],
+		dur: 2.6, still: 1,
+		props: [{ type: 'band', from: 'hand', to: 'farHand', w: 2.4 }],
+		glow: ['shoulder']
+	},
+	'palm-press': {
+		view: 'front',
+		frames: [{ ...FRONT, arm: 20, forearm: -120, farArm: -20, farForearm: 120 }, { arm: 22, forearm: -118, farArm: -22, farForearm: 118 }],
+		dur: 2,
+		glow: [['shoulder', 'farShoulder']],
+		arrows: [{ at: 'hand', d: 'M7 0h-4', gold: true }]
+	},
+	'doorway-pec-press': {
+		view: 'front',
+		frames: [{ ...FRONT, arm: 90, forearm: 180 }, { arm: 88, forearm: 178 }],
+		dur: 2,
+		props: [{ type: 'wall', at: 'elbow', dx: 1.5 }],
+		glow: ['shoulder'],
+		arrows: [{ at: 'elbow', d: 'M-6 -2h-5', gold: true }]
+	},
+	'wall-push-hold': {
+		frames: [{ ...STAND, torso: 160, head: 162, arm: 60, forearm: 140, farArm: 56, farForearm: 136, thigh: -12, shin: -12, farThigh: -16, farShin: -16 }, { arm: 62 }],
+		anchor: 'foot', dur: 2,
+		props: [{ type: 'wall', at: 'hand', dx: 1.5 }],
+		glow: ['shoulder']
+	},
+	'band-chest-press': {
+		frames: [{ ...STAND, arm: 88, forearm: 90, farArm: 84, farForearm: 88 }, { arm: 84, forearm: 86 }],
+		dur: 2.6, still: 1,
+		props: [{ type: 'band', from: 'hand', to: 'shoulder', w: 1.6, over: true }],
+		glow: ['shoulder']
+	},
+	'doorframe-internal-rotation': {
+		view: 'front',
+		frames: [{ ...FRONT, arm: 6, forearm: -70 }, { forearm: -72 }],
+		dur: 2,
+		glow: ['shoulder'],
+		arrows: [{ at: 'hand', d: 'M6 -4h-5', gold: true }]
+	},
+	'wall-shoulder-flexion': {
+		frames: [{ ...STAND, arm: 40, forearm: 90 }, { arm: 42 }],
+		dur: 2,
+		props: [{ type: 'wall', at: 'hand', dx: 1.5 }],
+		glow: ['shoulder'],
+		arrows: [{ at: 'elbow', d: 'M0 -2h5', gold: true }]
+	},
+	'wall-shoulder-abduction': {
+		view: 'front',
+		frames: [{ ...FRONT, arm: 22, forearm: 90 }, { arm: 24 }],
+		dur: 2,
+		props: [{ type: 'wall', at: 'elbow', dx: 1.5 }],
+		glow: ['shoulder'],
+		arrows: [{ at: 'elbow', d: 'M-3 -4h4', gold: true }]
+	},
+	'wall-shoulder-extension': {
+		frames: [{ ...STAND, arm: -14, forearm: 80 }, { arm: -16 }],
+		dur: 2,
+		props: [{ type: 'wall', at: 'elbow', dx: -1.5 }],
+		glow: ['shoulder'],
+		arrows: [{ at: 'elbow', d: 'M2 -4h-5', gold: true }]
+	},
+	'band-lateral-raise-hold': {
+		view: 'front',
+		frames: [{ ...FRONT, arm: 60, forearm: 66, farArm: -60, farForearm: -66 }, { arm: 88, forearm: 92, farArm: -88, farForearm: -92 }],
+		dur: 2.6, still: 1,
+		props: [{ type: 'band', from: 'hand', to: 'foot', w: 1.4 }, { type: 'band', from: 'farHand', to: 'farFoot', w: 1.4 }],
+		glow: [['shoulder', 'farShoulder']]
+	},
+	'band-front-raise': {
+		frames: [{ ...STAND, arm: 50, forearm: 52, farArm: 46, farForearm: 48 }, { arm: 88, forearm: 90, farArm: 84, farForearm: 86 }],
+		dur: 2.6, still: 1,
+		props: [{ type: 'band', from: 'hand', to: 'foot', w: 1.4 }],
+		glow: ['shoulder']
+	},
+	'band-overhead-press': {
+		view: 'front',
+		frames: [{ ...FRONT, arm: 96, forearm: 176, farArm: -96, farForearm: -176 }, { arm: 146, forearm: 160, farArm: -146, farForearm: -160 }],
+		dur: 2.6, still: 1,
+		props: [{ type: 'band', from: 'hand', to: 'foot', w: 1.4 }, { type: 'band', from: 'farHand', to: 'farFoot', w: 1.4 }],
+		glow: [['shoulder', 'farShoulder']]
+	},
+	'band-row-hold': {
+		frames: [{ ...STAND, arm: 70, forearm: 88, farArm: 66, farForearm: 86 }, { arm: -24, forearm: 90, farArm: -28, farForearm: 88 }],
+		dur: 2.6, still: 1,
+		props: [{ type: 'band', from: 'hand', to: 'hand', w: 1.6, fixed: { dx: 26 } }],
+		glow: [['shoulder', 'elbow']]
+	},
+	'band-face-pull': {
+		frames: [{ ...STAND, arm: 120, forearm: 116 }, { arm: 96, forearm: 150, farArm: 92, farForearm: 146 }],
+		dur: 2.6, still: 1,
+		props: [{ type: 'band', from: 'hand', to: 'hand', w: 1.6, fixed: { dx: 28, dy: -2 } }],
+		glow: ['shoulder']
+	},
+	'self-curl-hold': {
+		frames: [{ ...STAND, arm: 4, forearm: 96, farArm: 40, farForearm: 120 }, { forearm: 98, farForearm: 118 }],
+		dur: 2,
+		glow: [['shoulder', 'elbow']],
+		arrows: [{ at: 'hand', d: 'M0 -6v4', gold: true }]
+	},
 	'band-overhead-pulldown': {
 		view: 'front',
 		frames: [
