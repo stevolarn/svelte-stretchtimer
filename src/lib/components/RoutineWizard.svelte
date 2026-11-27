@@ -26,6 +26,7 @@
 	import MuscleChips from './MuscleChips.svelte';
 	import StockStretchPicker from './StockStretchPicker.svelte';
 	import StretchIllustration from './StretchIllustration.svelte';
+	import StretchDetailModal from './StretchDetailModal.svelte';
 
 	/** Step-by-step routine builder: answers in, generated routine out for review before saving. */
 	let { onclose, onsave }: { onclose: () => void; onsave: (routine: Routine) => void } = $props();
@@ -72,6 +73,7 @@
 	/** Library moves already swapped out, so ↻ keeps offering something new. */
 	let rejected = $state<string[]>([]);
 	let choosingFor = $state<number | null>(null);
+	let viewing = $state<Stretch | null>(null);
 	let swapNote = $state('');
 	const total = $derived(estimateSeconds(stretches, breakSeconds));
 
@@ -225,11 +227,13 @@
 			<ol class="wizard-list">
 				{#each stretches as s, i (s.id)}
 					<li>
-						<span class="wizard-thumb"><StretchIllustration iconKey={s.iconKey} name={s.name} size="100%" rounded={10} animated={false} /></span>
-						<span class="wizard-move">
-							<strong>{s.name}</strong>
-							<span class="muted small">{stretchDurationLabel(s)}</span>
-						</span>
+						<button class="wizard-open" aria-label="Show {s.name}" onclick={() => (viewing = s)}>
+							<span class="wizard-thumb"><StretchIllustration iconKey={s.iconKey} name={s.name} size="100%" rounded={10} animated={false} /></span>
+							<span class="wizard-move">
+								<strong>{s.name}</strong>
+								<span class="muted small">{stretchDurationLabel(s)}</span>
+							</span>
+						</button>
 						<span class="wizard-actions">
 							<button class="icon-btn" aria-label="Swap {s.name} for a similar move" title="Swap for a similar move" onclick={() => swap(i)}>↻</button>
 							<button class="icon-btn" aria-label="Choose a replacement for {s.name}" title="Choose…" onclick={() => (choosingFor = i)}>⋯</button>
@@ -250,6 +254,10 @@
 		{/if}
 	</div>
 </Modal>
+
+{#if viewing}
+	<StretchDetailModal stretch={viewing} onclose={() => (viewing = null)} />
+{/if}
 
 {#if choosingFor !== null}
 	<StockStretchPicker existing={stretches} onselect={choose} oncustom={() => (choosingFor = null)} onclose={() => (choosingFor = null)} />
@@ -354,13 +362,31 @@
 	}
 	.wizard-list li {
 		display: grid;
-		grid-template-columns: 52px 1fr auto;
+		grid-template-columns: 1fr auto;
 		align-items: center;
-		gap: 0.55rem;
+		gap: 0.3rem;
 		padding: 0.35rem;
 		border: 1px solid var(--border);
 		border-radius: 12px;
 		background: var(--surface);
+	}
+	.wizard-open {
+		display: grid;
+		grid-template-columns: 52px 1fr;
+		align-items: center;
+		gap: 0.55rem;
+		min-width: 0;
+		padding: 0;
+		border: 0;
+		background: none;
+		color: inherit;
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
+		border-radius: 10px;
+	}
+	.wizard-open:active {
+		opacity: 0.7;
 	}
 	.wizard-thumb {
 		width: 52px;
