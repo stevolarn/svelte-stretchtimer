@@ -10,7 +10,7 @@ export function clampSeconds(value: number, min = 1, max = 3600): number {
  * Build the playable timeline from a routine + settings:
  * one-sided stretches become a single segment, two-sided stretches become
  * Left then Right segments using the same shared duration, and (when enabled) a fixed break is inserted
- * between consecutive stretches. The whole set is repeated `routine.sets` times, with a break
+ * between consecutive stretches and before the first one. The whole set is repeated `routine.sets` times, with a break
  * between sets.
  */
 export function buildTimeline(routine: Routine, settings: Settings): Segment[] {
@@ -20,9 +20,15 @@ export function buildTimeline(routine: Routine, settings: Settings): Segment[] {
 			? Math.max(0, Math.round(routine.breakSeconds))
 			: Math.max(0, Math.round(settings.breakSeconds));
 	const set = buildSet(routine, settings, breakSecs);
-	if (totalSets === 1) return set;
-
 	const segments: Segment[] = [];
+	// A get-ready rest before the first stretch, the same length as the breaks between them.
+	if (settings.breaksEnabled && breakSecs > 0 && set.length > 0) {
+		const intro: Segment = { kind: 'break', stretch: null, side: null, seconds: breakSecs, label: 'Get ready', intro: true };
+		if (totalSets > 1) Object.assign(intro, { set: 1, totalSets });
+		segments.push(intro);
+	}
+	if (totalSets === 1) return [...segments, ...set];
+
 	for (let n = 1; n <= totalSets; n++) {
 		if (n > 1 && settings.breaksEnabled && breakSecs > 0 && set.length > 0) {
 			segments.push({

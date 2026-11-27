@@ -109,6 +109,7 @@ function enterSegment(index: number, settings: Settings): void {
 
 /** What the voice says as a segment starts. */
 function spokenCue(seg: Segment): string {
+	if (seg.intro) return 'Get ready';
 	if (seg.kind === 'break') return 'Rest';
 	if (seg.side === 'right') return 'Switch sides';
 	const name = seg.stretch?.name ?? seg.label;

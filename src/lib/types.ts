@@ -265,4 +265,6 @@ export interface Segment {
 	/** 1-based set number when the routine repeats */
 	set?: number;
 	totalSets?: number;
+	/** the get-ready rest before the first stretch */
+	intro?: boolean;
 }

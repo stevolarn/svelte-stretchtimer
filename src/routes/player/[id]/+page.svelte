@@ -407,7 +407,7 @@
 			<div class="stage">
 				<div class="stage-badges">
 					{#if segment.kind === 'break'}
-						<span class="pill pill-break">Rest</span>
+						<span class="pill pill-break">{segment.intro ? 'Get ready' : 'Rest'}</span>
 					{:else if segment.side}
 						<span class="pill pill-side">{sideLabel(segment.side)} side</span>
 					{/if}
