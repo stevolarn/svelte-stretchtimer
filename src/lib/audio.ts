@@ -24,6 +24,9 @@ export interface BeepOptions {
 
 /** Play a single short oscillator tone. Safe to call before any user gesture
  *  (it will simply be silent until the context can run). */
+/** Overall loudness multiplier for every cue. */
+const VOLUME = 1.35;
+
 export function beep({ freq = 880, duration = 0.12, gain = 0.12, type = 'sine', delay = 0 }: BeepOptions = {}): void {
 	const c = getCtx();
 	if (!c) return;
@@ -33,7 +36,7 @@ export function beep({ freq = 880, duration = 0.12, gain = 0.12, type = 'sine', 
 	osc.type = type;
 	osc.frequency.value = freq;
 	amp.gain.setValueAtTime(0.0001, t0);
-	amp.gain.exponentialRampToValueAtTime(gain, t0 + 0.01);
+	amp.gain.exponentialRampToValueAtTime(Math.min(1, gain * VOLUME), t0 + 0.01);
 	amp.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
 	osc.connect(amp);
 	amp.connect(c.destination);
