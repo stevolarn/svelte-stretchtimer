@@ -233,7 +233,11 @@ export const painAreaFocus: Record<PainArea, Focus> = {
 	'lower-back': 'back',
 	hip: 'hips',
 	knee: 'legs',
-	'ankle-foot': 'legs'
+	'ankle-foot': 'legs',
+	'head-jaw': 'neck',
+	'upper-arm': 'shoulders',
+	thigh: 'legs',
+	'calf-shin': 'legs'
 };
 
 /** Focus for a stretch inside a routine: its library entry's, else guessed from its name. */

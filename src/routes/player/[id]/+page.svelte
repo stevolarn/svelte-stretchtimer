@@ -21,6 +21,7 @@
 		gentleVersion,
 		getRoutine,
 		logPain,
+		painLog,
 		MICRO_BREAK_ID,
 		microBreak,
 		setLastPainAreas,
@@ -42,7 +43,8 @@
 	import StretchDetailModal from '$lib/components/StretchDetailModal.svelte';
 	import { musclesFor } from '$lib/muscles';
 	import PainAreaChips from '$lib/components/PainAreaChips.svelte';
-	import type { PainArea, Stretch } from '$lib/types';
+	import PainEntryEditor from '$lib/components/PainEntryEditor.svelte';
+	import type { PainArea, PainEntry, Stretch } from '$lib/types';
 
 	const isMicro = $derived(page.params.id === MICRO_BREAK_ID);
 	// Opened directly (reload or shortcut): shuffle one up rather than showing a missing routine.
@@ -66,6 +68,13 @@
 		if (painScore !== null) undoLastPain();
 		logPain(score, player.routineId, gentle, score > 0 ? painAreas : []);
 		painScore = score;
+	}
+	/** The finish-screen entry opened in the full journal editor; after that it's managed there. */
+	let painDetail = $state<PainEntry | null>(null);
+	let painDetailed = $state(false);
+	function openPainDetail(): void {
+		const last = painLog.at(-1);
+		if (last && last.routineId === player.routineId) painDetail = last;
 	}
 	function undoCheckIn(): void {
 		undoLastPain();
@@ -604,13 +613,31 @@
 							<span class="zone-dot zone-{painZone(painScore)}" aria-hidden="true"></span>
 							<span><strong>{painScore}/10.</strong> {zoneAdvice[painZone(painScore)]}</span>
 						</span>
-						<button class="btn small ghost" onclick={undoCheckIn}>Undo</button>
-						{#if painScore > 0}
-							<span class="small muted">Where? (optional)</span>
-							<PainAreaChips bind:selected={painAreas} label="Where does it hurt?" onchange={setLastPainAreas} />
+						{#if painDetailed}
+							<a class="small journal-link" href="/journal">Saved to your pain journal ›</a>
+						{:else}
+							<button class="btn small ghost" onclick={undoCheckIn}>Undo</button>
+							{#if painScore > 0}
+								<span class="small muted">Where? (optional)</span>
+								<PainAreaChips bind:selected={painAreas} label="Where does it hurt?" onchange={setLastPainAreas} />
+								<button class="btn small ghost" onclick={openPainDetail}>Add details (exact spot, cause…) ›</button>
+							{/if}
 						{/if}
 					{/if}
 				</div>
+			{/if}
+			{#if painDetail}
+				<PainEntryEditor
+					entry={painDetail}
+					onclose={() => (painDetail = null)}
+					ondone={(at) => {
+						painDetailed = at !== null;
+						if (at === null) {
+							painScore = null;
+							painAreas = [];
+						}
+					}}
+				/>
 			{/if}
 			<div class="finish-actions">
 				<button class="btn primary" onclick={done}>Done</button>
@@ -1279,5 +1306,10 @@
 		.finish-burst {
 			animation: none;
 		}
+	}
+	.journal-link {
+		color: var(--accent);
+		font-weight: 600;
+		text-decoration: none;
 	}
 </style>

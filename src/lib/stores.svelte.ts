@@ -31,6 +31,7 @@ import { clampMoveSets, clampReps, clampRepSeconds } from './timeline.ts';
 import { isMuscle } from './muscles.ts';
 import { autoSaveToFileHandle, isFileAutoBackupConnected } from './backup.ts';
 import { syncReminderState } from './reminders.ts';
+import { cleanSpots, cleanTags, entryAreas, isPainArea, PAIN_CAUSES, PAIN_HELPED } from './painSpots.ts';
 
 export const routines = $state<Routine[]>(loadRoutines());
 export const settings = $state<Settings>(loadSettings());
@@ -677,23 +678,64 @@ export function gentleVersion(r: Routine): Routine {
 	return { ...r, name: `${r.name || 'Routine'} · gentle`, stretches, sets: 1 };
 }
 
-export const PAIN_AREAS: { id: PainArea; label: string }[] = [
-	{ id: 'neck', label: 'Neck' },
-	{ id: 'shoulder', label: 'Shoulder' },
-	{ id: 'upper-back', label: 'Upper back' },
-	{ id: 'chest', label: 'Chest' },
-	{ id: 'forearm-elbow', label: 'Forearm & elbow' },
-	{ id: 'wrist-hand', label: 'Wrist & hand' },
-	{ id: 'thumb', label: 'Thumb' },
-	{ id: 'fingers', label: 'Fingers' },
-	{ id: 'lower-back', label: 'Lower back' },
-	{ id: 'hip', label: 'Hip' },
-	{ id: 'knee', label: 'Knee' },
-	{ id: 'ankle-foot', label: 'Ankle & foot' }
-];
+export { PAIN_AREAS } from './painSpots.ts';
 
-function isPainArea(value: unknown): value is PainArea {
-	return PAIN_AREAS.some((a) => a.id === value);
+/**
+ * Add or replace a pain-journal entry. `originalAt` is the entry being edited (null for a new one).
+ * Spots are tidied, `score` becomes their max and `areas` their coarse areas; entries with no spots
+ * keep the given score and areas. Custom causes / helped values are remembered as chips.
+ * Returns the saved entry's `at`.
+ */
+export function savePainEntry(originalAt: number | null, next: PainEntry): number {
+	const spots = cleanSpots(next.spots);
+	const causes = cleanTags(next.causes);
+	const helped = cleanTags(next.helped);
+	const note = typeof next.note === 'string' ? next.note.trim().slice(0, 2000) : '';
+	const keep = painLog.filter((p) => p.at !== originalAt);
+	let at = Math.round(next.at);
+	while (keep.some((p) => p.at === at)) at += 1;
+	const entry: PainEntry = {
+		date: todayKey(new Date(at)),
+		score: spots.length ? Math.max(...spots.map((p) => p.score)) : Math.min(10, Math.max(0, Math.round(next.score))),
+		routineId: next.routineId ?? null,
+		at,
+		...(next.gentle && { gentle: true })
+	};
+	const areas = spots.length ? entryAreas({ spots }) : [...new Set((next.areas ?? []).filter(isPainArea))];
+	if (areas.length) entry.areas = areas;
+	if (spots.length) entry.spots = spots;
+	if (causes.length) entry.causes = causes;
+	if (helped.length) entry.helped = helped;
+	if (note) entry.note = note;
+	keep.push(entry);
+	keep.sort((a, b) => a.at - b.at);
+	painLog.splice(0, painLog.length, ...keep);
+	savePain(painLog);
+	rememberCustom('customCauses', causes, PAIN_CAUSES);
+	rememberCustom('customHelped', helped, PAIN_HELPED);
+	return at;
+}
+
+function rememberCustom(key: 'customCauses' | 'customHelped', values: string[], presets: { id: string }[]): void {
+	const known = new Set([...presets.map((p) => p.id), ...(settings[key] ?? []).map((v) => v.toLowerCase())]);
+	const fresh = values.filter((v) => !known.has(v) && !known.has(v.toLowerCase()));
+	if (!fresh.length) return;
+	settings[key] = [...(settings[key] ?? []), ...fresh].slice(-30);
+	saveSettings(settings);
+}
+
+/** Forget a custom cause / "what helped" chip (entries that used it keep the text). */
+export function forgetCustomTag(key: 'customCauses' | 'customHelped', value: string): void {
+	settings[key] = (settings[key] ?? []).filter((v) => v !== value);
+	saveSettings(settings);
+}
+
+/** Delete one pain entry by its timestamp. */
+export function deletePainEntry(at: number): void {
+	const i = painLog.findIndex((p) => p.at === at);
+	if (i === -1) return;
+	painLog.splice(i, 1);
+	savePain(painLog);
 }
 
 /** Record how the pain is right now (0-10), and optionally where. */
@@ -1032,14 +1074,22 @@ function importPain(value: unknown, idMap: Map<string, string>): number {
 			oldId === null || oldId === MICRO_BREAK_ID
 				? oldId
 				: (idMap.get(oldId) ?? (routines.some((r) => r.id === oldId) ? oldId : null));
-		const areas = Array.isArray(p.areas) ? [...new Set(p.areas.filter(isPainArea))] : [];
+		const spots = cleanSpots(p.spots);
+		const areas = spots.length ? entryAreas({ spots }) : Array.isArray(p.areas) ? [...new Set(p.areas.filter(isPainArea))] : [];
+		const causes = cleanTags(p.causes);
+		const helped = cleanTags(p.helped);
+		const note = typeof p.note === 'string' ? p.note.trim().slice(0, 2000) : '';
 		painLog.push({
 			date: p.date,
-			score: Math.round(p.score),
+			score: spots.length ? Math.max(...spots.map((s) => s.score)) : Math.round(p.score),
 			routineId,
 			at: p.at,
 			...(p.gentle === true && { gentle: true }),
-			...(areas.length && { areas })
+			...(areas.length && { areas }),
+			...(spots.length && { spots }),
+			...(causes.length && { causes }),
+			...(helped.length && { helped }),
+			...(note && { note })
 		});
 		seen.add(p.at);
 		added += 1;

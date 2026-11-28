@@ -14,6 +14,7 @@
 	import { formatDuration, sessionTotals, sessionWhen } from '$lib/sessions';
 	import { checkScore, daysPractised, functionChange, MEANINGFUL_CHANGE, trackedActivities } from '$lib/recovery';
 	import type { PainArea } from '$lib/types';
+	import { entryAreaScore } from '$lib/painSpots';
 	import PainNow from '$lib/components/PainNow.svelte';
 	import WarningSigns from '$lib/components/WarningSigns.svelte';
 
@@ -56,7 +57,10 @@
 	const painDays = $derived(
 		Array.from({ length: PAIN_DAYS }, (_, i) => {
 			const key = addDays(today, i - PAIN_DAYS + 1);
-			const scores = shownEntries.filter((p) => p.date === key).map((p) => p.score);
+			const area = activeArea;
+			const scores = shownEntries
+				.filter((p) => p.date === key)
+				.map((p) => (area === 'all' ? p.score : (entryAreaScore(p, area) ?? p.score)));
 			return { key, avg: scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : null };
 		})
 	);
@@ -263,7 +267,10 @@
 
 {#if settings.painTracking}
 	<section class="card">
-		<h2 class="cal-title">Pain, last {PAIN_DAYS} days</h2>
+		<div class="spread pain-head">
+			<h2 class="cal-title">Pain, last {PAIN_DAYS} days</h2>
+			<a class="small journal-link" href="/journal">Open journal ›</a>
+		</div>
 		{#if areasInWindow.length > 0}
 			<div class="area-filter" role="group" aria-label="Show pain for">
 				<button type="button" class="filter-chip" class:on={activeArea === 'all'} aria-pressed={activeArea === 'all'} onclick={() => (areaFilter = 'all')}>All</button>
@@ -736,5 +743,13 @@
 	}
 	.sw.today {
 		box-shadow: inset 0 0 0 1.5px var(--text);
+	}
+	.pain-head {
+		align-items: baseline;
+	}
+	.journal-link {
+		color: var(--accent);
+		font-weight: 600;
+		text-decoration: none;
 	}
 </style>

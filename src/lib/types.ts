@@ -118,11 +118,35 @@ export interface PainEntry {
 	at: number;
 	/** logged after the gentle version, so it doesn't count toward progressing */
 	gentle?: boolean;
-	/** where it hurts; missing on entries logged before areas existed */
+	/** where it hurts (coarse); derived from `spots` when those exist */
 	areas?: PainArea[];
+	/** journal detail: each sore spot with its own score; `score` is then their max */
+	spots?: PainSpotEntry[];
+	/** preset cause ids (painSpots.ts) or custom text */
+	causes?: string[];
+	/** preset "what helped" ids or custom text */
+	helped?: string[];
+	note?: string;
+}
+
+export type PainSide = 'left' | 'right';
+
+export type PainType = 'aching' | 'sharp' | 'burning' | 'stiff' | 'throbbing' | 'shooting' | 'tingling' | 'numb' | 'weak' | 'cramping';
+
+export interface PainSpotEntry {
+	/** a PAIN_SPOTS id */
+	spot: string;
+	/** set for sided spots only */
+	side?: PainSide;
+	score: number;
+	types?: PainType[];
 }
 
 export type PainArea =
+	| 'head-jaw'
+	| 'upper-arm'
+	| 'thigh'
+	| 'calf-shin'
 	| 'wrist-hand'
 	| 'thumb'
 	| 'fingers'
@@ -160,6 +184,10 @@ export interface MorningCheck {
 export type Theme = 'light' | 'dark' | 'system';
 
 export interface Settings {
+	/** custom pain-journal causes, remembered as chips */
+	customCauses?: string[];
+	/** custom pain-journal "what helped" values, remembered as chips */
+	customHelped?: string[];
 	/** library stretch ids starred in the picker */
 	favouriteStretches?: string[];
 	/** library stretch ids most recently added from the picker, newest first */

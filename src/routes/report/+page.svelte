@@ -3,6 +3,7 @@
 	import { daysPractised, functionChange, MEANINGFUL_CHANGE, trackedActivities } from '$lib/recovery';
 	import { stretchDurationLabel } from '$lib/timeline';
 	import { addDays, todayKey } from '$lib/time';
+	import { entryAreaScore } from '$lib/painSpots';
 
 	const WEEKS = 8;
 	const today = todayKey();
@@ -58,7 +59,7 @@
 				start,
 				all: avg === null ? '–' : `${avg.toFixed(1)} (${inWeek.length})`,
 				areas: painAreas.map((a) => {
-					const m = mean(inWeek.filter((p) => p.areas?.includes(a.id)).map((p) => p.score));
+					const m = mean(inWeek.filter((p) => p.areas?.includes(a.id)).map((p) => entryAreaScore(p, a.id) ?? p.score));
 					return m === null ? '–' : m.toFixed(1);
 				})
 			};

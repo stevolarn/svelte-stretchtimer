@@ -59,6 +59,10 @@
 		hip: ['hip-opener', 'lower-body-reset'],
 		knee: ['lower-body-reset', 'runner-recovery'],
 		'ankle-foot': ['runner-recovery', 'lower-body-reset'],
+		'head-jaw': ['neck-shoulder-release', 'desk-reset'],
+		'upper-arm': ['shoulder-rehab', 'rsi-upper-body'],
+		thigh: ['lower-body-reset', 'hip-opener'],
+		'calf-shin': ['runner-recovery', 'lower-body-reset'],
 		general: ['desk-reset', 'typing-break', 'rsi-upper-body']
 	};
 
