@@ -75,6 +75,8 @@
 
 	const segment = $derived(player.segments[player.index] ?? null);
 	const nextSegment = $derived(player.segments[player.index + 1] ?? null);
+	/** The move the description and details sheet are about: during a rest, the one coming up. */
+	const cueSeg = $derived(segment?.kind === 'break' ? nextSegment : segment);
 	const fraction = $derived(segment && segment.seconds > 0 ? player.remaining / segment.seconds : 0);
 	/** Equipment/load for the stretch on screen (or the one coming up, during a rest). */
 	const loadLabel = $derived.by(() => {
@@ -249,7 +251,7 @@
 	let cueEl = $state<HTMLElement>();
 	let cueClamped = $state(false);
 	$effect(() => {
-		void segment?.stretch?.description;
+		void cueSeg?.stretch?.description;
 		const el = cueEl;
 		if (!el) return;
 		const measure = () => (cueClamped = el.scrollHeight > el.clientHeight + 1);
@@ -464,7 +466,7 @@
 					{/if}
 				</div>
 
-				{#if segment.kind === 'break'}
+				{#if segment.kind === 'break' && !nextSegment?.stretch?.description}
 					{#if nextSegment?.side === 'right'}
 						<p class="stage-cue">Switch sides — right side next</p>
 					{:else if nextSegment?.side === 'left'}
@@ -472,9 +474,9 @@
 					{:else}
 						<p class="stage-cue">Breathe and get ready</p>
 					{/if}
-				{:else if segment.stretch?.description}
+				{:else if cueSeg?.stretch?.description}
 					<button class="stage-cue-btn" onclick={() => (showZoomModal = true)} aria-label="Show full instructions">
-						<span class="stage-cue" bind:this={cueEl}>{segment.stretch.description}</span>
+						<span class="stage-cue" bind:this={cueEl}>{#if segment.kind === 'break' && cueSeg.side}<strong>{cueSeg.side === 'right' ? 'Switch sides: right next.' : 'Left side first.'}</strong> {/if}{cueSeg.stretch.description}</span>
 						{#if cueClamped}<span class="cue-more">More ›</span>{/if}
 					</button>
 				{/if}
@@ -514,24 +516,24 @@
 		</div>
 	</div>
 
-	{#if showZoomModal && segment?.stretch}
+	{#if showZoomModal && cueSeg?.stretch}
 		<Modal onclose={() => (showZoomModal = false)} class="zoom-sheet">
 			{#snippet header()}
-				<h2 style="font-size: 1.2rem">{segment.label}</h2>
-				{#if segment.side}<span class="muted small">{sideLabel(segment.side)} side</span>{/if}
+				<h2 style="font-size: 1.2rem">{segment?.kind === 'break' ? 'Up next: ' : ''}{cueSeg.label}</h2>
+				{#if cueSeg.side}<span class="muted small">{sideLabel(cueSeg.side)} side</span>{/if}
 			{/snippet}
 			<div class="zoom-visual">
-				{#if photoUrl}
-					<img src={photoUrl} alt={segment.label} />
+				{#if photoUrl && segment?.kind !== 'break'}
+					<img src={photoUrl} alt={cueSeg.label} />
 				{:else}
-					<StretchIllustration iconKey={segment.stretch.iconKey} name={segment.stretch.name} size="100%" rounded={18} />
+					<StretchIllustration iconKey={cueSeg.stretch.iconKey} name={cueSeg.stretch.name} size="100%" rounded={18} />
 				{/if}
 			</div>
-			{#if segment.stretch.description}
-				<p class="zoom-desc">{segment.stretch.description}</p>
+			{#if cueSeg.stretch.description}
+				<p class="zoom-desc">{cueSeg.stretch.description}</p>
 			{/if}
-			{#if musclesFor(segment.stretch).length > 0}
-				<div class="zoom-muscles"><MuscleChips muscles={musclesFor(segment.stretch)} /></div>
+			{#if musclesFor(cueSeg.stretch).length > 0}
+				<div class="zoom-muscles"><MuscleChips muscles={musclesFor(cueSeg.stretch)} /></div>
 			{/if}
 			<button class="btn primary" style="width: 100%; font-weight: 700" onclick={() => (showZoomModal = false)}>Back to timer</button>
 		</Modal>
