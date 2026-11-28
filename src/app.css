@@ -183,9 +183,29 @@ button {
 	opacity: 0.75;
 }
 
+.header-settings {
+	display: none;
+	color: var(--muted);
+	padding: 0.35rem;
+	margin: -0.35rem -0.35rem -0.35rem 0;
+	border-radius: 9px;
+}
+.header-settings.active {
+	color: var(--text);
+	background: var(--surface-2);
+}
+.header-settings-icon {
+	width: 1.4rem;
+	height: 1.4rem;
+	display: block;
+}
+
 @media (max-width: 600px) {
 	.desktop-nav-links {
 		display: none;
+	}
+	.header-settings {
+		display: block;
 	}
 	.mobile-tab-bar {
 		display: flex;
