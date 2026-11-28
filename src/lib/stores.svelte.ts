@@ -625,21 +625,14 @@ export function getRoutine(id: string): Routine | undefined {
 
 export const MICRO_BREAK_ID = 'micro-break';
 
-/** Desk-friendly RSI moves: one for the neck, one for the shoulders, two for the arms. */
+/** Desk-friendly RSI moves in the typing break's order: shoulders, neck, wrist flexors, wrist extensors, hands, chest. */
 const microPools = [
-	['mob-chin-tucks', 'static-neck-rotation', 'static-upper-trap', 'static-levator-scapulae'],
-	['dynamic-shoulder-rolls', 'static-reach-round', 'dynamic-shoulder-shrugs'],
-	[
-		'static-wrist-flexor',
-		'static-wrist-extensor',
-		'static-prayer-stretch',
-		'mob-tendon-glides',
-		'dynamic-forearm-rotations',
-		'mob-median-nerve-glide',
-		'mob-elbow-bend-turn',
-		'static-thumb-tuck',
-		'mob-wrist-circles'
-	]
+	['dynamic-shoulder-shrugs', 'dynamic-shoulder-rolls'],
+	['mob-chin-tucks', 'static-neck-rotation', 'static-upper-trap'],
+	['static-wrist-flexor', 'static-prayer-stretch'],
+	['static-wrist-extensor', 'static-reverse-prayer', 'dynamic-forearm-rotations'],
+	['mob-tendon-glides', 'mob-median-nerve-glide', 'static-thumb-tuck', 'mob-wrist-circles'],
+	['static-chest-opener', 'static-reach-round', 'static-cactus-arms']
 ];
 
 /** The current micro-break; never saved with the routines. */
@@ -654,7 +647,7 @@ function pick<T>(items: T[], count: number): T[] {
 	return pool.slice(0, count);
 }
 
-/** Shuffle up a fresh ~2-minute break: 30 seconds per move, split across sides where needed. */
+/** Shuffle up a fresh ~2-minute break: one move from each pool, 20 seconds each, split across sides where needed. */
 export function shuffleMicroBreak(): Routine {
 	const routine = newRoutine('2-minute micro-break', 3);
 	routine.id = MICRO_BREAK_ID;
@@ -664,10 +657,10 @@ export function shuffleMicroBreak(): Routine {
 }
 
 function microStretches(): Stretch[] {
-	const ids = [...pick(microPools[0], 1), ...pick(microPools[1], 1), ...pick(microPools[2], 2)];
+	const ids = microPools.map((pool) => pick(pool, 1)[0]);
 	return ids.map((id) => {
 		const s = stock(id);
-		return { ...newStretch(), ...s, durationSeconds: s.sides === 'two' ? 15 : 30, photoId: null };
+		return { ...newStretch(), ...s, durationSeconds: s.sides === 'two' ? 10 : 20, photoId: null };
 	});
 }
 
