@@ -133,7 +133,7 @@
 		const url = URL.createObjectURL(blob);
 		const link = document.createElement('a');
 		link.href = url;
-		link.download = `stretch-timer-backup-${new Date().toISOString().slice(0, 10)}.json`;
+		link.download = `stretch-recovery-backup-${new Date().toISOString().slice(0, 10)}.json`;
 		link.click();
 		URL.revokeObjectURL(url);
 		notify('Backup downloaded.');
@@ -221,7 +221,7 @@
 </script>
 
 <svelte:head>
-	<title>Settings · Stretch Timer</title>
+	<title>Settings · Stretch & Recovery</title>
 </svelte:head>
 
 <h1 class="page-title">Settings</h1>
@@ -560,7 +560,7 @@
 			</div>
 		{/if}
 	</div>
-	<p class="muted small set-foot">Stretch Timer · v{__APP_VERSION__}</p>
+	<p class="muted small set-foot">Stretch & Recovery · v{__APP_VERSION__}</p>
 </section>
 
 <style>

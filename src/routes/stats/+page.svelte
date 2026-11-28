@@ -131,7 +131,7 @@
 </script>
 
 <svelte:head>
-	<title>Streak · Stretch Timer</title>
+	<title>Streak · Stretch & Recovery</title>
 </svelte:head>
 
 <h1 class="page-title">Streak</h1>

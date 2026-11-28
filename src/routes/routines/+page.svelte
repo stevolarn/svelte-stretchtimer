@@ -190,7 +190,7 @@
 </script>
 
 <svelte:head>
-	<title>Routines · Stretch Timer</title>
+	<title>Routines · Stretch & Recovery</title>
 </svelte:head>
 
 <svelte:window onclick={() => (menuFor = null)} />

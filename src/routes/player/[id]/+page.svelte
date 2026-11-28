@@ -296,7 +296,7 @@
 </script>
 
 <svelte:head>
-	<title>{routine ? `${routine.name || 'Routine'} · Stretch Timer` : 'Player · Stretch Timer'}</title>
+	<title>{routine ? `${routine.name || 'Routine'} · Stretch & Recovery` : 'Player · Stretch & Recovery'}</title>
 </svelte:head>
 
 {#if player.status === 'idle'}

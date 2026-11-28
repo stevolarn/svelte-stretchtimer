@@ -141,6 +141,8 @@
 	const path = $derived(dots.map((d, i) => `${i ? 'L' : 'M'}${d.x.toFixed(1)} ${d.y.toFixed(1)}`).join(' '));
 </script>
 
+<svelte:head><title>Pain journal · Stretch &amp; Recovery</title></svelte:head>
+
 <div class="page">
 	<header class="spread head">
 		<h1>Pain journal</h1>

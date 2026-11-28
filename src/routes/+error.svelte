@@ -3,7 +3,7 @@
 </script>
 
 <svelte:head>
-	<title>{page.status === 404 ? 'Page not found' : 'Something went wrong'} · Stretch Timer</title>
+	<title>{page.status === 404 ? 'Page not found' : 'Something went wrong'} · Stretch & Recovery</title>
 </svelte:head>
 
 <div class="card error-card">

@@ -1,9 +1,9 @@
 {
   "$schema": "https://json.schemastore.org/web-manifest-combined.json",
   "id": "/",
-  "name": "Stretch Timer",
-  "short_name": "Stretch",
-  "description": "Phone-first offline timer for stretching and mobility routines with custom cues, streaks, and audio guidance.",
+  "name": "Stretch & Recovery",
+  "short_name": "Stretch & Rec",
+  "description": "Phone-first offline app for stretching, mobility and strength routines, with a pain journal, recovery tracking, streaks and audio guidance.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

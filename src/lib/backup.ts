@@ -10,15 +10,15 @@ let fileHandle: FileSystemFileHandle | null = null;
  */
 export async function shareToCloudOrDrive(): Promise<{ method: 'share' | 'download'; success: boolean }> {
 	const jsonContent = await exportBackup();
-	const filename = `stretch-timer-backup-${new Date().toISOString().slice(0, 10)}.json`;
+	const filename = `stretch-recovery-backup-${new Date().toISOString().slice(0, 10)}.json`;
 	const blob = new Blob([jsonContent], { type: 'application/json' });
 	const file = new File([blob], filename, { type: 'application/json' });
 
 	if (typeof navigator !== 'undefined' && navigator.canShare && navigator.canShare({ files: [file] })) {
 		try {
 			await navigator.share({
-				title: 'Stretch Timer Backup',
-				text: 'Offline backup of Stretch Timer routines and streak history.',
+				title: 'Stretch & Recovery Backup',
+				text: 'Offline backup of Stretch & Recovery routines and streak history.',
 				files: [file]
 			});
 			return { method: 'share', success: true };
@@ -61,7 +61,7 @@ export async function connectFileAutoBackup(): Promise<boolean> {
 				types: Array<{ description: string; accept: Record<string, string[]> }>;
 			}) => Promise<FileSystemFileHandle>;
 		}).showSaveFilePicker({
-			suggestedName: `stretch-timer-autobackup.json`,
+			suggestedName: `stretch-recovery-autobackup.json`,
 			types: [
 				{
 					description: 'JSON Backup File',

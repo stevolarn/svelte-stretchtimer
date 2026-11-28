@@ -107,7 +107,7 @@
 </script>
 
 <svelte:head>
-	<title>Summary · Stretch Timer</title>
+	<title>Summary · Stretch & Recovery</title>
 </svelte:head>
 
 <div class="report">
@@ -116,7 +116,7 @@
 			<a class="btn ghost small" href="/stats">‹ Stats</a>
 			<button type="button" class="btn primary small" onclick={() => window.print()}>Print / Save PDF</button>
 		</div>
-		<h1>Stretch Timer summary</h1>
+		<h1>Stretch &amp; Recovery summary</h1>
 		<p class="muted small meta">
 			{longDate(rangeStart)} to {longDate(today)} (last {WEEKS} weeks) · generated {longDate(today)}
 		</p>

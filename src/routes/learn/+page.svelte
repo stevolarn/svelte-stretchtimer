@@ -22,7 +22,7 @@
 	afterNavigate(openFromHash);
 </script>
 
-<svelte:head><title>Learn · Stretch Timer</title></svelte:head>
+<svelte:head><title>Learn · Stretch & Recovery</title></svelte:head>
 
 <a class="back-link" href="/">‹ Home</a>
 <h1 class="page-title">Learn</h1>

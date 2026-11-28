@@ -401,7 +401,7 @@
 </script>
 
 <svelte:head>
-	<title>{routine ? `${routine.name || 'Untitled routine'} · Stretch Timer` : 'Routine · Stretch Timer'}</title>
+	<title>{routine ? `${routine.name || 'Untitled routine'} · Stretch & Recovery` : 'Routine · Stretch & Recovery'}</title>
 </svelte:head>
 
 {#if !routine}

@@ -78,7 +78,7 @@ function updateTitle(): void {
 /** Back to the player page's own title (svelte:head won't rewrite it while its value is unchanged). */
 function restoreTitle(): void {
 	if (typeof document === 'undefined') return;
-	document.title = `${player.routineName || 'Routine'} · Stretch Timer`;
+	document.title = `${player.routineName || 'Routine'} · Stretch & Recovery`;
 }
 
 function enterSegment(index: number, settings: Settings): void {

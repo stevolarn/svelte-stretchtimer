@@ -278,7 +278,7 @@
 </script>
 
 <svelte:head>
-	<title>Stretch Timer</title>
+	<title>Stretch & Recovery</title>
 </svelte:head>
 
 <div class="card streak-banner">

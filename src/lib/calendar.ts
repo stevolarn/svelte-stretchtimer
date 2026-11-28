@@ -65,7 +65,7 @@ function fold(line: string): string {
 /** An .ics calendar with a weekly repeating event and alarm for every scheduled time. */
 export function scheduleIcs(routines: Routine[], settings: Settings, origin: string): { ics: string; events: number } {
 	const now = `${new Date().toISOString().replace(/[-:]/g, '').slice(0, 15)}Z`;
-	const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Stretch Timer//Schedule//EN', 'CALSCALE:GREGORIAN'];
+	const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Stretch & Recovery//Schedule//EN', 'CALSCALE:GREGORIAN'];
 	let events = 0;
 	for (const r of routines) {
 		const s = r.schedule;

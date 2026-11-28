@@ -1194,7 +1194,7 @@ export async function importBackup(
 ): Promise<{ added: number; skipped: number; pain: number; morning: number; function: number }> {
 	const parsed: unknown = JSON.parse(raw);
 	const source = Array.isArray(parsed) ? { routines: parsed, photos: {} } : parsed;
-	if (!isRecord(source) || !Array.isArray(source.routines)) throw new Error('This file is not a valid Stretch Timer backup.');
+	if (!isRecord(source) || !Array.isArray(source.routines)) throw new Error('This file is not a valid Stretch & Recovery backup.');
 
 	const photos = isRecord(source.photos) ? source.photos : {};
 	let added = 0;
